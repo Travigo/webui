@@ -9,9 +9,7 @@ import Card from '@/components/Card.vue'
       Timetables
     </PageTitle>
     <Card>
-      This is a list of Timetables
-      <br/><br/>
-      Nothing here at the moment
+      <strong>Currently not implemented</strong>
     </Card>
   </div>
 </template>

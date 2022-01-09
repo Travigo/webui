@@ -4,6 +4,6 @@
 
 <template>
   <div>
-    Map
+    <strong>Currently not implemented</strong>
   </div>
 </template>

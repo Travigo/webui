@@ -72,7 +72,7 @@ export default {
         <router-view />
       </div>
     </main>
-    <footer>
+    <footer class="m-2">
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
         &copy; BritBus |
         <router-link :to="{ name: 'about' }">About</router-link> | 

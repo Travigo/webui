@@ -9,9 +9,7 @@ import Card from '@/components/Card.vue'
       Operators
     </PageTitle>
     <Card>
-      This is a list of Operators
-      <br/><br/>
-      Nothing here at the moment
+      <strong>Currently not implemented</strong>
     </Card>
   </div>
 </template>

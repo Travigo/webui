@@ -46,6 +46,14 @@ export const routes = [
     component: () => import('./views/Map.vue')
   },
   {
+    name: 'stops/view',
+    path: '/stops/:id',
+    meta: { 
+      title: 'Stop' // should be the actual stop name
+    },
+    component: () => import('./views/Stops/View.vue')
+  },
+  {
     name: 'operators/home',
     path: '/operators',
     meta: { 
