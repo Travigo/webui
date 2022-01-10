@@ -1,17 +1,47 @@
 <script>
 export default {
     name: 'App',
+    data () {
+      return {
+        hamburgerMenuOpen: false,
+        navItems: [
+          {
+            name: 'Map',
+            route: { name: 'map' }
+          },
+          {
+            name: 'Operators',
+            route: { name: 'operators/home' }
+          },
+          {
+            name: 'Timetables',
+            route: { name: 'timetables/home' }
+          },
+          {
+            name: 'Historical',
+            route: { name: 'historical/home' }
+          }
+        ]
+      }
+    },
+    methods: {
+      hamburgerMenuToggle() {
+        this.hamburgerMenuOpen = !this.hamburgerMenuOpen;
+      }
+    },
     watch: {
       $route: {
         immediate: true,
-          handler(to, from) {
-            if (to.meta.title === undefined) {
-              document.title = 'BritBus';
-            } else {
-              document.title = 'BritBus / ' + to.meta.title;
-            }
+        handler(to, from) {
+          console.log("WHAT")
+          this.hamburgerMenuOpen = false
+          if (to.meta.title === undefined) {
+            document.title = 'BritBus';
+          } else {
+            document.title = 'BritBus / ' + to.meta.title;
           }
-        },
+        }
+      },
     }
 };
 </script>
@@ -23,7 +53,7 @@ export default {
         <div class="relative flex items-center justify-between h-16">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <!-- Mobile menu button-->
-            <button class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
+            <button @click="hamburgerMenuToggle" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
               <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -40,10 +70,16 @@ export default {
             </router-link>
             <div class="hidden sm:block sm:ml-6">
               <div class="flex">
-                <router-link :to="{ name: 'map' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
-                  Map
+                <router-link
+                  v-for="navItem in navItems"
+                  v-bind:key="navItem.name"
+                  :to="navItem.route" 
+                  active-class="active-nav-tab"
+                  class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out"
+                >
+                  {{ navItem.name }}
                 </router-link>
-                <router-link :to="{ name: 'operators/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
+                <!-- <router-link :to="{ name: 'operators/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
                   Operators
                 </router-link>
                 <router-link :to="{ name: 'timetables/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
@@ -51,19 +87,24 @@ export default {
                 </router-link>
                 <router-link :to="{ name: 'historical/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
                   Historical
-                </router-link>
+                </router-link> -->
               </div>
             </div>
           </div>
         </div>
       </div>
     
-      <div class="hidden sm:hidden">
+      <div class="sm:hidden" v-bind:class="{ hidden: !hamburgerMenuOpen }">
         <div class="px-2 pt-2 pb-3">
-          <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-gray-900 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">Map</a>
-          <a href="#" class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">Operators</a>
-          <a href="#" class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">Timetables</a>
-          <a href="#" class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">Historical</a>
+          <router-link
+            v-for="navItem in navItems"
+            v-bind:key="navItem.name"
+            :to="navItem.route" 
+            active-class="active-nav-tab"
+            class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out"
+          >
+            {{ navItem.name }}
+          </router-link>
         </div>
       </div>
     </nav>
