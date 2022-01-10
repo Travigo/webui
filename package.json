@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "axios": "^0.24.0",
+    "leaflet.markercluster": "^1.5.3",
     "sass": "^1.47.0",
     "sass-loader": "^12.4.0",
     "vue": "^3.2.26",

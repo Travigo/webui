@@ -33,7 +33,6 @@ export default {
       $route: {
         immediate: true,
         handler(to, from) {
-          console.log("WHAT")
           this.hamburgerMenuOpen = false
           if (to.meta.title === undefined) {
             document.title = 'BritBus';

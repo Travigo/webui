@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import './tailwind.css'
 import './main.css'
-import 'leaflet/dist/leaflet.css'
+// import 'leaflet/dist/leaflet.css'
 import App from './App.vue'
 import { routes } from './routes.js'
 import { createRouter, createWebHistory } from 'vue-router'

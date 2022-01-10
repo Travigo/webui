@@ -7,17 +7,21 @@
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
     </PageTitle>
-    <div class="flex flex-row h-full">
-      <div class="basis-1/2 mr-2">
-        <Card>
+    <div class="flex flex-col-reverse md:flex-row h-full">
+      <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">
+        <!-- <Card>
           {{ this.stop.OtherNames }}
-        </Card>
-        <PageTitle>
-          Services
-        </PageTitle>
+        </Card> -->
+        
         <Card>
+          <template #title>
+            Services
+          </template>
+          <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+            No services run at this stop
+          </span>
           <div class="mb-4 last:mb-0" v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier">
-            <span class="text-3xl text-center font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 mr-1 h-12 min-w-[3rem]">
+            <span class="text-3xl text-center font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 mr-2 h-12 min-w-[3rem]">
               {{ service.ServiceName }}
             </span>
             <span>
@@ -29,12 +33,12 @@
           </div>
         </Card>
       </div>
-      <div class="basis-1/2 ml-2">
+      <div class="basis-full md:basis-1/2 md:ml-2 h-[250px] md:h-[400px]">
         <l-map
           :zoom="zoom"
           :center="center"
           :options="mapOptions"
-          style="height: 400px"
+          style="height: 100%"
         >
           <l-tile-layer
             :url="url"
