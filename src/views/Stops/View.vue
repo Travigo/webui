@@ -1,30 +1,40 @@
 <template>
   <div v-if="loading">Loading...</div>
-  <div v-else>
+  <div v-else class="h-full">
     <PageTitle>
       {{ this.stop.PrimaryName }}
       <span class="text-sm text-gray-700">
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
     </PageTitle>
-    <div class="flex flex-row">
+    <div class="flex flex-row h-full">
       <div class="basis-1/2 mr-2">
         <Card>
           {{ this.stop.OtherNames }}
         </Card>
-        <Card class="mt-4">
-          {{ this.stop.Services }}
+        <PageTitle>
+          Services
+        </PageTitle>
+        <Card>
+          <div class="mb-4 last:mb-0" v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier">
+            <span class="text-3xl text-center font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 mr-1 h-12 min-w-[3rem]">
+              {{ service.ServiceName }}
+            </span>
+            <span>
+              {{ service.OutboundDescription.Destination }}
+            </span>
+            <span v-if="service.OutboundDescription.Destination===''">
+              {{ service.OutboundDescription.Description }}
+            </span>
+          </div>
         </Card>
       </div>
       <div class="basis-1/2 ml-2">
         <l-map
-          v-if="showMap"
           :zoom="zoom"
           :center="center"
           :options="mapOptions"
-          style="height: 80%"
-          @update:center="centerUpdate"
-          @update:zoom="zoomUpdate"
+          style="height: 400px"
         >
           <l-tile-layer
             :url="url"
@@ -33,7 +43,10 @@
             <l-marker :lat-lng="center">
               <l-tooltip :options="{ permanent: true, interactive: true }">
                 <div>
-                  {{ this.stop.PrimaryName }}
+                  <p>
+                    <strong>{{ this.stop.PrimaryName }}</strong>
+                  </p>
+                  {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
                 </div>
               </l-tooltip>
             </l-marker>
@@ -52,7 +65,7 @@ import { latLng } from 'leaflet';
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
 
 export default {
-  name: 'Bus',
+  name: 'StopsView',
   data () {
     return {
       stop: null,
@@ -71,8 +84,7 @@ export default {
       // showParagraph: false,
       mapOptions: {
         zoomSnap: 0.5
-      },
-      showMap: true
+      }
     }
   },
   components: {
@@ -98,20 +110,6 @@ export default {
         this.error = error
       })
       .finally(() => this.loading = false)
-  },
-  methods: {
-    zoomUpdate(zoom) {
-      this.currentZoom = zoom;
-    },
-    centerUpdate(center) {
-      this.currentCenter = center;
-    },
-    showLongText() {
-      this.showParagraph = !this.showParagraph;
-    },
-    innerClick() {
-      alert("Click!");
-    }
   }
 }
 </script>
