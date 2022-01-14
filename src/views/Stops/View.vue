@@ -1,39 +1,55 @@
 <template>
-  <div v-if="loading">Loading...</div>
+  <div v-if="loadingStop">Loading...</div>
   <div v-else class="h-full">
     <PageTitle>
       {{ this.stop.PrimaryName }}
       <span class="text-sm text-gray-700">
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
+      <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+        No services run at this stop
+      </span>
+
+      <div class="md:float-right inline">
+        <span
+          v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier"
+          class="text-base text-center font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 ml-2 h-8 min-w-[1rem]"
+        >
+          {{ service.ServiceName }}
+        </span>
+      </div>
     </PageTitle>
     <div class="flex flex-col-reverse md:flex-row h-full">
-      <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">
-        <!-- <Card>
-          {{ this.stop.OtherNames }}
-        </Card> -->
-        
+      <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
         <Card>
           <template #title>
-            Services
+            Departures
           </template>
-          <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
-            No services run at this stop
+          <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+            Loading...
           </span>
-          <div class="mb-4 last:mb-0" v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier">
-            <span class="text-3xl text-center font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 mr-2 h-12 min-w-[3rem]">
-              {{ service.ServiceName }}
-            </span>
-            <span>
-              {{ service.OutboundDescription.Destination }}
-            </span>
-            <span v-if="service.OutboundDescription.Destination===''">
-              {{ service.OutboundDescription.Description }}
-            </span>
+          <span v-else-if="!this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+            No upcoming departures at this stop
+          </span>
+          <div class="mb-4 last:mb-0 flex" v-for="departure in this.departures" v-bind:key="departure.PrimaryIdentifier">
+            <div class="text-xl text-center font-semibold inline-block py-2 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 h-11 min-w-[2.5rem]">
+              {{ departure.Journey.Service.ServiceName }}
+            </div>
+            <div class="flex-auto my-auto">
+              <div>
+                {{ departure.Journey.DestinationDisplay }}
+              </div>
+              <div class="text-xs">
+                {{ departure.Journey.Operator.PrimaryName }}
+              </div>
+            </div>
+            <div class="my-auto">
+              {{ this.prettyTime(departure.Time) }}
+            </div>
           </div>
         </Card>
       </div>
-      <div class="basis-full md:basis-1/2 md:ml-2 h-[250px] md:h-[400px]">
+      <div class="basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
         <l-map
           :zoom="zoom"
           :center="center"
@@ -73,7 +89,11 @@ export default {
   data () {
     return {
       stop: null,
-      loading: true,
+      loadingStop: true,
+
+      departures: null,
+      loadingDepartures: true,
+
       error: null,
 
       zoom: 16,
@@ -101,8 +121,9 @@ export default {
     LPopup,
     LTooltip
   },
-  mounted () {
-    axios
+  methods: {
+    getStop() {
+      axios
       .get(`/api/stops/${this.$route.params.id}`)
       .then(response => {
         this.stop = response.data
@@ -113,7 +134,33 @@ export default {
         console.log(error)
         this.error = error
       })
-      .finally(() => this.loading = false)
+      .finally(() => this.loadingStop = false)
+    },
+    getDepartures() {
+      axios
+      .get(`/api/stops/${this.$route.params.id}/departures?count=10`)
+      .then(response => {
+        this.departures = response.data
+      })
+      .catch(error => {
+        console.log(error)
+        // this.error = error
+      })
+      .finally(() => this.loadingDepartures = false)
+    },
+    prettyTime(datetimeString) {
+      let datetime = new Date(Date.parse(datetimeString))
+
+      let hour = datetime.getHours()
+      let minute = datetime.getMinutes()
+      let minuteFormatted = minute < 10 ? "0" + minute : minute
+
+      return `${hour}:${minuteFormatted}`
+    }
+  },
+  mounted () {
+    this.getStop()
+    this.getDepartures()
   }
 }
 </script>
