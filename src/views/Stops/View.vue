@@ -31,20 +31,26 @@
           <span v-else-if="!this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
             No upcoming departures at this stop
           </span>
-          <div class="mb-4 last:mb-0 flex" v-for="departure in this.departures" v-bind:key="departure.PrimaryIdentifier">
-            <div class="text-xl text-center font-semibold inline-block py-2 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 h-11 min-w-[2.5rem]">
-              {{ departure.Journey.Service.ServiceName }}
+
+          <div class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
+            <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
+              {{ this.prettyDay(departure.Time) }}
             </div>
-            <div class="flex-auto my-auto">
-              <div>
-                {{ departure.Journey.DestinationDisplay }}
+            <div class="flex">
+              <div class="text-xl text-center font-semibold inline-block py-2 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 h-11 min-w-[2.5rem]">
+                {{ departure.Journey.Service.ServiceName }}
               </div>
-              <div class="text-xs">
-                {{ departure.Journey.Operator.PrimaryName }}
+              <div class="flex-auto my-auto">
+                <div>
+                  {{ departure.Journey.DestinationDisplay }}
+                </div>
+                <div class="text-xs">
+                  {{ departure.Journey.Operator.PrimaryName }}
+                </div>
               </div>
-            </div>
-            <div class="my-auto">
-              {{ this.prettyTime(departure.Time) }}
+              <div class="my-auto">
+                {{ this.prettyTime(departure.Time) }}
+              </div>
             </div>
           </div>
         </Card>
@@ -138,7 +144,7 @@ export default {
     },
     getDepartures() {
       axios
-      .get(`/api/stops/${this.$route.params.id}/departures?count=10`)
+      .get(`/api/stops/${this.$route.params.id}/departures?count=15`)
       .then(response => {
         this.departures = response.data
       })
@@ -156,6 +162,26 @@ export default {
       let minuteFormatted = minute < 10 ? "0" + minute : minute
 
       return `${hour}:${minuteFormatted}`
+    },
+    prettyDay(datetimeString) {
+      let datetime = new Date(Date.parse(datetimeString))
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+      return days[datetime.getDay()]
+    },
+    departureDayChange(index) {
+      let comparisonDateTime;
+      // If we're at the start then comparison datetime is current date else its the last items
+      // TODO when able to look in future handle that
+      if (index == 0) {
+        comparisonDateTime = new Date(Date.now())
+      } else {
+        comparisonDateTime = new Date(Date.parse(this.departures[index-1].Time))
+      }
+
+      let currentDateTime = new Date(Date.parse(this.departures[index].Time))
+
+      return comparisonDateTime.getDate() != currentDateTime.getDate()
     }
   },
   mounted () {
