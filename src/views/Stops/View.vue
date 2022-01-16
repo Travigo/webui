@@ -6,7 +6,7 @@
       <span class="text-sm text-gray-700">
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
-      <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+      <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
         No services run at this stop
       </span>
 
@@ -42,7 +42,7 @@
               </div>
               <div class="flex-auto my-auto">
                 <div>
-                  {{ departure.Journey.DestinationDisplay }}
+                  {{ departure.DestinationDisplay }}
                 </div>
                 <div class="text-xs">
                   {{ departure.Journey.Operator.PrimaryName }}
