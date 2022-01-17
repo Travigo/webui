@@ -1,3 +1,3 @@
 export default {
-  URL: (process.env.NODE_ENV === 'development' ? 'http://localhost:3000/api' : 'https://api.britbus.devspace.app')
+  URL: (process.env.NODE_ENV === 'development' ? '/api' : 'https://api.britbus.devspace.app')
 }

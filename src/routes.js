@@ -54,12 +54,36 @@ export const routes = [
     component: () => import('./views/Stops/View.vue')
   },
   {
+    name: 'journeys/view',
+    path: '/journeys/:id',
+    meta: { 
+      title: 'Journey' // should be the actual stop name
+    },
+    component: () => import('./views/Journeys/View.vue')
+  },
+  {
     name: 'operators/home',
     path: '/operators',
     meta: { 
       title: 'Operators'
     },
     component: () => import('./views/Operators/Home.vue')
+  },
+  {
+    name: 'operators/view',
+    path: '/operators/:id',
+    meta: { 
+      title: 'Operator' // should be the actual stop name
+    },
+    component: () => import('./views/Operators/View.vue')
+  },
+  {
+    name: 'operators/view_group',
+    path: '/operators/group/:id',
+    meta: { 
+      title: 'Operator Group' // should be the actual stop name
+    },
+    component: () => import('./views/Operators/View_Group.vue')
   },
   {
     name: 'timetables/home',

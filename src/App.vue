@@ -87,15 +87,6 @@ export default {
                 >
                   {{ navItem.name }}
                 </router-link>
-                <!-- <router-link :to="{ name: 'operators/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
-                  Operators
-                </router-link>
-                <router-link :to="{ name: 'timetables/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
-                  Timetables
-                </router-link>
-                <router-link :to="{ name: 'historical/home' }" active-class="active-nav-tab" class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out">
-                  Historical
-                </router-link> -->
               </div>
             </div>
           </div>

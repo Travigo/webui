@@ -45,11 +45,15 @@
                   {{ departure.DestinationDisplay }}
                 </div>
                 <div class="text-xs">
-                  {{ departure.Journey.Operator.PrimaryName }}
+                  <router-link :to="{'name': 'operators/view', params: {'id': departure.Journey.Operator.PrimaryIdentifier}}">
+                    {{ departure.Journey.Operator.PrimaryName }}
+                  </router-link>
                 </div>
               </div>
               <div class="my-auto">
-                {{ this.prettyTime(departure.Time) }}
+                <router-link :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}">
+                  {{ this.prettyTime(departure.Time) }}
+                </router-link>
               </div>
             </div>
           </div>
