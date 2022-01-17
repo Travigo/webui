@@ -44,6 +44,7 @@ import PageTitle from '@/components/PageTitle.vue'
 import Modal from '@/components/Modal.vue'
 import Card from '@/components/Card.vue'
 import axios from 'axios'
+import API from '@/API'
 
 import { latLngBounds, latLng } from 'leaflet';
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
@@ -99,7 +100,7 @@ export default {
       let topRightLat = bounds._northEast.lat;
 
       axios
-        .get(`/api/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+        .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
         .then(response => {
           let newStops = response.data
 

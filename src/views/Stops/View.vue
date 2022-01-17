@@ -86,6 +86,7 @@
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
 import axios from 'axios'
+import API from '@/API'
 
 import { latLng } from 'leaflet';
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
@@ -130,7 +131,7 @@ export default {
   methods: {
     getStop() {
       axios
-      .get(`/api/stops/${this.$route.params.id}`)
+      .get(`${API.URL}/stops/${this.$route.params.id}`)
       .then(response => {
         this.stop = response.data
 
@@ -144,7 +145,7 @@ export default {
     },
     getDepartures() {
       axios
-      .get(`/api/stops/${this.$route.params.id}/departures?count=15`)
+      .get(`${API.URL}/stops/${this.$route.params.id}/departures?count=15`)
       .then(response => {
         this.departures = response.data
       })
