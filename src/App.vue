@@ -1,6 +1,9 @@
 <script>
 export default {
     name: 'App',
+    computed: {
+      isDev() { return process.env.NODE_ENV === 'development' }
+    },
     data () {
       return {
         hamburgerMenuOpen: false,
@@ -65,6 +68,12 @@ export default {
             <router-link :to="{ path: '/' }">
               <div class="flex-shrink-0 text-white text-2xl tracking-wider">
                 <span class="text-unionjack-red">Brit</span><span class="text-unionjack-blue">Bus</span>
+                <span v-if="this.isDev" class="text-xs font-semibold inline-block px-2 uppercase rounded text-red-600">
+                  Dev
+                </span>
+                <span v-else class="text-xs font-semibold inline-block px-2 uppercase rounded text-orange-600">
+                  Beta
+                </span>
               </div>
             </router-link>
             <div class="hidden sm:block sm:ml-6">
