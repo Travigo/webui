@@ -47,14 +47,14 @@ ingress:
     kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-prod
   hosts:
-    - host: britbus.claydonlee.com
+    - host: britbus.devspace.app
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
-    - secretName: britbus-web-ui-tls
+    - secretName: britbus-web-ui-devspaceapp-tls
       hosts:
-        - britbus.claydonlee.com
+        - britbus.devspace.app
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
