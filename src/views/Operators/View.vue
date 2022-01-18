@@ -26,7 +26,7 @@
         </a>
       </div>
 
-      <div v-if="this.operator.SocialMedia.Twitter" class="mb-2">
+      <div v-if="this.operator.SocialMedia && this.operator.SocialMedia.Twitter" class="mb-2">
         <strong>Twitter: </strong>
         <a :href="'https://twitter.com/' + this.operator.SocialMedia.Twitter" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
           {{ this.operator.SocialMedia.Twitter }}

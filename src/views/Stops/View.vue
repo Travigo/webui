@@ -34,7 +34,7 @@
 
           <div class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
             <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
-              {{ this.prettyDay(departure.Time) }}
+              {{ this.pretty.day(departure.Time) }}
             </div>
             <div class="flex">
               <div class="text-xl text-center font-semibold inline-block py-2 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 h-11 min-w-[2.5rem]">
@@ -52,7 +52,7 @@
               </div>
               <div class="my-auto">
                 <router-link :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}">
-                  {{ this.prettyTime(departure.Time) }}
+                  {{ this.pretty.time(departure.Time) }}
                 </router-link>
               </div>
             </div>
@@ -91,6 +91,7 @@ import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
+import Pretty from '@/pretty'
 
 import { latLng } from 'leaflet';
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
@@ -99,6 +100,7 @@ export default {
   name: 'StopsView',
   data () {
     return {
+      pretty: Pretty,
       stop: null,
       loadingStop: true,
 
@@ -158,21 +160,6 @@ export default {
         // this.error = error
       })
       .finally(() => this.loadingDepartures = false)
-    },
-    prettyTime(datetimeString) {
-      let datetime = new Date(Date.parse(datetimeString))
-
-      let hour = datetime.getHours()
-      let minute = datetime.getMinutes()
-      let minuteFormatted = minute < 10 ? "0" + minute : minute
-
-      return `${hour}:${minuteFormatted}`
-    },
-    prettyDay(datetimeString) {
-      let datetime = new Date(Date.parse(datetimeString))
-      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
-      return days[datetime.getDay()]
     },
     departureDayChange(index) {
       let comparisonDateTime;
