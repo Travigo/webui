@@ -30,11 +30,17 @@
         <Card>
           <ol class="relative border-l border-gray-200">                  
             <li class="mb-5 ml-4 last:mb-0 relative" v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-              <div class="absolute w-3 h-3 bg-gray-200 rounded-full -left-[1.4rem] top-1.5 border border-white"></div>
+              <div
+                class="absolute w-3 h-3 bg-gray-200 rounded-full -left-[1.4rem] top-1.5 border border-white"
+                v-bind:class="{ 'bg-gray-800': point.stop.PrimaryIdentifier == this.realtime.DepartedStopRef || point.stop.PrimaryIdentifier == this.realtime.NextStopRef }"
+              ></div>
 
               <div class="flex">
                 <div class="flex-auto my-auto min-h-[40px]">
-                  <div class="mb-1 font-normal text-gray-900">
+                  <div 
+                    class="mb-1 font-normal text-gray-900" 
+                    v-bind:class="{ 'font-black': point.stop.PrimaryIdentifier == this.realtime.DepartedStopRef || point.stop.PrimaryIdentifier == this.realtime.NextStopRef }"
+                  >
                     {{ point.stop.PrimaryName }}
                   </div>
                   <div class="mb-1 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
@@ -67,8 +73,9 @@
             :url="url"
             :attribution="attribution"
           />
+
           <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-            <l-marker :lat-lng="point.latLng">
+            <l-circle-marker :lat-lng="point.latLng" :radius="4" color="green" :fill="true" fillColor="green">
               <l-popup>
                 <div>
                   <p>
@@ -77,13 +84,21 @@
                   {{ point.stop.OtherNames.Indicator }} {{ point.stop.OtherNames.Landmark }}
                 </div>
               </l-popup>
+            </l-circle-marker>
 
-              <l-polyline
-                :lat-lngs="point.track"
-                color="blue"
-              />
-            </l-marker>
+            <l-polyline
+              :lat-lngs="point.track"
+              color="blue"
+            />
           </div>
+
+          <!-- <l-circle :lat-lng="[52.1852036, 0.1725319]" :radius="5" color="green" fillColor="green" fillOpacity="1.0" /> -->
+          <l-marker 
+            :lat-lng="[this.realtime.VehicleLocation.coordinates[1], this.realtime.VehicleLocation.coordinates[0]]"
+            v-if="this.realtime"  
+          >
+            <l-icon icon-url="https://placekitten.com/16/16" :icon-size="[16, 16]" />
+          </l-marker>
         </l-map>
       </div>
     </div>
@@ -98,13 +113,14 @@ import API from '@/API'
 import Pretty from '@/pretty'
 
 import { latLng } from 'leaflet';
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LPolyline } from '@vue-leaflet/vue-leaflet';
+import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LPolyline, LCircleMarker, LIcon } from '@vue-leaflet/vue-leaflet';
 
 export default {
   data () {
     return {
       journey: null,
       journeyPoints: null,
+      realtime: null,
 
       loading: true,
       error: null,
@@ -133,7 +149,9 @@ export default {
     LMarker,
     LPopup,
     LTooltip,
-    LPolyline
+    LPolyline,
+    LCircleMarker,
+    LIcon
   },
   methods: {
     getJourney() {
@@ -148,9 +166,10 @@ export default {
         //   // stop.TrackLatLngs = stop.Track.map(x => latLng(x.coordinates[1], x.coordinates[0]))
         // })
 
-        this.journeyPoints = this.extractJourneyPoints(newJourney.Path)
+        this.journeyPoints = this.extractJourneyPoints(newJourney.Journey.Path)
 
-        this.journey = newJourney
+        this.journey = newJourney.Journey
+        this.realtime = newJourney.RealtimeJourney
       })
       .catch(error => {
         console.log(error)
