@@ -32,14 +32,12 @@
             <li class="mb-5 ml-4 last:mb-0 relative" v-for="(point, index) in this.journeyPoints" v-bind:key="index">
               <div
                 class="absolute w-3 h-3 bg-gray-200 rounded-full -left-[1.4rem] top-1.5 border border-white"
-                v-bind:class="{ 'bg-gray-800': point.stop.PrimaryIdentifier == this.realtime.DepartedStopRef || point.stop.PrimaryIdentifier == this.realtime.NextStopRef }"
               ></div>
 
               <div class="flex">
                 <div class="flex-auto my-auto min-h-[40px]">
                   <div 
                     class="mb-1 font-normal text-gray-900" 
-                    v-bind:class="{ 'font-black': point.stop.PrimaryIdentifier == this.realtime.DepartedStopRef || point.stop.PrimaryIdentifier == this.realtime.NextStopRef }"
                   >
                     {{ point.stop.PrimaryName }}
                   </div>
@@ -94,8 +92,8 @@
 
           <!-- <l-circle :lat-lng="[52.1852036, 0.1725319]" :radius="5" color="green" fillColor="green" fillOpacity="1.0" /> -->
           <l-marker 
-            :lat-lng="[this.realtime.VehicleLocation.coordinates[1], this.realtime.VehicleLocation.coordinates[0]]"
-            v-if="this.realtime"  
+            :lat-lng="[this.journey.RealtimeJourney.VehicleLocation.coordinates[1], this.journey.RealtimeJourney.VehicleLocation.coordinates[0]]"
+            v-if="this.journey.RealtimeJourney"  
           >
             <l-icon icon-url="https://placekitten.com/16/16" :icon-size="[16, 16]" />
           </l-marker>
@@ -120,7 +118,6 @@ export default {
     return {
       journey: null,
       journeyPoints: null,
-      realtime: null,
 
       loading: true,
       error: null,
@@ -137,7 +134,9 @@ export default {
       currentZoom: 11.5,
       mapOptions: {
         zoomSnap: 0.5
-      }
+      },
+
+      refreshTimer: null
     }
   },
   components: {
@@ -160,16 +159,9 @@ export default {
       .then(response => {
         let newJourney = response.data
 
-        // newJourney.Path.forEach(stop => {
-        //   stop.OriginStop.latLng = latLng(stop.OriginStop.Location.coordinates[1], stop.OriginStop.Location.coordinates[0])
+        this.journeyPoints = this.extractJourneyPoints(newJourney.Path)
 
-        //   // stop.TrackLatLngs = stop.Track.map(x => latLng(x.coordinates[1], x.coordinates[0]))
-        // })
-
-        this.journeyPoints = this.extractJourneyPoints(newJourney.Journey.Path)
-
-        this.journey = newJourney.Journey
-        this.realtime = newJourney.RealtimeJourney
+        this.journey = newJourney
       })
       .catch(error => {
         console.log(error)
@@ -215,6 +207,10 @@ export default {
   },
   mounted () {
     this.getJourney()
-  }
+    this.refreshTimer = setInterval(this.getJourney, 30000)
+  },
+  beforeDestroy() {  
+    clearInterval(this.refreshTimer)
+  }, 
 }
 </script>

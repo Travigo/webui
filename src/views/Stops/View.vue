@@ -120,7 +120,9 @@ export default {
       currentZoom: 11.5,
       mapOptions: {
         zoomSnap: 0.5
-      }
+      },
+
+      refreshTimer: null
     }
   },
   components: {
@@ -160,6 +162,10 @@ export default {
       })
       .finally(() => this.loadingDepartures = false)
     },
+    getData() {
+      this.getStop()
+      this.getDepartures()
+    },
     departureDayChange(index) {
       let comparisonDateTime;
       // If we're at the start then comparison datetime is current date else its the last items
@@ -176,8 +182,11 @@ export default {
     }
   },
   mounted () {
-    this.getStop()
-    this.getDepartures()
-  }
+    this.getData()
+    this.refreshTimer = setInterval(this.getData, 30000)
+  },
+  beforeDestroy() {  
+    clearInterval(this.refreshTimer)
+  }, 
 }
 </script>
