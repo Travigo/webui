@@ -53,7 +53,7 @@
               <div class="my-auto text-right">
                 <router-link :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}">
                   {{ this.pretty.time(departure.Time) }}
-                  <p class="text-xs" v-if="departure.RealtimeJourney">
+                  <p class="text-xs" v-if="departure.Journey.RealtimeJourney">
                     Realtime
                   </p>
                 </router-link>

@@ -28,34 +28,54 @@
     <div class="flex flex-col-reverse md:flex-row h-full md:mt-4">
       <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block" v-bind:class="{ hidden: this.currentTab != 'timeline' }">  
         <Card>
-          <ol class="relative border-l border-gray-200">                  
-            <li class="mb-5 ml-4 last:mb-0 relative" v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-              <div
-                class="absolute w-3 h-3 bg-gray-200 rounded-full -left-[1.4rem] top-1.5 border border-white"
-              ></div>
+          <a
+            v-if="!this.expandInactiveStops && this.hasHiddenStops"
+            @click="showAllStops()" 
+            href="#"
+            class="text-center block bg-gray-100 text-gray-600 text-sm p-1 rounded-lg"
+          >
+            Show previous stops
+          </a>
+          <ol class="relative border-l border-gray-300">                  
+            <li 
+              class="mb-5 ml-4 last:mb-0 relative" 
+              v-for="(point, index) in this.journeyPoints"
+              v-bind:key="index"
+            >
+              <span
+                v-if="this.showStop(index)"
+              >
+                <div
+                  class="absolute w-3 h-3 bg-gray-300 rounded-full -left-[1.4rem] top-1.5 border border-white"
+                  v-bind:class="{'bg-gray-600': point.active}"
+                ></div>
 
-              <div class="flex">
-                <div class="flex-auto my-auto min-h-[40px]">
-                  <div 
-                    class="mb-1 font-normal text-gray-900" 
-                  >
-                    {{ point.stop.PrimaryName }}
+                <div 
+                  class="flex text-gray-600"
+                  v-bind:class="{'text-gray-900': point.active}"
+                >
+                  <div class="flex-auto my-auto min-h-[40px]">
+                    <div 
+                      class="mb-1 font-normal"
+                    >
+                      {{ point.stop.PrimaryName }}
+                    </div>
+                    <div class="mb-1 text-sm font-normal leading-none text-gray-400">
+                      <!-- <span v-for="activity in point.activity" v-bind:key="activity" class="text-xs p-1 rounded text-amber-600 bg-amber-200 mr-1 last:mr-0">
+                        {{ activity }}
+                      </span> -->
+                    </div>
                   </div>
-                  <div class="mb-1 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
-                    <!-- <span v-for="activity in point.activity" v-bind:key="activity" class="text-xs p-1 rounded text-amber-600 bg-amber-200 mr-1 last:mr-0">
-                      {{ activity }}
-                    </span> -->
+                  <div class="text-base font-normal text-right">
+                    <p>
+                      {{ this.pretty.time(point.arivalTime) }}
+                    </p>
+                    <p class="text-xs" v-if="point.arivalTime != point.departureTime && point.departureTime != null">
+                      Departs {{ this.pretty.time(point.departureTime) }}
+                    </p>
                   </div>
                 </div>
-                <div class="text-base font-normal text-right">
-                  <p>
-                    {{ this.pretty.time(point.arivalTime) }}
-                  </p>
-                  <p class="text-xs" v-if="point.arivalTime != point.departureTime && point.departureTime != null">
-                    Departs {{ this.pretty.time(point.departureTime) }}
-                  </p>
-                </div>
-              </div>
+              </span>
             </li>
           </ol>
         </Card>
@@ -73,7 +93,13 @@
           />
 
           <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-            <l-circle-marker :lat-lng="point.latLng" :radius="4" color="green" :fill="true" fillColor="green">
+            <l-circle-marker 
+              :lat-lng="point.latLng"
+              :radius="4" 
+              color="green"
+              :fill="true" 
+              fillColor="green"
+            >
               <l-popup>
                 <div>
                   <p>
@@ -136,7 +162,10 @@ export default {
         zoomSnap: 0.5
       },
 
-      refreshTimer: null
+      refreshTimer: null,
+
+      expandInactiveStops: false,
+      hasHiddenStops: false
     }
   },
   components: {
@@ -159,7 +188,7 @@ export default {
       .then(response => {
         let newJourney = response.data
 
-        this.journeyPoints = this.extractJourneyPoints(newJourney.Path)
+        this.journeyPoints = this.extractJourneyPoints(newJourney)
 
         this.journey = newJourney
       })
@@ -169,11 +198,21 @@ export default {
       })
       .finally(() => this.loading = false)
     },
-    extractJourneyPoints(path) {
+    extractJourneyPoints(journey) {
       let journeyPoints = []
 
-      for (let index = 0; index < path.length; index++) {
-        const element = path[index];
+      let activeStop = (journey.RealtimeJourney == undefined)
+
+      if (!activeStop) {
+        this.hasHiddenStops = true
+      }
+
+      for (let index = 0; index < journey.Path.length; index++) {
+        const element = journey.Path[index];
+
+        if (!activeStop && journey.RealtimeJourney != undefined && journey.RealtimeJourney.NextStopRef === element.OriginStopRef) {
+          activeStop = true
+        }
         
         journeyPoints.push({
           "stop": element.OriginStop,
@@ -181,20 +220,22 @@ export default {
           "arivalTime": element.OriginArivalTime,
           "departureTime": element.OriginDepartureTime,
           "activity": element.OriginActivity,
-          "track": element.Track.map(x => latLng(x.coordinates[1], x.coordinates[0]))
+          "track": element.Track.map(x => latLng(x.coordinates[1], x.coordinates[0])),
+          "active": activeStop
         })
 
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
 
         // if last one in list then append the destination stop
-        if (index == path.length-1) {
+        if (index == journey.Path.length-1) {
           journeyPoints.push({
             "stop": element.DestinationStop,
             "arivalTime": element.DestinationArivalTime,
             "latLng": latLng(element.DestinationStop.Location.coordinates[1], element.DestinationStop.Location.coordinates[0]),
             "departureTime": null,
             "activity": element.DestinationActivity,
-            "track": []
+            "track": [],
+            "active": activeStop
           })
         }
       }
@@ -203,6 +244,12 @@ export default {
     },
     changeTab(newTab) {
       this.currentTab = newTab
+    },
+    showStop(index) {
+      return this.journeyPoints[index]["active"] || this.expandInactiveStops
+    },
+    showAllStops() {
+      this.expandInactiveStops = true
     }
   },
   mounted () {
