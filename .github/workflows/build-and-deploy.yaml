@@ -85,4 +85,4 @@ jobs:
 
     - name: Helm upgrade
       run: |-
-        helm upgrade -i britbus-web-ui ./charts/britbus-web-ui --set image.tag=sha-${{env.GITHUB_SHA}}
+        helm upgrade -i britbus-web-ui ./charts/britbus-web-ui --set image.tag=sha-${{ github.sha }}
