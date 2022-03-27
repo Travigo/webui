@@ -51,6 +51,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy-helm:
+    on:
+      push:
+        branches: [ main ]
+  
     name: Deploy to GCP
     runs-on: ubuntu-latest
     environment: production
