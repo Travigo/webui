@@ -51,9 +51,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy-helm:
-    on:
-      push:
-        branches: [ main ]
+    if: github.ref == 'refs/heads/main'
   
     name: Deploy to GCP
     runs-on: ubuntu-latest
