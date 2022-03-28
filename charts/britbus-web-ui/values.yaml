@@ -50,6 +50,10 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
+    - host: www.britbus.app
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
