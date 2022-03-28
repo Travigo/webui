@@ -1,12 +1,9 @@
 export default {
   time(datetimeString) {
-    let datetime = new Date(Date.parse(datetimeString))
+    const timeRegex = /[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}):([0-9]{2}):[0-9]{2}Z/;
+    let matches = datetimeString.match(timeRegex);
 
-    let hour = datetime.getHours()
-    let minute = datetime.getMinutes()
-    let minuteFormatted = minute < 10 ? "0" + minute : minute
-
-    return `${hour}:${minuteFormatted}`
+    return `${matches[1]}:${matches[2]}`
   },
   day(datetimeString) {
     let datetime = new Date(Date.parse(datetimeString))
