@@ -12,6 +12,7 @@
     "sass": "^1.47.0",
     "sass-loader": "^12.4.0",
     "vue": "^3.2.26",
+    "vue-gtag": "^2.0.1",
     "vue-router": "^4.0.12"
   },
   "devDependencies": {
