@@ -1,6 +1,6 @@
 export default {
   time(datetimeString) {
-    const timeRegex = /[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}):([0-9]{2}):[0-9]{2}Z/;
+    const timeRegex = /[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}):([0-9]{2}):[0-9]{2}/;
     let matches = datetimeString.match(timeRegex);
 
     return `${matches[1]}:${matches[2]}`
