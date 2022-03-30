@@ -67,7 +67,15 @@
                     </div>
                   </div>
                   <div class="text-base font-normal text-right">
-                    <p>
+                    <p v-if="point.realtime && point.arivalTime !== point.realtime.ArrivalTime">
+                      <span class="text-xs line-through">
+                        {{ this.pretty.time(point.arivalTime) }}
+                      </span>
+                      <span class="text-red-500">
+                        {{ this.pretty.time(point.realtime.ArrivalTime) }}
+                      </span>
+                    </p>
+                    <p v-else>
                       {{ this.pretty.time(point.arivalTime) }}
                     </p>
                     <p class="text-xs" v-if="point.arivalTime != point.departureTime && point.departureTime != null">
@@ -221,7 +229,8 @@ export default {
           "departureTime": element.OriginDepartureTime,
           "activity": element.OriginActivity,
           "track": element.Track.map(x => latLng(x.coordinates[1], x.coordinates[0])),
-          "active": activeStop
+          "active": activeStop,
+          "realtime": journey.RealtimeJourney?.Stops[element.OriginStopRef]
         })
 
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
@@ -235,7 +244,8 @@ export default {
             "departureTime": null,
             "activity": element.DestinationActivity,
             "track": [],
-            "active": activeStop
+            "active": activeStop,
+            "realtime": journey.RealtimeJourney?.Stops[element.DestinationStopRef]
           })
         }
       }
