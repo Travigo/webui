@@ -9,7 +9,7 @@ import Card from '@/components/Card.vue'
       Frequently Asked Questions
     </PageTitle>
     <Card>
-      None
+      Currently empty
     </Card>
   </div>
 </template>
