@@ -67,18 +67,18 @@
                     </div>
                   </div>
                   <div class="text-base font-normal text-right">
-                    <p v-if="point.realtime && point.arivalTime !== point.realtime.ArrivalTime">
+                    <p v-if="point.realtime && point.arrivalTime !== point.realtime.ArrivalTime">
                       <span class="text-xs line-through">
-                        {{ this.pretty.time(point.arivalTime) }}
+                        {{ this.pretty.time(point.arrivalTime) }}
                       </span>
                       <span class="text-red-500">
                         {{ this.pretty.time(point.realtime.ArrivalTime) }}
                       </span>
                     </p>
                     <p v-else>
-                      {{ this.pretty.time(point.arivalTime) }}
+                      {{ this.pretty.time(point.arrivalTime) }}
                     </p>
-                    <p class="text-xs" v-if="point.arivalTime != point.departureTime && point.departureTime != null">
+                    <p class="text-xs" v-if="point.arrivalTime != point.departureTime && point.departureTime != null">
                       Departs {{ this.pretty.time(point.departureTime) }}
                     </p>
                   </div>
@@ -225,7 +225,7 @@ export default {
         journeyPoints.push({
           "stop": element.OriginStop,
           "latLng": latLng(element.OriginStop.Location.coordinates[1], element.OriginStop.Location.coordinates[0]),
-          "arivalTime": element.OriginArivalTime,
+          "arrivalTime": element.OriginArrivalTime,
           "departureTime": element.OriginDepartureTime,
           "activity": element.OriginActivity,
           "track": element.Track.map(x => latLng(x.coordinates[1], x.coordinates[0])),
@@ -239,7 +239,7 @@ export default {
         if (index == journey.Path.length-1) {
           journeyPoints.push({
             "stop": element.DestinationStop,
-            "arivalTime": element.DestinationArivalTime,
+            "arrivalTime": element.DestinationArrivalTime,
             "latLng": latLng(element.DestinationStop.Location.coordinates[1], element.DestinationStop.Location.coordinates[0]),
             "departureTime": null,
             "activity": element.DestinationActivity,
