@@ -14,7 +14,7 @@ import Card from '@/components/Card.vue'
     </p>
 
     <p class="pt-4">
-      It is currently in a beta state with only limited functionality, but you can visit the <b>Map</b> using the navigation menu above, select a bus stop and view upcoming scheduled buses &amp; realtime tracked buses with accurate estimated arrivals.
+      It is currently in a beta state with only limited functionality, but you can visit the <b>Map</b> using the navigation menu above, select a bus stop and view upcoming scheduled buses &amp; realtime tracked buses with accurate estimated arrivals. Or visit <b>Operators</b> for a list of all bus operators.
     </p>
 
     <p class="pt-4">

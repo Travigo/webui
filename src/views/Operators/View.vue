@@ -59,11 +59,8 @@ import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
 
-import { latLng } from 'leaflet';
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
-
 export default {
-  name: 'StopsView',
+  name: 'OperatorsView',
   data () {
     return {
       operator: null,
