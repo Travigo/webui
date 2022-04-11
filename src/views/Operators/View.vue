@@ -32,23 +32,23 @@
           {{ this.operator.SocialMedia.Twitter }}
         </a>
       </div>
-    </Card>
 
-    <Card v-if="this.operator.OperatorGroup" class="mt-4">
-      Part of the group 
-      <router-link :to="{'name': 'operators/view_group', params: {'id': this.operator.OperatorGroup.Identifier}}" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
-        {{ this.operator.OperatorGroup.Name }}
-      </router-link>
-    </Card>
+      <div v-if="this.operator.OperatorGroup" class="mt-4">
+        Part of the group 
+        <router-link :to="{'name': 'operators/view_group', params: {'id': this.operator.OperatorGroup.Identifier}}" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+          {{ this.operator.OperatorGroup.Name }}
+        </router-link>
+      </div>
 
-    <Card v-if="this.operator.OtherNames" class="mt-4">
-      <span class="font-bold">Also know as:</span>
+      <div v-if="this.operator.OtherNames.length > 0" class="mt-4">
+        <span class="font-bold">Also know as:</span>
 
-      <ul class="list-disc">
-        <li v-for="name in this.operator.OtherNames" v-bind:key="name" class="ml-5">
-          {{ name }}
-        </li>
-      </ul>
+        <ul class="list-disc">
+          <li v-for="name in this.operator.OtherNames" v-bind:key="name" class="ml-5">
+            {{ name }}
+          </li>
+        </ul>
+      </div>
     </Card>
   </div>
 </template>
