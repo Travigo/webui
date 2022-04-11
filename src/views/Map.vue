@@ -15,12 +15,13 @@
       style="height: 600px"
       @update:bounds="mapPositionUpdate"
       @update:zoom="zoomUpdate"
-      @ready="getStopsOnLoad()"
+      @ready="getDataOnLoad()"
     >
       <l-tile-layer
         :url="url"
         :attribution="attribution"
       />
+
       <l-marker :lat-lng="stop.latLng" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
         <l-popup>
           <div>
@@ -35,7 +36,28 @@
           </div>
         </l-popup>
       </l-marker>
+
+      <l-marker :lat-lng="vehicle.latLng" v-for="vehicle in this.vehicles" v-bind:key="vehicle.PrimaryIdentifier">
+        <l-popup>
+          <div>
+            <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
+            <div>
+              {{ vehicle.Journey.Service.ServiceName }} / {{ vehicle.Journey.Operator.PrimaryName }}
+            </div>
+
+            <p>
+              <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.JourneyRef}}">View</router-link>
+            </p>
+          </div>
+        </l-popup>
+      </l-marker>
     </l-map>
+
+    <input type="checkbox" id="showStops" v-model="this.showStops">
+    <label for="showStops">Show Stops</label>
+
+    <input type="checkbox" id="showVehicles" v-model="this.showVehicles">
+    <label for="showVehicles">Show Vehicles</label>
   </div>
 </template>
 
@@ -53,7 +75,9 @@ export default {
   name: 'StopsView',
   data () {
     return {
-      stops: null,
+      stops: [],
+      vehicles: [],
+
       loading: false,
       error: null,
 
@@ -67,7 +91,10 @@ export default {
         zoomSnap: 0.5,
       },
 
-      dataLoadMinZoom: 12
+      dataLoadMinZoom: 12,
+
+      showStops: undefined,
+      showVehicles: undefined
     }
   },
   components: {
@@ -85,8 +112,10 @@ export default {
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
-    getStopsOnLoad() {
-      this.mapPositionUpdate(this.$refs.map.leafletObject.getBounds())
+    getDataOnLoad() {
+      if (this.$refs.map !== undefined) {
+        this.mapPositionUpdate(this.$refs.map.leafletObject.getBounds())
+      }
     },
     mapPositionUpdate(bounds) {
       // TODO: For now just dont load anything if you're too zoomed out
@@ -99,22 +128,43 @@ export default {
       let topRightLon = bounds._northEast.lng;
       let topRightLat = bounds._northEast.lat;
 
-      axios
-        .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
-        .then(response => {
-          let newStops = response.data
+      if (this.showStops) {
+        axios
+          .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+          .then(response => {
+            let newStops = response.data
 
-          newStops.forEach(stop => {
-            stop.latLng = latLng(stop.Location.coordinates[1], stop.Location.coordinates[0])
-          });
+            newStops.forEach(stop => {
+              stop.latLng = latLng(stop.Location.coordinates[1], stop.Location.coordinates[0])
+            });
 
-          this.stops = newStops
-        })
-        .catch(error => {
-          console.log(error)
-          this.error = error
-        })
-        .finally(() => this.loading = false)
+            this.stops = newStops
+          })
+          .catch(error => {
+            console.log(error)
+            this.error = error
+          })
+          .finally(() => this.loading = false)
+      }
+
+      if (this.showVehicles) {
+        axios
+          .get(`${API.URL}/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+          .then(response => {
+            let newVehicles = response.data
+
+            newVehicles.forEach(vehicle => {
+              vehicle.latLng = latLng(vehicle.VehicleLocation.coordinates[1], vehicle.VehicleLocation.coordinates[0])
+            });
+
+            this.vehicles = newVehicles
+          })
+          .catch(error => {
+            console.log(error)
+            this.error = error
+          })
+          .finally(() => this.loading = false)
+      }
     },
   },
   created() {
@@ -122,8 +172,47 @@ export default {
       this.center = JSON.parse(localStorage.map_last_center)
       this.zoom = parseInt(localStorage.map_last_zoom)
     }
+
+    if (localStorage.map_showStops !== undefined) {
+      this.showStops = (localStorage.map_showStops == "true")
+    }
+    if (localStorage.map_showVehicles !== undefined) {
+      this.showVehicles = (localStorage.map_showVehicles == "true")
+    }
   },
   watch: {
+    showStops: {
+      immediate: true,
+      handler(to, from) {
+        if (from === undefined) {
+          return
+        }
+
+        if (to) {
+          this.getDataOnLoad()
+        } else {
+          this.stops = []
+        }
+
+        localStorage.map_showStops = to
+      }
+    },
+    showVehicles: {
+      immediate: true,
+      handler(to, from) {
+        if (from === undefined) {
+          return
+        }
+
+        if (to) {
+          this.getDataOnLoad()
+        } else {
+          this.vehicles = []
+        }
+
+        localStorage.map_showVehicles = to
+      }
+    },
     $route: {
       immediate: true,
       handler(to, from) {
