@@ -15,7 +15,7 @@
       style="height: 600px"
       @update:bounds="mapPositionUpdate"
       @update:zoom="zoomUpdate"
-      @ready="getDataOnLoad()"
+      @ready="getData()"
     >
       <l-tile-layer
         :url="url"
@@ -93,6 +93,8 @@ export default {
 
       dataLoadMinZoom: 12,
 
+      refreshTimer: null,
+
       showStops: undefined,
       showVehicles: undefined
     }
@@ -112,12 +114,12 @@ export default {
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
-    getDataOnLoad() {
+    getData(updateStops = true, updateVehicles = true) {
       if (this.$refs.map !== undefined) {
-        this.mapPositionUpdate(this.$refs.map.leafletObject.getBounds())
+        this.mapPositionUpdate(this.$refs.map.leafletObject.getBounds(), updateStops, updateVehicles)
       }
     },
-    mapPositionUpdate(bounds) {
+    mapPositionUpdate(bounds, updateStops = true, updateVehicles = true) {
       // TODO: For now just dont load anything if you're too zoomed out
       if (this.$refs.map.leafletObject.getZoom() < this.dataLoadMinZoom) {
         return
@@ -128,7 +130,7 @@ export default {
       let topRightLon = bounds._northEast.lng;
       let topRightLat = bounds._northEast.lat;
 
-      if (this.showStops) {
+      if (this.showStops && updateStops) {
         axios
           .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
@@ -147,7 +149,7 @@ export default {
           .finally(() => this.loading = false)
       }
 
-      if (this.showVehicles) {
+      if (this.showVehicles && updateVehicles) {
         axios
           .get(`${API.URL}/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
@@ -175,11 +177,21 @@ export default {
 
     if (localStorage.map_showStops !== undefined) {
       this.showStops = (localStorage.map_showStops == "true")
+    } else {
+      this.showStops = true
     }
     if (localStorage.map_showVehicles !== undefined) {
       this.showVehicles = (localStorage.map_showVehicles == "true")
+    } else {
+      this.showVehicles = false
     }
   },
+  mounted() {
+    this.refreshTimer = setInterval(this.getData.bind(null, false, true), 15000)
+  },
+  beforeDestroy() {  
+    clearInterval(this.refreshTimer)
+  }, 
   watch: {
     showStops: {
       immediate: true,
@@ -189,7 +201,7 @@ export default {
         }
 
         if (to) {
-          this.getDataOnLoad()
+          this.getData()
         } else {
           this.stops = []
         }
@@ -205,7 +217,7 @@ export default {
         }
 
         if (to) {
-          this.getDataOnLoad()
+          this.getData()
         } else {
           this.vehicles = []
         }
