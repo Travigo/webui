@@ -24,11 +24,11 @@
     </div>
   </Card>
 
-  <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-4 sm:grid-cols-4">
-    <Stat-Card title="Stops" :value="this.stats?.stops.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card title="Services" :value="this.stats?.services.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card title="Buses Currently Tracked" :value="this.stats?.active_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card title="Historical Journeys" :value="this.stats?.historical_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
+  <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-4 sm:grid-cols-4 mt-2">
+    <Stat-Card title="Bus Stops" :value="this.stats?.stops.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card class="mt-2 sm:mt-0" title="Services" :value="this.stats?.services.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card class="mt-2 sm:mt-0" title="Buses Currently Tracked" :value="this.stats?.active_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card class="mt-2 sm:mt-0" title="Historical Journeys" :value="this.stats?.historical_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
   </div>
 </template>
 

@@ -65,7 +65,7 @@ import Card from '@/components/Card.vue'
         </div>
 
         <div class="mt-4">
-          Traveline provides the NOC (National Operator Code) database which is used for Operator &amp; Operation Groups details.
+          Traveline provides the NOC (National Operator Code) database which is used for Operator &amp; Operator Groups details.
         </div>
       </div>
     </Card>
