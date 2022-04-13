@@ -126,7 +126,7 @@ export default {
       let topRightLat = bounds._northEast.lat;
 
       // TODO: For now just dont load anything if you're too zoomed out
-      if (this.showStops && updateStops && (this.$refs.map.leafletObject.getZoom() < this.dataLoadMinZoom)) {
+      if (this.showStops && updateStops && (this.$refs.map.leafletObject.getZoom() >= this.dataLoadMinZoom)) {
         axios
           .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
