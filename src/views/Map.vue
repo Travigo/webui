@@ -120,17 +120,13 @@ export default {
       }
     },
     mapPositionUpdate(bounds, updateStops = true, updateVehicles = true) {
-      // TODO: For now just dont load anything if you're too zoomed out
-      if (this.$refs.map.leafletObject.getZoom() < this.dataLoadMinZoom) {
-        return
-      }
-
       let bottomLeftLon = bounds._southWest.lng;
       let bottomLeftLat = bounds._southWest.lat;
       let topRightLon = bounds._northEast.lng;
       let topRightLat = bounds._northEast.lat;
 
-      if (this.showStops && updateStops) {
+      // TODO: For now just dont load anything if you're too zoomed out
+      if (this.showStops && updateStops && (this.$refs.map.leafletObject.getZoom() < this.dataLoadMinZoom)) {
         axios
           .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
