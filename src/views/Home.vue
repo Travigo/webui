@@ -25,10 +25,10 @@
   </Card>
 
   <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-4 sm:grid-cols-4">
-    <Stat-Card title="Operators" value="--" />
-    <Stat-Card title="Services" value="--" />
-    <Stat-Card title="Buses Currently Tracked" value="--" />
-    <Stat-Card title="Historical Journeys" value="--" />
+    <Stat-Card title="Operators" :value="this.stats?.operators.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card title="Services" :value="this.stats?.services.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card title="Buses Currently Tracked" :value="this.stats?.active_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card title="Historical Journeys" :value="this.stats?.historical_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
   </div>
 </template>
 
@@ -36,11 +36,35 @@
 import Card from '@/components/Card.vue'
 import StatCard from '@/components/StatCard.vue'
 
+import axios from 'axios'
+import API from '@/API'
+
 export default {
   name: 'Home',
   components: {
     Card,
     StatCard,
   },
+  data () {
+    return {
+      stats: undefined
+    }
+  },
+  methods: {
+    getStats() {
+      axios
+        .get(`${API.URL}/stats`)
+        .then(response => {
+          this.stats = response.data
+        })
+        .catch(error => {
+          console.log(error)
+          this.error = error
+        })
+    }
+  },
+  mounted () {
+    this.getStats()
+  }
 }
 </script>

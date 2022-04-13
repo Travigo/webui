@@ -138,29 +138,29 @@ export default {
   methods: {
     getStop() {
       axios
-      .get(`${API.URL}/stops/${this.$route.params.id}`)
-      .then(response => {
-        this.stop = response.data
+        .get(`${API.URL}/stops/${this.$route.params.id}`)
+        .then(response => {
+          this.stop = response.data
 
-        this.center = latLng(this.stop.Location.coordinates[1], this.stop.Location.coordinates[0])
-      })
-      .catch(error => {
-        console.log(error)
-        this.error = error
-      })
-      .finally(() => this.loadingStop = false)
+          this.center = latLng(this.stop.Location.coordinates[1], this.stop.Location.coordinates[0])
+        })
+        .catch(error => {
+          console.log(error)
+          this.error = error
+        })
+        .finally(() => this.loadingStop = false)
     },
     getDepartures() {
       axios
-      .get(`${API.URL}/stops/${this.$route.params.id}/departures?count=15`)
-      .then(response => {
-        this.departures = response.data
-      })
-      .catch(error => {
-        console.log(error)
-        // this.error = error
-      })
-      .finally(() => this.loadingDepartures = false)
+        .get(`${API.URL}/stops/${this.$route.params.id}/departures?count=15`)
+        .then(response => {
+          this.departures = response.data
+        })
+        .catch(error => {
+          console.log(error)
+          // this.error = error
+        })
+        .finally(() => this.loadingDepartures = false)
     },
     getData() {
       this.getStop()
