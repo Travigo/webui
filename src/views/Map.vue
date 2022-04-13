@@ -189,7 +189,7 @@ export default {
   mounted() {
     this.refreshTimer = setInterval(this.getData.bind(null, false, true), 15000)
   },
-  beforeDestroy() {  
+  beforeRouteLeave() {  
     clearInterval(this.refreshTimer)
   }, 
   watch: {

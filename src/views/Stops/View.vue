@@ -185,7 +185,7 @@ export default {
     this.getData()
     this.refreshTimer = setInterval(this.getData, 30000)
   },
-  beforeDestroy() {  
+  beforeRouteLeave() {  
     clearInterval(this.refreshTimer)
   }, 
 }

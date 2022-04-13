@@ -1,8 +1,3 @@
-<script setup>
-import ButtonRepo from '@/components/ButtonRepo.vue'
-import Card from '@/components/Card.vue'
-</script>
-
 <template>
   <Card class="m-4">
     <h1 class="text-3xl font-bold leading-tight text-gray-900 mb-4">
@@ -10,46 +5,42 @@ import Card from '@/components/Card.vue'
     </h1>
 
     <p>
-      BritBus is an app that provide realtime &amp; up to date information on bus transport within Great Britain.
+      BritBus is an app that provides realtime &amp; up to date information on bus transport within Great Britain.
     </p>
 
     <p class="pt-4">
-      It is currently in a beta state with only limited functionality, but you can visit the <b>Map</b> using the navigation menu above, select a bus stop and view upcoming scheduled buses &amp; realtime tracked buses with accurate estimated arrivals. Or visit <b>Operators</b> for a list of all bus operators.
+      It is currently in a beta state with only limited functionality.
     </p>
 
-    <p class="pt-4">
+    <div class="pt-4">
       <h1 class="text-xl font-bold">
-        Current Status
+        Current Features
       </h1>
 
-      <div class="mt-2">
-        Implemented:
-
-        <ul class="list-disc pl-5">
-          <li>Import bus stops &amp; bus stop groups</li>
-          <li>Import bus operators &amp; operator groups</li>
-          <li>Import bus lines</li>
-          <li>Import bus timetables</li>
-          <li>Endpoint for providing timetable for a given stop on each day</li>
-          <li>Calculate realtime bus progress and stop estimates using BODS SIRI-VM</li>
-        </ul>
-      </div>
-
-      <div class="mt-5">
-        The following are in the TODO list:
-
-        <ul class="list-disc pl-5">
-          <li>Import bus lines from TfL API</li>
-          <li>Import bus lines from TfE API</li>
-          <li>Calculate realtime bus progress and stop estimates using TfL API</li>
-          <li>Calculate realtime bus progress and stop estimates using TfE API</li>
-          <li>Import fares</li>
-          <li>Historical bus reliability analysis</li>
-          <li>Subscribe to changes in a bus line</li>
-          <li>Highlight potential disruptions on the service or area</li>
-          <li>Nicer user interface</li>
-        </ul>
-      </div>
-    </p>
+      <ul class="list-disc pl-5">
+        <li>You can explore the <b>Map</b> using the navigation menu above, select a bus stop and view upcoming scheduled buses &amp; realtime tracked buses with accurate estimated arrivals</li>
+        <li>Visit <b>Operators</b> for a list of all bus operators in your region.</li>
+      </ul>
+    </div>
   </Card>
+
+  <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-4 sm:grid-cols-4">
+    <Stat-Card title="Operators" value="--" />
+    <Stat-Card title="Services" value="--" />
+    <Stat-Card title="Buses Currently Tracked" value="--" />
+    <Stat-Card title="Historical Journeys" value="--" />
+  </div>
 </template>
+
+<script>
+import Card from '@/components/Card.vue'
+import StatCard from '@/components/StatCard.vue'
+
+export default {
+  name: 'Home',
+  components: {
+    Card,
+    StatCard,
+  },
+}
+</script>

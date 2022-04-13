@@ -266,7 +266,7 @@ export default {
     this.getJourney()
     this.refreshTimer = setInterval(this.getJourney, 30000)
   },
-  beforeDestroy() {  
+  beforeRouteLeave() {  
     clearInterval(this.refreshTimer)
   }, 
 }
