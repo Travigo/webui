@@ -37,7 +37,7 @@
         </l-popup>
       </l-marker>
 
-      <l-marker :lat-lng="vehicle.latLng" v-for="vehicle in this.vehicles" v-bind:key="vehicle.PrimaryIdentifier">
+      <l-marker :lat-lng="vehicle.latLng" v-for="(vehicle, i) in this.vehicles" v-bind:key="i">
         <l-popup>
           <div>
             <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
@@ -46,7 +46,7 @@
             </div>
 
             <p>
-              <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.JourneyRef}}">View</router-link>
+              <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.Journey.PrimaryIdentifier}}">View</router-link>
             </p>
           </div>
         </l-popup>
