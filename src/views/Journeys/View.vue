@@ -1,6 +1,18 @@
 <template>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
+    <Page-Title>
+      {{ journey.Service.ServiceName }} - {{ journey.DestinationDisplay }}
+
+      <div class="md:float-right inline">
+        <span
+          v-if="journey.RealtimeJourney"
+          class="text-base text-center font-semibold inline-block py-1 px-2 rounded text-blue-600 bg-blue-200 ml-2 h-8 min-w-[1rem]"
+        >
+          Realtime
+        </span>
+      </div>
+    </Page-Title>
     <div class="md:hidden">
       <ul class="flex flex-wrap -mb-px">
         <li class="mr-2">
@@ -25,7 +37,7 @@
         </li>
       </ul>
     </div>
-    <div class="flex flex-col-reverse md:flex-row h-full md:mt-4">
+    <div class="flex flex-col-reverse md:flex-row h-full">
       <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block" v-bind:class="{ hidden: this.currentTab != 'timeline' }">  
         <Card>
           <a
