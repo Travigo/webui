@@ -136,7 +136,6 @@
             />
           </div>
 
-          <!-- <l-circle :lat-lng="[52.1852036, 0.1725319]" :radius="5" color="green" fillColor="green" fillOpacity="1.0" /> -->
           <l-marker 
             :lat-lng="[this.journey.RealtimeJourney.VehicleLocation.coordinates[1], this.journey.RealtimeJourney.VehicleLocation.coordinates[0]]"
             v-if="this.journey.RealtimeJourney"  
@@ -221,18 +220,8 @@ export default {
     extractJourneyPoints(journey) {
       let journeyPoints = []
 
-      let activeStop = (journey.RealtimeJourney == undefined)
-
-      if (!activeStop) {
-        this.hasHiddenStops = true
-      }
-
       for (let index = 0; index < journey.Path.length; index++) {
         const element = journey.Path[index];
-
-        if (!activeStop && journey.RealtimeJourney != undefined && journey.RealtimeJourney.NextStopRef === element.OriginStopRef) {
-          activeStop = true
-        }
         
         journeyPoints.push({
           "stop": element.OriginStop,
@@ -241,7 +230,6 @@ export default {
           "departureTime": element.OriginDepartureTime,
           "activity": element.OriginActivity,
           "track": element.Track.map(x => latLng(x.coordinates[1], x.coordinates[0])),
-          "active": activeStop,
           "realtime": journey.RealtimeJourney?.Stops[element.OriginStopRef]
         })
 
@@ -256,10 +244,23 @@ export default {
             "departureTime": null,
             "activity": element.DestinationActivity,
             "track": [],
-            "active": activeStop,
             "realtime": journey.RealtimeJourney?.Stops[element.DestinationStopRef]
           })
         }
+      }
+
+      let activeStop = (journey.RealtimeJourney == undefined)
+
+      if (!activeStop) {
+        this.hasHiddenStops = true
+      }
+
+      for (let index = 0; index < journeyPoints.length; index++) {
+        if (!activeStop && journey.RealtimeJourney != undefined && journey.RealtimeJourney.NextStopRef === journeyPoints[index].stop.PrimaryIdentifier) {
+          activeStop = true
+        }
+
+        journeyPoints[index]["active"] = activeStop
       }
 
       return journeyPoints
