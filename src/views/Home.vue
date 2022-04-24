@@ -25,10 +25,10 @@
   </Card>
 
   <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-4 sm:grid-cols-4 mt-2">
-    <Stat-Card title="Bus Stops" :value="this.stats?.stops.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card class="mt-2 sm:mt-0" title="Services" :value="this.stats?.services.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card class="mt-2 sm:mt-0" title="Buses Currently Tracked" :value="this.stats?.active_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card class="mt-2 sm:mt-0" title="Historical Journeys" :value="this.stats?.historical_realtime_journeys.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card title="Bus Stops" :value="this.stats?.Stops.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card class="mt-2 sm:mt-0" title="Services" :value="this.stats?.Services.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card class="mt-2 sm:mt-0" title="Buses Currently Tracked" :value="this.stats?.ActiveRealtimeJourneys.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card class="mt-2 sm:mt-0" title="Historical Journeys" :value="this.stats?.HistoricalRealtimeJourneys.toLocaleString('en', {useGrouping:true})" />
   </div>
 </template>
 
