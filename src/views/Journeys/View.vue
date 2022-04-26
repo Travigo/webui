@@ -11,6 +11,13 @@
         >
           Realtime
         </span>
+
+        <span
+          v-if="journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack'"
+          class="text-base text-center font-semibold inline-block py-1 px-2 rounded text-orange-600 bg-orange-200 ml-2 h-8 min-w-[1rem]"
+        >
+          Low Accuracy
+        </span>
       </div>
     </Page-Title>
     <div class="md:hidden">

@@ -7,7 +7,12 @@
     <Card>
       <div v-if="this.operator.Website" class="mb-2">
         <strong>Website: </strong>
-        <a :href="this.operator.Website" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+        <a 
+          :href="this.operator.Website"
+          target="_blank"
+          rel="noreferrer noopener"
+          class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150"
+        >
           {{ this.operator.Website }}
         </a>
       </div>
@@ -28,7 +33,12 @@
 
       <div v-if="this.operator.SocialMedia && this.operator.SocialMedia.Twitter" class="mb-2">
         <strong>Twitter: </strong>
-        <a :href="'https://twitter.com/' + this.operator.SocialMedia.Twitter" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+        <a 
+          :href="'https://twitter.com/' + this.operator.SocialMedia.Twitter"
+          target="_blank"
+          rel="noreferrer noopener"
+          class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150"
+        >
           {{ this.operator.SocialMedia.Twitter }}
         </a>
       </div>

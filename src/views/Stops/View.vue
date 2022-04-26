@@ -54,7 +54,10 @@
                 <router-link :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}">
                   {{ this.pretty.time(departure.Time) }}
                   <p class="text-xs" v-if="departure.Journey.RealtimeJourney">
-                    Realtime
+                    Realtime 
+                    <span  v-if="departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack'">
+                      &middot; Low Accuracy
+                    </span>
                   </p>
                 </router-link>
               </div>
