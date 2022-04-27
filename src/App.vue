@@ -114,9 +114,9 @@ export default {
     </main>
     <footer class="m-2">
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
-        &copy; Aaron Claydon {{ new Date().getFullYear() }} |
-        <router-link :to="{ name: 'about' }">About</router-link> | 
-        <!-- <router-link :to="{ name: 'faq' }">FAQ</router-link> |  -->
+        &copy; Aaron Claydon {{ new Date().getFullYear() }} &bull; 
+        <router-link :to="{ name: 'about' }">About</router-link> &bull; 
+        <!-- <router-link :to="{ name: 'faq' }">FAQ</router-link> &bull;  -->
         <router-link :to="{ name: 'contact' }">Contact</router-link>
       </div>
     </footer>
