@@ -1,4 +1,7 @@
 <template>
+  <div v-if="error">
+    {{ error }}
+  </div>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
     <PageTitle>

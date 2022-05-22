@@ -18,6 +18,8 @@
           {{ service.ServiceName }}
         </span>
       </div>
+
+      <div class="clear-both" />
     </PageTitle>
     <div class="flex flex-col-reverse md:flex-row h-full">
       <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
