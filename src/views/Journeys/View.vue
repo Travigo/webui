@@ -95,7 +95,7 @@
                       </span>
                     </p>
                     <p v-else-if="point.realtime && point.arrivalTime === point.realtime.ArrivalTime">
-                      <span class="text-green-500">
+                      <span class="text-green-700">
                         {{ this.pretty.time(point.arrivalTime) }}
                       </span>
                     </p>
