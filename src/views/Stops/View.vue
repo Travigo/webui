@@ -11,12 +11,11 @@
       </span>
 
       <div class="md:float-right inline">
-        <span
-          v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier"
-          class="text-base text-center font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 ml-2 h-8 min-w-[1rem]"
-        >
-          {{ service.ServiceName }}
-        </span>
+        <ServiceIcon
+          class="ml-2"
+          v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier" 
+          :service="service" 
+        />
       </div>
 
       <div class="clear-both" />
@@ -39,9 +38,11 @@
               {{ this.pretty.day(departure.Time) }}
             </div>
             <div class="flex">
-              <div class="text-xl text-center font-semibold inline-block py-2 px-2 uppercase rounded text-blue-600 bg-blue-200 mr-2 h-11 min-w-[2.5rem]">
-                {{ departure.Journey.Service.ServiceName }}
-              </div>
+              <ServiceIcon 
+                class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
+                style="line-height: 44px"
+                :service="departure.Journey.Service"
+              />
               <div class="flex-auto my-auto">
                 <div>
                   {{ departure.DestinationDisplay }}
@@ -103,6 +104,7 @@
 <script>
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
+import ServiceIcon from '@/components/ServiceIcon.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -139,6 +141,7 @@ export default {
   components: {
     PageTitle,
     Card,
+    ServiceIcon,
 
     LMap,
     LTileLayer,
