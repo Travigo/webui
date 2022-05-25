@@ -11,7 +11,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifest: {
         name: 'BritBus',
-        short_name: 'Travel information for British buses',
+        short_name: 'BritBus',
         description: 'Provides realtime and scheduled information on bus travel in Great Britain',
         theme_color: '#ffffff',
         icons: [
