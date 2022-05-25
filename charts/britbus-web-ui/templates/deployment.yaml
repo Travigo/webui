@@ -49,7 +49,9 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: BASE_URL
-              value: "{{ .Values.ingress.hosts[0].host }}"
+              {{ with index .Values.ingress.hosts 0 }}
+              value: "{{ .host }}"
+              {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
