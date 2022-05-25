@@ -47,11 +47,6 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          env:
-            - name: BASE_URL
-              {{ with index .Values.ingress.hosts 0 }}
-              value: "{{ .host }}"
-              {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
