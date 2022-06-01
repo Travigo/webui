@@ -53,7 +53,7 @@ export default {
   methods: {
     getStats() {
       axios
-        .get(`${API.URL}/stats`)
+        .get(`${API.URL}/core/stats`)
         .then(response => {
           this.stats = response.data
         })

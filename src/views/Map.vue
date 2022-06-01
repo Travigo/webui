@@ -128,7 +128,7 @@ export default {
       // TODO: For now just dont load anything if you're too zoomed out
       if (this.showStops && updateStops && (this.$refs.map.leafletObject.getZoom() >= this.dataLoadMinZoom)) {
         axios
-          .get(`${API.URL}/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
             let newStops = response.data
 
@@ -147,7 +147,7 @@ export default {
 
       if (this.showVehicles && updateVehicles) {
         axios
-          .get(`${API.URL}/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+          .get(`${API.URL}/core/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
             let newVehicles = response.data
 

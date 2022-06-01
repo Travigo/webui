@@ -41,7 +41,7 @@ export default {
   methods: {
     getOperators() {
       axios
-      .get(`${API.URL}/operators`)
+      .get(`${API.URL}/core/operators`)
       .then(response => {
         this.operatorRegions = response.data
       })

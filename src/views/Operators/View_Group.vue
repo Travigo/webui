@@ -36,7 +36,7 @@ export default {
   methods: {
     getOperatorGroup() {
       axios
-      .get(`${API.URL}/operator_groups/${this.$route.params.id}`)
+      .get(`${API.URL}/core/operator_groups/${this.$route.params.id}`)
       .then(response => {
         this.group = response.data
       })

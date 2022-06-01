@@ -215,7 +215,7 @@ export default {
   methods: {
     getJourney() {
       axios
-      .get(`${API.URL}/journeys/${this.$route.params.id}`)
+      .get(`${API.URL}/core/journeys/${this.$route.params.id}`)
       .then(response => {
         let newJourney = response.data
 

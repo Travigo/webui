@@ -152,7 +152,7 @@ export default {
   methods: {
     getStop() {
       axios
-        .get(`${API.URL}/stops/${this.$route.params.id}`)
+        .get(`${API.URL}/core/stops/${this.$route.params.id}`)
         .then(response => {
           this.stop = response.data
 
@@ -166,7 +166,7 @@ export default {
     },
     getDepartures() {
       axios
-        .get(`${API.URL}/stops/${this.$route.params.id}/departures?count=15`)
+        .get(`${API.URL}/core/stops/${this.$route.params.id}/departures?count=15`)
         .then(response => {
           this.departures = response.data
         })
