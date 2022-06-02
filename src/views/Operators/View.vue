@@ -4,10 +4,18 @@
   </div>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
-    <PageTitle>
+    <PageTitle class="pb-0 md:pb-0 lg:pb-0">
       {{ this.operator.PrimaryName }}
     </PageTitle>
-    <Card>
+
+    <NavTabBar
+      class="mb-2"
+      :tabs="tabs"
+      :currentTab="currentTab"
+      :changeTab="changeTab"
+    />
+
+    <Card v-bind:class="{ hidden: this.currentTab != 'overview' }">
       <div v-if="this.operator.Website" class="mb-2">
         <strong>Website: </strong>
         <a 
@@ -63,12 +71,21 @@
         </ul>
       </div>
     </Card>
+
+    <Card v-bind:class="{ hidden: this.currentTab != 'services' }">
+      Services
+    </Card>
+
+    <Card v-bind:class="{ hidden: this.currentTab != 'stats' }">
+      Stats
+    </Card>
   </div>
 </template>
 
 <script>
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
+import NavTabBar from '@/components/NavTabBar.vue'
 import axios from 'axios'
 import API from '@/API'
 
@@ -79,13 +96,33 @@ export default {
       operator: null,
       loading: true,
       error: null,
+
+      currentTab: 'overview',
+      tabs: [
+        {
+          id: "overview",
+          name: "Overview"
+        },
+        {
+          id: "services",
+          name: "Services"
+        },
+        {
+          id: "stats",
+          name: "Statistics"
+        }
+      ]
     }
   },
   components: {
     PageTitle,
-    Card
+    Card,
+    NavTabBar
   },
   methods: {
+    changeTab(newTab) {
+      this.currentTab = newTab
+    },
     getOperator() {
       axios
       .get(`${API.URL}/core/operators/${this.$route.params.id}`)

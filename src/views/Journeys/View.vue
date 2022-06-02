@@ -21,28 +21,7 @@
       </div>
     </Page-Title>
     <div class="md:hidden">
-      <ul class="flex flex-wrap -mb-px">
-        <li class="mr-2">
-          <a 
-            href="#"
-            @click="changeTab('timeline')" 
-            class="inline-block py-4 px-4 text-sm font-medium text-center rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300"
-            v-bind:class="{'text-blue-600 border-blue-600 hover:text-blue-600 hover:border-blue-600 active': this.currentTab == 'timeline'}"
-          >
-            Timeline
-          </a>
-        </li>
-        <li class="mr-2">
-          <a
-            href="#"
-            @click="changeTab('map')"
-            class="inline-block py-4 px-4 text-sm font-medium text-center rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300"
-            v-bind:class="{'text-blue-600 border-blue-600 hover:text-blue-600 hover:border-blue-600 active': this.currentTab == 'map'}"
-          >
-            Map
-          </a>
-        </li>
-      </ul>
+      <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
     <div class="flex flex-col-reverse md:flex-row h-full">
       <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block" v-bind:class="{ hidden: this.currentTab != 'timeline' }">  
@@ -163,6 +142,7 @@
 <script>
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
+import NavTabBar from '@/components/NavTabBar.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -181,8 +161,6 @@ export default {
 
       pretty: Pretty,
 
-      currentTab: 'timeline',
-
       zoom: 12,
       center: latLng(52.2065, 0.1356),
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -196,12 +174,25 @@ export default {
       refreshTimer: null,
 
       expandInactiveStops: false,
-      hasHiddenStops: false
+      hasHiddenStops: false,
+
+      currentTab: 'timeline',
+      tabs: [
+        {
+          id: "timeline",
+          name: "Timeline"
+        },
+        {
+          id: "map",
+          name: "Map"
+        }
+      ]
     }
   },
   components: {
     PageTitle,
     Card,
+    NavTabBar,
 
     LMap,
     LTileLayer,
