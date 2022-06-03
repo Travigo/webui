@@ -1,7 +1,7 @@
 <template>
   <div>
     <PageTitle>
-      Historical
+      Statistics
     </PageTitle>
     <Card>
       <strong>Coming Soon</strong>
@@ -18,7 +18,7 @@ import Card from '@/components/Card.vue'
 import PageTitle from '@/components/PageTitle.vue'
 
 export default {
-  name: 'HistoricalHome',
+  name: 'StatisticsHome',
   components: {
     Card,
     PageTitle,

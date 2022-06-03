@@ -21,8 +21,8 @@ export default {
             route: { name: 'timetables/home' }
           },
           {
-            name: 'Historical',
-            route: { name: 'historical/home' }
+            name: 'Statistics',
+            route: { name: 'statistics/home' }
           }
         ]
       }

@@ -94,12 +94,12 @@ export const routes = [
     component: () => import('./views/Timetables/Home.vue')
   },
   {
-    name: 'historical/home',
-    path: '/historical',
+    name: 'statistics/home',
+    path: '/statistics',
     meta: { 
-      title: 'Historical'
+      title: 'Statistics'
     },
-    component: () => import('./views/Historical/Home.vue')
+    component: () => import('./views/Statistics/Home.vue')
   },
 
   { path: '/:path(.*)', component: NotFound },
