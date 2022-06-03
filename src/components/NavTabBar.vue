@@ -6,9 +6,8 @@
       v-bind:key="tab.id"
     >
       <a
-        href="#"
         @click="changeTab(tab.id)" 
-        class="inline-block py-4 px-4 text-sm font-medium text-center rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300"
+        class="cursor-pointer inline-block py-4 px-4 text-sm font-medium text-center rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300"
         v-bind:class="{'text-blue-600 border-blue-600 hover:text-blue-600 hover:border-blue-600 active': this.currentTab == tab.id}"
       >
         {{ tab.name }}
