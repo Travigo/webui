@@ -7,6 +7,14 @@
   </PageTitle>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
+    <!-- <div>
+      <mapbox-map 
+        accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+        height="600px"
+        @update:center="mapPositionUpdate"
+        @update:zoom="zoomUpdate"
+      />
+    </div> -->
     <l-map
       ref="map"
       :zoom="zoom"
@@ -70,6 +78,7 @@ import API from '@/API'
 
 import { latLngBounds, latLng } from 'leaflet';
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
+import { MapboxMap } from "vue-mapbox-ts";
 
 export default {
   name: 'StopsView',
@@ -108,7 +117,8 @@ export default {
     LTileLayer,
     LMarker,
     LPopup,
-    LTooltip
+    LTooltip,
+    MapboxMap
   },
   methods: {
     zoomUpdate(zoom) {

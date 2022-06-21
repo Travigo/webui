@@ -5,8 +5,9 @@ import './main.css'
 import App from './App.vue'
 import { routes } from './routes.js'
 import { createRouter, createWebHistory } from 'vue-router'
-import VueGtag from "vue-gtag";
-import { registerSW } from 'virtual:pwa-register';
+import VueGtag from "vue-gtag"
+import { registerSW } from 'virtual:pwa-register'
+import VueMapboxTs from "vue-mapbox-ts"
 
 const app = createApp(App)
 
@@ -17,6 +18,8 @@ const router = createRouter({
 app.use(router)
 
 app.use(VueGtag, {config: { id: "G-X0ZSSZCPYX" }})
+
+app.use(VueMapboxTs)
 
 app.mount('#app')
 

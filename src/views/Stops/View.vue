@@ -75,27 +75,23 @@
         </Card>
       </div>
       <div class="basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
-        <l-map
+        <mapbox-map 
+          accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+          style="height: 100%"
           :zoom="zoom"
           :center="center"
-          :options="mapOptions"
-          style="height: 100%"
         >
-          <l-tile-layer
-            :url="url"
-            :attribution="attribution"
-          />
-            <l-marker :lat-lng="center">
-              <l-tooltip :options="{ permanent: true, interactive: true }">
-                <div>
-                  <p>
-                    <strong>{{ this.stop.PrimaryName }}</strong>
-                  </p>
-                  {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
-                </div>
-              </l-tooltip>
-            </l-marker>
-        </l-map>
+          <mapbox-marker :lngLat="center">
+            <mapbox-popup>
+              <div>
+                <p>
+                  <strong>{{ this.stop.PrimaryName }}</strong>
+                </p>
+                {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
+              </div>
+            </mapbox-popup>
+          </mapbox-marker>
+        </mapbox-map>
       </div>
     </div>
   </div>
@@ -108,9 +104,6 @@ import ServiceIcon from '@/components/ServiceIcon.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
-
-import { latLng } from 'leaflet';
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
 
 export default {
   name: 'StopsView',
@@ -126,14 +119,8 @@ export default {
       error: null,
 
       zoom: 13,
-      center: latLng(52.2065, 0.1356),
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      center: [0.1356, 52.2065],
       currentZoom: 11.5,
-      mapOptions: {
-        zoomSnap: 0.5
-      },
 
       refreshTimer: null
     }
@@ -142,12 +129,6 @@ export default {
     PageTitle,
     Card,
     ServiceIcon,
-
-    LMap,
-    LTileLayer,
-    LMarker,
-    LPopup,
-    LTooltip
   },
   methods: {
     getStop() {
@@ -156,7 +137,7 @@ export default {
         .then(response => {
           this.stop = response.data
 
-          this.center = latLng(this.stop.Location.coordinates[1], this.stop.Location.coordinates[0])
+          this.center = this.stop.Location.coordinates
         })
         .catch(error => {
           console.log(error)
