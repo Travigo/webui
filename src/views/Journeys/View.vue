@@ -172,7 +172,7 @@
             </mapbox-marker>
 
             <mapbox-geogeometry-raw :source="point.track" v-if="point.track">
-              <mapbox-geogeometry-line :width="5" color="green" />
+              <mapbox-geogeometry-line :width="5" :color="point.active ? 'green' : 'gray'" />
             </mapbox-geogeometry-raw>
           </div>
 
