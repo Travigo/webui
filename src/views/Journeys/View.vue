@@ -7,14 +7,38 @@
       <div class="md:float-right inline">
         <span
           v-if="journey.RealtimeJourney"
-          class="text-base text-center font-semibold inline-block py-1 px-2 rounded text-blue-600 bg-blue-200 ml-2 h-8 min-w-[1rem]"
+          class="
+            text-base text-center
+            font-semibold
+            inline-block
+            py-1
+            px-2
+            rounded
+            text-blue-600
+            bg-blue-200
+            ml-2
+            h-8
+            min-w-[1rem]
+          "
         >
           Realtime
         </span>
 
         <span
           v-if="journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack'"
-          class="text-base text-center font-semibold inline-block py-1 px-2 rounded text-orange-600 bg-orange-200 ml-2 h-8 min-w-[1rem]"
+          class="
+            text-base text-center
+            font-semibold
+            inline-block
+            py-1
+            px-2
+            rounded
+            text-orange-600
+            bg-orange-200
+            ml-2
+            h-8
+            min-w-[1rem]
+          "
         >
           Low Accuracy
         </span>
@@ -24,48 +48,76 @@
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
     <div class="flex flex-col-reverse md:flex-row h-full">
-      <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block" v-bind:class="{ hidden: this.currentTab != 'timeline' }">  
+      <div
+        class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block"
+        v-bind:class="{ hidden: this.currentTab != 'timeline' }"
+      >
         <Card>
           <a
             v-if="!this.expandInactiveStops && this.hasHiddenStops"
-            @click="showAllStops()" 
+            @click="showAllStops()"
             href="#"
-            class="text-center block bg-gray-100 text-gray-600 text-sm p-1 rounded-lg"
+            class="
+              text-center
+              block
+              bg-gray-100
+              text-gray-600 text-sm
+              p-1
+              rounded-lg
+            "
           >
             Show previous stops
           </a>
-          <ol class="relative border-l border-gray-300">                  
-            <li 
-              class="mb-5 ml-4 last:mb-0 relative" 
+          <ol class="relative border-l border-gray-300">
+            <li
+              class="mb-5 ml-4 last:mb-0 relative"
               v-for="(point, index) in this.journeyPoints"
               v-bind:key="index"
             >
-              <span
-                v-if="this.showStop(index)"
-              >
+              <span v-if="this.showStop(index)">
                 <div
-                  class="absolute w-3 h-3 bg-gray-300 rounded-full -left-[1.4rem] top-1.5 border border-white"
-                  v-bind:class="{'bg-gray-600': point.active}"
+                  class="
+                    absolute
+                    w-3
+                    h-3
+                    bg-gray-300
+                    rounded-full
+                    -left-[1.4rem]
+                    top-1.5
+                    border border-white
+                  "
+                  v-bind:class="{ 'bg-gray-600': point.active }"
                 ></div>
 
-                <div 
+                <div
                   class="flex text-gray-600"
-                  v-bind:class="{'text-gray-900': point.active}"
+                  v-bind:class="{ 'text-gray-900': point.active }"
                 >
                   <div class="flex-auto my-auto min-h-[40px]">
-                    <div 
-                      class="mb-1 font-normal"
-                    >
+                    <div class="mb-1 font-normal">
                       {{ point.stop.PrimaryName }}
                     </div>
-                    <div class="mb-1 text-sm font-normal leading-none text-gray-400">
+                    <div
+                      class="
+                        mb-1
+                        text-sm
+                        font-normal
+                        leading-none
+                        text-gray-400
+                      "
+                    >
                       <!-- <span v-for="activity in point.activity" v-bind:key="activity" class="text-xs p-1 rounded text-amber-600 bg-amber-200 mr-1 last:mr-0">
                         {{ activity }}
                       </span> -->
                     </div>
                   </div>
                   <div class="text-base font-normal text-right">
-                    <p v-if="point.realtime && point.arrivalTime !== point.realtime.ArrivalTime">
+                    <p
+                      v-if="
+                        point.realtime &&
+                        point.arrivalTime !== point.realtime.ArrivalTime
+                      "
+                    >
                       <span class="text-xs line-through">
                         {{ this.pretty.time(point.arrivalTime) }}
                       </span>
@@ -73,7 +125,12 @@
                         {{ this.pretty.time(point.realtime.ArrivalTime) }}
                       </span>
                     </p>
-                    <p v-else-if="point.realtime && point.arrivalTime === point.realtime.ArrivalTime">
+                    <p
+                      v-else-if="
+                        point.realtime &&
+                        point.arrivalTime === point.realtime.ArrivalTime
+                      "
+                    >
                       <span class="text-green-700">
                         {{ this.pretty.time(point.arrivalTime) }}
                       </span>
@@ -81,7 +138,13 @@
                     <p v-else>
                       {{ this.pretty.time(point.arrivalTime) }}
                     </p>
-                    <p class="text-xs" v-if="point.arrivalTime != point.departureTime && point.departureTime != null">
+                    <p
+                      class="text-xs"
+                      v-if="
+                        point.arrivalTime != point.departureTime &&
+                        point.departureTime != null
+                      "
+                    >
                       Departs {{ this.pretty.time(point.departureTime) }}
                     </p>
                   </div>
@@ -91,67 +154,49 @@
           </ol>
         </Card>
       </div>
-      <div class="basis-full md:basis-1/2 md:ml-2 h-[450px] md:h-[400px] md:block" v-bind:class="{ hidden: this.currentTab != 'map' }">
-        <l-map
+      <div
+        class="basis-full md:basis-1/2 md:ml-2 h-[450px] md:h-[400px] md:block"
+        v-bind:class="{ hidden: this.currentTab != 'map' }"
+      >
+        <mapbox-map
+          accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+          style="height: 100%"
           :zoom="zoom"
           :center="center"
-          :options="mapOptions"
-          style="height: 100%"
         >
-          <l-tile-layer
-            :url="url"
-            :attribution="attribution"
-          />
-
           <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-            <l-circle-marker 
-              :lat-lng="point.latLng"
-              :radius="4" 
-              color="green"
-              :fill="true" 
-              fillColor="green"
-            >
-              <l-popup>
-                <div>
-                  <p>
-                    <strong>{{ point.stop.PrimaryName }}</strong>
-                  </p>
-                  {{ point.stop.OtherNames.Indicator }} {{ point.stop.OtherNames.Landmark }}
-                </div>
-              </l-popup>
-            </l-circle-marker>
+            <mapbox-marker :lngLat="point.location">
+              <template v-slot:icon>
+                <img src="/icons/bus-stop-station-svgrepo-com.png">
+              </template>
+            </mapbox-marker>
 
-            <l-polyline
-              :lat-lngs="point.track"
-              color="blue"
-            />
+            <mapbox-geogeometry-raw :source="point.track" v-if="point.track">
+              <mapbox-geogeometry-line :width="5" color="green" />
+            </mapbox-geogeometry-raw>
           </div>
 
-          <l-marker 
-            :lat-lng="[this.journey.RealtimeJourney.VehicleLocation.coordinates[1], this.journey.RealtimeJourney.VehicleLocation.coordinates[0]]"
-            v-if="this.journey.RealtimeJourney"  
-          >
-            <l-icon icon-url="https://placekitten.com/16/16" :icon-size="[16, 16]" />
-          </l-marker>
-        </l-map>
+          <mapbox-marker :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates" v-if="this.journey.RealtimeJourney">
+            <template v-slot:icon>
+              <img src="/icons/bus-svgrepo-com.png">
+            </template>
+          </mapbox-marker>
+        </mapbox-map>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import PageTitle from '@/components/PageTitle.vue'
-import Card from '@/components/Card.vue'
-import NavTabBar from '@/components/NavTabBar.vue'
-import axios from 'axios'
-import API from '@/API'
-import Pretty from '@/pretty'
-
-import { latLng } from 'leaflet';
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LPolyline, LCircleMarker, LIcon } from '@vue-leaflet/vue-leaflet';
+import PageTitle from "@/components/PageTitle.vue";
+import Card from "@/components/Card.vue";
+import NavTabBar from "@/components/NavTabBar.vue";
+import axios from "axios";
+import API from "@/API";
+import Pretty from "@/pretty";
 
 export default {
-  data () {
+  data() {
     return {
       journey: null,
       journeyPoints: null,
@@ -161,129 +206,137 @@ export default {
 
       pretty: Pretty,
 
-      zoom: 12,
-      center: latLng(52.2065, 0.1356),
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-      currentZoom: 11.5,
-      mapOptions: {
-        zoomSnap: 0.5
-      },
+      zoom: 11,
+      center: [0.1356, 52.2065],
 
       refreshTimer: null,
 
       expandInactiveStops: false,
       hasHiddenStops: false,
 
-      currentTab: 'timeline',
+      currentTab: "timeline",
       tabs: [
         {
           id: "timeline",
-          name: "Timeline"
+          name: "Timeline",
         },
         {
           id: "map",
-          name: "Map"
-        }
+          name: "Map",
+        },
       ]
-    }
+    };
   },
   components: {
     PageTitle,
     Card,
-    NavTabBar,
-
-    LMap,
-    LTileLayer,
-    LMarker,
-    LPopup,
-    LTooltip,
-    LPolyline,
-    LCircleMarker,
-    LIcon
+    NavTabBar
   },
   methods: {
     getJourney() {
       axios
-      .get(`${API.URL}/core/journeys/${this.$route.params.id}`)
-      .then(response => {
-        let newJourney = response.data
+        .get(`${API.URL}/core/journeys/${this.$route.params.id}`)
+        .then((response) => {
+          let newJourney = response.data;
 
-        this.journeyPoints = this.extractJourneyPoints(newJourney)
+          this.journeyPoints = this.extractJourneyPoints(newJourney);
 
-        this.journey = newJourney
-      })
-      .catch(error => {
-        console.log(error)
-        this.error = error
-      })
-      .finally(() => this.loading = false)
+          this.journey = newJourney;
+        })
+        .catch((error) => {
+          console.log(error);
+          this.error = error;
+        })
+        .finally(() => (this.loading = false));
     },
     extractJourneyPoints(journey) {
-      let journeyPoints = []
+      let journeyPoints = [];
 
       for (let index = 0; index < journey.Path.length; index++) {
         const element = journey.Path[index];
-        
+
+        let track = {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              properties: {
+                stroke: "#545454",
+                "stroke-width": 9.6,
+                "stroke-opacity": 1,
+              },
+              geometry: {
+                type: "LineString",
+                coordinates: element.Track.map((x) => x.coordinates),
+              },
+            },
+          ],
+        };
+
         journeyPoints.push({
-          "stop": element.OriginStop,
-          "latLng": latLng(element.OriginStop.Location.coordinates[1], element.OriginStop.Location.coordinates[0]),
-          "arrivalTime": element.OriginArrivalTime,
-          "departureTime": element.OriginDepartureTime,
-          "activity": element.OriginActivity,
-          "track": element.Track.map(x => latLng(x.coordinates[1], x.coordinates[0])),
-          "realtime": journey.RealtimeJourney?.Stops[element.OriginStopRef]
-        })
+          stop: element.OriginStop,
+          location: element.OriginStop.Location.coordinates,
+          arrivalTime: element.OriginArrivalTime,
+          departureTime: element.OriginDepartureTime,
+          activity: element.OriginActivity,
+          track: track,
+          realtime: journey.RealtimeJourney?.Stops[element.OriginStopRef],
+        });
 
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
 
         // if last one in list then append the destination stop
-        if (index == journey.Path.length-1) {
+        if (index == journey.Path.length - 1) {
           journeyPoints.push({
-            "stop": element.DestinationStop,
-            "arrivalTime": element.DestinationArrivalTime,
-            "latLng": latLng(element.DestinationStop.Location.coordinates[1], element.DestinationStop.Location.coordinates[0]),
-            "departureTime": null,
-            "activity": element.DestinationActivity,
-            "track": [],
-            "realtime": journey.RealtimeJourney?.Stops[element.DestinationStopRef]
-          })
+            stop: element.DestinationStop,
+            arrivalTime: element.DestinationArrivalTime,
+            location: element.OriginStop.Location.coordinates,
+            departureTime: null,
+            activity: element.DestinationActivity,
+            track: null,
+            realtime:
+              journey.RealtimeJourney?.Stops[element.DestinationStopRef],
+          });
         }
       }
 
-      let activeStop = (journey.RealtimeJourney == undefined)
+      let activeStop = journey.RealtimeJourney == undefined;
 
       if (!activeStop) {
-        this.hasHiddenStops = true
+        this.hasHiddenStops = true;
       }
 
       for (let index = 0; index < journeyPoints.length; index++) {
-        if (!activeStop && journey.RealtimeJourney != undefined && journey.RealtimeJourney.NextStopRef === journeyPoints[index].stop.PrimaryIdentifier) {
-          activeStop = true
+        if (
+          !activeStop &&
+          journey.RealtimeJourney != undefined &&
+          journey.RealtimeJourney.NextStopRef ===
+            journeyPoints[index].stop.PrimaryIdentifier
+        ) {
+          activeStop = true;
         }
 
-        journeyPoints[index]["active"] = activeStop
+        journeyPoints[index]["active"] = activeStop;
       }
 
-      return journeyPoints
+      return journeyPoints;
     },
     changeTab(newTab) {
-      this.currentTab = newTab
+      this.currentTab = newTab;
     },
     showStop(index) {
-      return this.journeyPoints[index]["active"] || this.expandInactiveStops
+      return this.journeyPoints[index]["active"] || this.expandInactiveStops;
     },
     showAllStops() {
-      this.expandInactiveStops = true
-    }
+      this.expandInactiveStops = true;
+    },
   },
-  mounted () {
-    this.getJourney()
-    this.refreshTimer = setInterval(this.getJourney, 30000)
+  mounted() {
+    this.getJourney();
+    this.refreshTimer = setInterval(this.getJourney, 30000);
   },
-  beforeRouteLeave() {  
-    clearInterval(this.refreshTimer)
-  }, 
-}
+  beforeRouteLeave() {
+    clearInterval(this.refreshTimer);
+  },
+};
 </script>
