@@ -167,7 +167,7 @@
           <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
             <mapbox-marker :lngLat="point.location">
               <template v-slot:icon>
-                <img src="/icons/bus-stop-station-svgrepo-com.png">
+                <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
               </template>
             </mapbox-marker>
 
@@ -176,9 +176,13 @@
             </mapbox-geogeometry-raw>
           </div>
 
-          <mapbox-marker :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates" v-if="this.journey.RealtimeJourney">
+          <mapbox-marker 
+            :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
+            :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
+            v-if="this.journey.RealtimeJourney"
+          >
             <template v-slot:icon>
-              <img src="/icons/bus-svgrepo-com.png">
+              <img src="/icons/bus-svgrepo-com-32x32.png">
             </template>
           </mapbox-marker>
         </mapbox-map>

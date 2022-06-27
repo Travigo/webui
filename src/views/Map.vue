@@ -36,9 +36,9 @@
           </mapbox-popup>
         </mapbox-marker>
 
-        <mapbox-marker :lngLat="vehicle.VehicleLocation.coordinates" v-for="(vehicle, i) in this.vehicles" v-bind:key="i">
+        <mapbox-marker :lngLat="vehicle.VehicleLocation.coordinates" :rotation="vehicle.VehicleBearing-90" v-for="(vehicle, i) in this.vehicles" v-bind:key="i">
           <template v-slot:icon>
-            <img src="/icons/bus-svgrepo-com.png">
+            <img src="/icons/bus-svgrepo-com-24x24.png">
           </template>
 
           <mapbox-popup>
