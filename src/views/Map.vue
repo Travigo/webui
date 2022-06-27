@@ -1,65 +1,61 @@
 <template>
-  <PageTitle>
+  <!-- <PageTitle>
     Bus Map
     <span v-if="this.currentZoom < this.dataLoadMinZoom" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-amber-600 bg-amber-200 mr-1">
       Zoom in some more to load the stops
     </span>
-  </PageTitle>
+  </PageTitle> -->
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
-    <!-- <div>
-      <mapbox-map 
+    <div>
+      <mapbox-map
+        ref="map"
         accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
         height="600px"
+        :center="initialCenter"
+        :zoom="initialZoom"
+        @loaded="mapLoaded"
         @update:center="mapPositionUpdate"
         @update:zoom="zoomUpdate"
-      />
-    </div> -->
-    <l-map
-      ref="map"
-      :zoom="zoom"
-      :center="center"
-      :options="mapOptions"
-      style="height: 600px"
-      @update:bounds="mapPositionUpdate"
-      @update:zoom="zoomUpdate"
-      @ready="getData()"
-    >
-      <l-tile-layer
-        :url="url"
-        :attribution="attribution"
-      />
+      >
+        <mapbox-navigation-control position="bottom-left" />
+        <mapbox-geolocate-control />
 
-      <l-marker :lat-lng="stop.latLng" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
-        <l-popup>
-          <div>
-            <strong>{{ stop.PrimaryName }}</strong>
+        <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
+          <mapbox-popup>
             <div>
+              <p>
+                <strong>{{ stop.PrimaryName }}</strong>
+              </p>
               {{ stop.OtherNames.Indicator }} {{ stop.OtherNames.Landmark }}
+
+              <p>
+                <router-link :to="{'name': 'stops/view', params: {'id': stop.PrimaryIdentifier}}">View</router-link>
+              </p>
             </div>
+          </mapbox-popup>
+        </mapbox-marker>
 
-            <p>
-              <router-link :to="{'name': 'stops/view', params: {'id': stop.PrimaryIdentifier}}">View</router-link>
-            </p>
-          </div>
-        </l-popup>
-      </l-marker>
+        <mapbox-marker :lngLat="vehicle.VehicleLocation.coordinates" v-for="(vehicle, i) in this.vehicles" v-bind:key="i">
+          <template v-slot:icon>
+            <img src="/icons/bus-svgrepo-com.png">
+          </template>
 
-      <l-marker :lat-lng="vehicle.latLng" v-for="(vehicle, i) in this.vehicles" v-bind:key="i">
-        <l-popup>
-          <div>
-            <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
+          <mapbox-popup>
             <div>
-              {{ vehicle.Journey.Service.ServiceName }} / {{ vehicle.Journey.Operator.PrimaryName }}
-            </div>
+              <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
+              <div>
+                {{ vehicle.Journey.Service.ServiceName }} / {{ vehicle.Journey.Operator.PrimaryName }}
+              </div>
 
-            <p>
-              <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.Journey.PrimaryIdentifier}}">View</router-link>
-            </p>
-          </div>
-        </l-popup>
-      </l-marker>
-    </l-map>
+              <p>
+                <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.Journey.PrimaryIdentifier}}">View</router-link>
+              </p>
+            </div>
+          </mapbox-popup>
+        </mapbox-marker>
+      </mapbox-map>
+    </div>
 
     <input type="checkbox" id="showStops" v-model="this.showStops">
     <label for="showStops">Show Stops</label>
@@ -76,8 +72,6 @@ import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
 
-import { latLngBounds, latLng } from 'leaflet';
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
 import { MapboxMap } from "vue-mapbox-ts";
 
 export default {
@@ -90,22 +84,20 @@ export default {
       loading: false,
       error: null,
 
-      zoom: 13,
-      center: latLng(52.2065, 0.1356),
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-      currentZoom: 12,
-      mapOptions: {
-        zoomSnap: 0.5,
-      },
+      currentZoom: 5,
+      currentCenter: [0.1356, 52.2065],
 
-      dataLoadMinZoom: 12,
+      initialZoom: 5,
+      initialCenter: [0.1356, 52.2065],
+
+      dataLoadMinZoom: 9,
 
       refreshTimer: null,
 
       showStops: undefined,
-      showVehicles: undefined
+      showVehicles: undefined,
+
+      mapboxObject: undefined
     }
   },
   components: {
@@ -113,38 +105,41 @@ export default {
     Card,
     Modal,
 
-    LMap,
-    LTileLayer,
-    LMarker,
-    LPopup,
-    LTooltip,
     MapboxMap
   },
   methods: {
+    mapLoaded(map) {
+      this.mapboxObject = map
+
+      this.refreshData()
+    },
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
-    getData(updateStops = true, updateVehicles = true) {
+    refreshData(updateStops = true, updateVehicles = true) {
       if (this.$refs.map !== undefined) {
-        this.mapPositionUpdate(this.$refs.map.leafletObject.getBounds(), updateStops, updateVehicles)
+        this.getData(updateStops, updateVehicles)
       }
     },
-    mapPositionUpdate(bounds, updateStops = true, updateVehicles = true) {
-      let bottomLeftLon = bounds._southWest.lng;
-      let bottomLeftLat = bounds._southWest.lat;
-      let topRightLon = bounds._northEast.lng;
-      let topRightLat = bounds._northEast.lat;
+    mapPositionUpdate(center) {
+      this.currentCenter = center
+
+      this.getData(true, true)
+    },
+    getData(updateStops, updateVehicles) {
+      const bounds = this.mapboxObject.getBounds()
+
+      let bottomLeftLon = bounds._sw.lng
+      let bottomLeftLat = bounds._sw.lat
+      let topRightLon = bounds._ne.lng
+      let topRightLat = bounds._ne.lat
 
       // TODO: For now just dont load anything if you're too zoomed out
-      if (this.showStops && updateStops && (this.$refs.map.leafletObject.getZoom() >= this.dataLoadMinZoom)) {
+      if (this.showStops && updateStops && (this.currentZoom >= this.dataLoadMinZoom)) {
         axios
           .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
             let newStops = response.data
-
-            newStops.forEach(stop => {
-              stop.latLng = latLng(stop.Location.coordinates[1], stop.Location.coordinates[0])
-            });
 
             this.stops = newStops
           })
@@ -161,10 +156,6 @@ export default {
           .then(response => {
             let newVehicles = response.data
 
-            newVehicles.forEach(vehicle => {
-              vehicle.latLng = latLng(vehicle.VehicleLocation.coordinates[1], vehicle.VehicleLocation.coordinates[0])
-            });
-
             this.vehicles = newVehicles
           })
           .catch(error => {
@@ -177,8 +168,11 @@ export default {
   },
   created() {
     if (localStorage.map_last_center !== undefined && localStorage.map_last_zoom !== undefined) {
-      this.center = JSON.parse(localStorage.map_last_center)
-      this.zoom = parseInt(localStorage.map_last_zoom)
+      this.initialCenter = JSON.parse(localStorage.map_last_center)
+      this.initialZoom = parseInt(localStorage.map_last_zoom)
+
+      this.currentCenter = this.initialCenter
+      this.currentZoom = this.initialZoom
     }
 
     if (localStorage.map_showStops !== undefined) {
@@ -193,7 +187,7 @@ export default {
     }
   },
   mounted() {
-    this.refreshTimer = setInterval(this.getData.bind(null, false, true), 15000)
+    this.refreshTimer = setInterval(this.refreshData.bind(null, false, true), 15000)
   },
   beforeRouteLeave() {  
     clearInterval(this.refreshTimer)
@@ -207,7 +201,7 @@ export default {
         }
 
         if (to) {
-          this.getData()
+          this.refreshData()
         } else {
           this.stops = []
         }
@@ -223,7 +217,7 @@ export default {
         }
 
         if (to) {
-          this.getData()
+          this.refreshData()
         } else {
           this.vehicles = []
         }
@@ -235,8 +229,8 @@ export default {
       immediate: true,
       handler(to, from) {
         if (this.$refs.map !== undefined) {
-          localStorage.map_last_center = JSON.stringify(this.$refs.map.leafletObject.getCenter())
-          localStorage.map_last_zoom = this.$refs.map.leafletObject.getZoom()
+          localStorage.map_last_center = JSON.stringify(this.currentCenter)
+          localStorage.map_last_zoom = this.currentZoom
         }
       }
     },

@@ -2,7 +2,8 @@
 export default {
     name: 'App',
     computed: {
-      isDev() { return process.env.NODE_ENV === 'development' }
+      isDev() { return process.env.NODE_ENV === 'development' },
+      isFullscreen() { return this.$route.meta.fullscreen === true }
     },
     data () {
       return {
@@ -108,11 +109,14 @@ export default {
       </div>
     </nav>
     <main class="flex-grow h-full">
-      <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-full">
+      <div 
+        class="h-full"
+        v-bind:class="{'max-w-7xl mx-auto px-2 sm:px-6 lg:px-8': !this.isFullscreen}"
+      >
         <router-view />
       </div>
     </main>
-    <footer class="m-2">
+    <footer class="m-2" v-if="!this.isFullscreen">
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
         &copy; Aaron Claydon {{ new Date().getFullYear() }} &bull; 
         <router-link :to="{ name: 'about' }">About</router-link> &bull; 

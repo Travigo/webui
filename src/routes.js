@@ -41,7 +41,8 @@ export const routes = [
     name: 'map',
     path: '/map',
     meta: { 
-      title: 'Map'
+      title: 'Map',
+      fullscreen: true
     },
     component: () => import('./views/Map.vue')
   },
