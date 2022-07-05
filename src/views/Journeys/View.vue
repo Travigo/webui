@@ -163,6 +163,7 @@
           style="height: 100%"
           :zoom="zoom"
           :center="center"
+          @loaded="mapLoaded"
         >
           <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
             <mapbox-marker :lngLat="point.location">
@@ -192,12 +193,12 @@
 </template>
 
 <script>
-import PageTitle from "@/components/PageTitle.vue";
-import Card from "@/components/Card.vue";
-import NavTabBar from "@/components/NavTabBar.vue";
-import axios from "axios";
-import API from "@/API";
-import Pretty from "@/pretty";
+import PageTitle from "@/components/PageTitle.vue"
+import Card from "@/components/Card.vue"
+import NavTabBar from "@/components/NavTabBar.vue"
+import axios from "axios"
+import API from "@/API"
+import Pretty from "@/pretty"
 
 export default {
   data() {
@@ -210,8 +211,11 @@ export default {
 
       pretty: Pretty,
 
-      zoom: 11,
-      center: [0.1356, 52.2065],
+      zoom: 4,
+      center: [-4, 55],
+
+      mapboxObject: undefined,
+      bounds: undefined,
 
       refreshTimer: null,
 
@@ -237,27 +241,67 @@ export default {
     NavTabBar
   },
   methods: {
+    mapLoaded(map) {
+      this.mapboxObject = map
+
+      this.setBounds()
+    },
+    setBounds() {
+      if (this.mapboxObject !== undefined && this.bounds === undefined && this.journey !== undefined) {
+        let northeastern = [999999, 999999]
+        let southwestern = [-999999, -999999]
+
+        const boundingBoxPadding = 0.015
+
+        for (let index = 0; index < this.journeyPoints.length; index++) {
+          const element = this.journeyPoints[index]
+          const cords = element.stop.Location.coordinates
+
+          if (cords[0] < northeastern[0]) {
+            northeastern[0] = cords[0] - boundingBoxPadding
+          }
+          if (cords[1] < northeastern[1]) {
+            northeastern[1] = cords[1] - boundingBoxPadding
+          }
+
+          if (cords[0] > southwestern[0]) {
+            southwestern[0] = cords[0] + boundingBoxPadding
+          }
+          if (cords[1] > southwestern[1]) {
+            southwestern[1] = cords[1] + boundingBoxPadding
+          }
+        }
+        this.bounds = [
+          southwestern,
+          northeastern
+        ]
+        
+        this.mapboxObject.fitBounds(this.bounds)
+      }
+    },
     getJourney() {
       axios
         .get(`${API.URL}/core/journeys/${this.$route.params.id}`)
         .then((response) => {
-          let newJourney = response.data;
+          let newJourney = response.data
 
-          this.journeyPoints = this.extractJourneyPoints(newJourney);
+          this.journeyPoints = this.extractJourneyPoints(newJourney)
 
-          this.journey = newJourney;
+          this.journey = newJourney
+
+          this.setBounds()
         })
         .catch((error) => {
-          console.log(error);
-          this.error = error;
+          console.log(error)
+          this.error = error
         })
-        .finally(() => (this.loading = false));
+        .finally(() => (this.loading = false))
     },
     extractJourneyPoints(journey) {
-      let journeyPoints = [];
+      let journeyPoints = []
 
       for (let index = 0; index < journey.Path.length; index++) {
-        const element = journey.Path[index];
+        const element = journey.Path[index]
 
         let track = {
           type: "FeatureCollection",
@@ -275,7 +319,7 @@ export default {
               },
             },
           ],
-        };
+        }
 
         journeyPoints.push({
           stop: element.OriginStop,
@@ -285,7 +329,7 @@ export default {
           activity: element.OriginActivity,
           track: track,
           realtime: journey.RealtimeJourney?.Stops[element.OriginStopRef],
-        });
+        })
 
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
 
@@ -300,14 +344,14 @@ export default {
             track: null,
             realtime:
               journey.RealtimeJourney?.Stops[element.DestinationStopRef],
-          });
+          })
         }
       }
 
-      let activeStop = journey.RealtimeJourney == undefined;
+      let activeStop = journey.RealtimeJourney == undefined
 
       if (!activeStop) {
-        this.hasHiddenStops = true;
+        this.hasHiddenStops = true
       }
 
       for (let index = 0; index < journeyPoints.length; index++) {
@@ -317,30 +361,30 @@ export default {
           journey.RealtimeJourney.NextStopRef ===
             journeyPoints[index].stop.PrimaryIdentifier
         ) {
-          activeStop = true;
+          activeStop = true
         }
 
-        journeyPoints[index]["active"] = activeStop;
+        journeyPoints[index]["active"] = activeStop
       }
 
-      return journeyPoints;
+      return journeyPoints
     },
     changeTab(newTab) {
-      this.currentTab = newTab;
+      this.currentTab = newTab
     },
     showStop(index) {
-      return this.journeyPoints[index]["active"] || this.expandInactiveStops;
+      return this.journeyPoints[index]["active"] || this.expandInactiveStops
     },
     showAllStops() {
-      this.expandInactiveStops = true;
+      this.expandInactiveStops = true
     },
   },
   mounted() {
     this.getJourney();
-    this.refreshTimer = setInterval(this.getJourney, 30000);
+    this.refreshTimer = setInterval(this.getJourney, 30000)
   },
   beforeRouteLeave() {
-    clearInterval(this.refreshTimer);
+    clearInterval(this.refreshTimer)
   },
 };
 </script>
