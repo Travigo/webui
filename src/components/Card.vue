@@ -1,6 +1,6 @@
 <template>
    <div class="max-w-7xl mx-auto">
-      <div class="rounded-md bg-white shadow p-6">
+      <div class="rounded-lg bg-white shadow-md p-6 border border-gray-200">
         <PageTitle v-if="hasTitleSlot" paddingStyle="pb-4">
           <slot name="title"></slot>
         </PageTitle>

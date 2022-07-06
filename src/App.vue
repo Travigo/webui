@@ -50,8 +50,8 @@ export default {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col justify-between">
-    <nav class="bg-white shadow sticky top-0 z-50">
+  <div class="mmin-h-screen flex flex-col justify-between">
+    <nav class="mt-2 sm:mt-3 lg:mt-4 mx-2 sm:mx-6 lg:mx-8 bg-white rounded-lg border border-gray-200 shadow-md sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -116,7 +116,7 @@ export default {
         <router-view />
       </div>
     </main>
-    <footer class="m-2" v-if="!this.isFullscreen">
+    <footer class="mx-2 my-4" v-if="!this.isFullscreen">
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
         &copy; Aaron Claydon {{ new Date().getFullYear() }} &bull; 
         <router-link :to="{ name: 'about' }">About</router-link> &bull; 

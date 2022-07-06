@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'BritBus',
         short_name: 'BritBus',
         description: 'Provides realtime and scheduled information on bus travel in Great Britain',
-        theme_color: '#ffffff',
+        theme_color: '#f3f4f6',
         icons: [
           {
             src: 'pwa-192x192.png',
