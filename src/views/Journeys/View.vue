@@ -4,45 +4,43 @@
     <Page-Title>
       {{ journey.Service.ServiceName }} - {{ journey.DestinationDisplay }}
 
-      <div class="md:float-right inline">
+      <p
+        class="text-sm font-medium text-gray-500"
+        v-if="journey.RealtimeJourney"
+      >
         <span
           v-if="journey.RealtimeJourney"
           class="
             text-base text-center
-            font-semibold
             inline-block
-            py-1
             px-2
             rounded
             text-blue-600
             bg-blue-200
-            ml-2
-            h-8
+            h-6
             min-w-[1rem]
           "
         >
           Realtime
         </span>
-
         <span
           v-if="journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack'"
           class="
             text-base text-center
-            font-semibold
             inline-block
-            py-1
             px-2
             rounded
             text-orange-600
             bg-orange-200
             ml-2
-            h-8
+            h-6
             min-w-[1rem]
           "
         >
           Low Accuracy
         </span>
-      </div>
+        Last location update at {{ this.pretty.time(journey.RealtimeJourney.ModificationDateTime) }}
+      </p>
     </Page-Title>
     <div class="md:hidden">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
