@@ -51,7 +51,9 @@ export default {
 
 <template>
   <div class="mmin-h-screen flex flex-col justify-between">
-    <nav class="mt-2 sm:mt-3 lg:mt-4 mx-2 sm:mx-6 lg:mx-8 bg-white rounded-lg border border-gray-200 shadow-md sticky top-0 z-50">
+    <nav
+      class="mt-2 sm:mt-3 lg:mt-4 mx-2 sm:mx-6 lg:mx-8 bg-white rounded-lg border border-gray-200 shadow-md sticky top-0 z-50"
+    >
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">

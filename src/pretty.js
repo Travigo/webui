@@ -1,9 +1,11 @@
 export default {
   time(datetimeString) {
-    const timeRegex = /[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}):([0-9]{2}):[0-9]{2}/;
-    let matches = datetimeString.match(timeRegex);
+    let datetime = new Date(Date.parse(datetimeString))
 
-    return `${matches[1]}:${matches[2]}`
+    let hours = this.padToTwo(datetime.getHours())
+    let minutes = this.padToTwo(datetime.getMinutes())
+
+    return `${hours}:${minutes}`
   },
   day(datetimeString) {
     let datetime = new Date(Date.parse(datetimeString))
@@ -11,4 +13,8 @@ export default {
 
     return days[datetime.getDay()]
   },
+  padToTwo(number) {
+    if (number<=99) { number = ("0"+number).slice(-2) }
+    return number;
+  }
 }
