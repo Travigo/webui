@@ -147,7 +147,12 @@ export default {
     },
     getDepartures() {
       axios
-        .get(`${API.URL}/core/stops/${this.$route.params.id}/departures?count=15`)
+        .get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {
+          params: {
+            'count': 15,
+            'datetime': this.$route.query.datetime
+          }
+        })
         .then(response => {
           this.departures = response.data
         })
@@ -177,6 +182,7 @@ export default {
     }
   },
   mounted () {
+    console.log(this.$route.query.datetime)
     this.getData()
     this.refreshTimer = setInterval(this.getData, 30000)
   },
