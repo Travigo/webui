@@ -6,9 +6,6 @@
       <span class="text-sm text-gray-700">
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
-      <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
-        No services run at this stop
-      </span>
 
       <div class="md:float-right inline">
         <ServiceIcon
@@ -31,6 +28,10 @@
           </span>
           <span v-else-if="!this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
             No upcoming departures at this stop
+          </span>
+
+          <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
+            No services run at this stop
           </span>
 
           <div class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
