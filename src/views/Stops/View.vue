@@ -63,7 +63,7 @@
                       &middot; Low Accuracy
                     </span>
                   </div>
-                  <div class="text-xs text-gray-600" v-else-if="departure.Type == 'Scheduled'">
+                  <div class="text-xs text-gray-600 dark:text-gray-400" v-else-if="departure.Type == 'Scheduled'">
                     Scheduled
                   </div>
                    <div class="text-xs text-orange-600" v-else-if="departure.Type == 'Estimated'">

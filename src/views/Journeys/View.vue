@@ -62,6 +62,7 @@
               text-gray-600 text-sm
               p-1
               rounded-lg
+              dark:bg-gray-700 dark:border-gray-400 dark:text-gray-300
             "
           >
             Show previous stops
@@ -89,7 +90,7 @@
 
                 <div
                   class="flex text-gray-600"
-                  v-bind:class="{ 'text-gray-900': point.active }"
+                  v-bind:class="{ 'text-gray-900 dark:text-gray-100': point.active }"
                 >
                   <div class="flex-auto my-auto min-h-[40px]">
                     <div class="mb-1 font-normal">
