@@ -1,6 +1,6 @@
 <template>
   <Card class="m-4">
-    <h1 class="text-3xl font-bold leading-tight text-gray-900 mb-4">
+    <h1 class="text-3xl font-bold leading-tight text-gray-900 mb-4 dark:text-gray-200">
       Welcome
     </h1>
 

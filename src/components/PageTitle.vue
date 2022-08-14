@@ -1,6 +1,6 @@
 <template>
    <div class="max-w-7xl mx-auto" :class="paddingStyle">
-    <h1 class="text-3xl font-bold leading-tight text-gray-900">
+    <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-200">
       <slot></slot>
     </h1>
   </div>

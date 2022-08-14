@@ -52,7 +52,7 @@ export default {
 <template>
   <div class="mmin-h-screen flex flex-col justify-between">
     <nav
-      class="mt-2 sm:mt-3 lg:mt-4 mx-2 sm:mx-6 lg:mx-8 bg-white rounded-lg border border-gray-200 shadow-md sticky top-0 z-50"
+      class="mt-2 sm:mt-3 lg:mt-4 mx-2 sm:mx-6 lg:mx-8 bg-white rounded-lg border border-gray-200 shadow-md sticky top-0 z-50 dark:bg-gray-800 dark:border-gray-600"
     >
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
@@ -70,7 +70,7 @@ export default {
           <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
             <router-link :to="{ path: '/' }">
               <div class="flex-shrink-0 text-white text-2xl tracking-wider">
-                <span class="text-unionjack-red">Brit</span><span class="text-unionjack-blue">Bus</span>
+                <span class="text-unionjack-red">Brit</span><span class="text-unionjack-blue dark:text-blue-600">Bus</span>
                 <span v-if="this.isDev" class="text-xs font-semibold inline-block px-2 uppercase rounded text-red-600">
                   Dev
                 </span>
@@ -86,7 +86,7 @@ export default {
                   v-bind:key="navItem.name"
                   :to="navItem.route" 
                   active-class="active-nav-tab"
-                  class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out"
+                  class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out dark:text-gray-100"
                 >
                   {{ navItem.name }}
                 </router-link>
