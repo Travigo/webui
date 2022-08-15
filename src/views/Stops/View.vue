@@ -1,4 +1,5 @@
 <template>
+  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
   <div v-if="loadingStop">Loading...</div>
   <div v-else class="h-full">
     <PageTitle>
@@ -102,6 +103,7 @@
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
 import ServiceIcon from '@/components/ServiceIcon.vue'
+import Alert from '@/components/Alert.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -117,7 +119,7 @@ export default {
       departures: null,
       loadingDepartures: true,
 
-      error: null,
+      error: undefined,
 
       zoom: 13,
       center: [0.1356, 52.2065],
@@ -130,6 +132,7 @@ export default {
     PageTitle,
     Card,
     ServiceIcon,
+    Alert,
   },
   methods: {
     getStop() {

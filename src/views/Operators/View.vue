@@ -1,7 +1,5 @@
 <template>
-  <div v-if="error">
-    {{ error }}
-  </div>
+  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
     <PageTitle class="pb-0 md:pb-0 lg:pb-0">
@@ -28,6 +26,7 @@
 <script>
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
+import Alert from '@/components/Alert.vue'
 import NavTabBar from '@/components/NavTabBar.vue'
 import OperatorOverview from '@/components/Operators/Overview.vue'
 import OperatorServices from '@/components/Operators/Services.vue'
@@ -40,7 +39,7 @@ export default {
     return {
       operator: null,
       loading: true,
-      error: null,
+      error: undefined,
 
       defaultTab: 'overview',
       currentTab: null,
@@ -65,7 +64,8 @@ export default {
     Card,
     NavTabBar,
     OperatorOverview,
-    OperatorServices
+    OperatorServices,
+    Alert
   },
   methods: {
     changeTab(newTab) {

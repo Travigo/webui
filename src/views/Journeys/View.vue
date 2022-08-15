@@ -1,4 +1,5 @@
 <template>
+  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
     <Page-Title>
@@ -195,6 +196,7 @@
 import PageTitle from "@/components/PageTitle.vue"
 import Card from "@/components/Card.vue"
 import NavTabBar from "@/components/NavTabBar.vue"
+import Alert from "@/components/Alert.vue"
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
@@ -206,7 +208,7 @@ export default {
       journeyPoints: null,
 
       loading: true,
-      error: null,
+      error: undefined,
 
       pretty: Pretty,
 
@@ -237,7 +239,8 @@ export default {
   components: {
     PageTitle,
     Card,
-    NavTabBar
+    NavTabBar,
+    Alert
   },
   methods: {
     mapLoaded(map) {

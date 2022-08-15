@@ -1,4 +1,5 @@
 <template>
+  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
     <PageTitle>
@@ -15,23 +16,22 @@
 <script>
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
+import Alert from '@/components/Alert.vue'
 import axios from 'axios'
 import API from '@/API'
-
-import { latLng } from 'leaflet';
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
 
 export default {
   data () {
     return {
-      group: null,
+      group: undefined,
       loading: true,
-      error: null,
+      error: undefined,
     }
   },
   components: {
     PageTitle,
-    Card
+    Card,
+    Alert
   },
   methods: {
     getOperatorGroup() {
