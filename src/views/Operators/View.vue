@@ -18,7 +18,7 @@
     <OperatorServices :operator="this.operator" v-bind:class="{ hidden: this.currentTab != 'services' }" />
 
     <Card v-bind:class="{ hidden: this.currentTab != 'stats' }">
-      Stats
+      Stats will be included in a later update
     </Card>
   </div>
 </template>
