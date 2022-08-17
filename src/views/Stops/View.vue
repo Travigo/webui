@@ -188,7 +188,7 @@ export default {
   mounted () {
     console.log(this.$route.query.datetime)
     this.getData()
-    this.refreshTimer = setInterval(this.getData, 30000)
+    this.refreshTimer = setInterval(this.getDepartures, 30000)
   },
   beforeRouteLeave() {  
     clearInterval(this.refreshTimer)
