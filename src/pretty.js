@@ -6,7 +6,7 @@ export default {
     return new Date(datetime.getTime() + userTimezoneOffset)
   },
   time(datetimeString) {
-    let datetime = parseIncorrectDateTime(datetimeString)
+    let datetime = this.parseIncorrectDateTime(datetimeString)
 
     let hours = this.padToTwo(datetime.getHours())
     let minutes = this.padToTwo(datetime.getMinutes())
@@ -14,7 +14,7 @@ export default {
     return `${hours}:${minutes}`
   },
   day(datetimeString) {
-    let datetime = parseIncorrectDateTime(datetimeString)
+    let datetime = this.parseIncorrectDateTime(datetimeString)
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
     return days[datetime.getDay()]
