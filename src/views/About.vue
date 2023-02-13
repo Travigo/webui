@@ -68,6 +68,24 @@ import Card from '@/components/Card.vue'
           Traveline provides the NOC (National Operator Code) database which is used for Operator &amp; Operator Groups details.
         </div>
       </div>
+
+      <div class="mt-6">
+        <h3 class="text-xl font-bold">Stagecoach Open Data</h3>
+
+        <div class="mt-1">
+          <span class="font-bold">Source: </span>
+          <a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="https://www.stagecoachbus.com/open-data">https://www.stagecoachbus.com/open-data/</a>
+        </div>
+
+        <div>
+          <span class="font-bold">Provider: </span>
+          Stagecoach
+        </div>
+
+        <div class="mt-4">
+          Stagecoach also provide all the service and timetable data on all their routes on their website. Including services in Scotland which are not already present in the Department for Transport Open Data system.
+        </div>
+      </div>
     </Card>
   </div>
 </template>
