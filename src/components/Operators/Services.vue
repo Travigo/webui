@@ -39,9 +39,6 @@ export default {
     operator: {},
   },
   methods: {
-    changeTab(newTab) {
-      this.currentTab = newTab
-    },
     getServices() {
       axios
       .get(`${API.URL}/core/operators/${this.operator.PrimaryIdentifier}/services`)

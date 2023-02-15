@@ -17,9 +17,7 @@
 
     <OperatorServices :operator="this.operator" v-bind:class="{ hidden: this.currentTab != 'services' }" />
 
-    <Card v-bind:class="{ hidden: this.currentTab != 'stats' }">
-      Stats will be included in a later update
-    </Card>
+    <OperatorStats :operator="this.operator" v-bind:class="{ hidden: this.currentTab != 'stats' }" />
   </div>
 </template>
 
@@ -30,6 +28,7 @@ import Alert from '@/components/Alert.vue'
 import NavTabBar from '@/components/NavTabBar.vue'
 import OperatorOverview from '@/components/Operators/Overview.vue'
 import OperatorServices from '@/components/Operators/Services.vue'
+import OperatorStats from '@/components/Operators/Stats.vue'
 import axios from 'axios'
 import API from '@/API'
 
@@ -65,6 +64,7 @@ export default {
     NavTabBar,
     OperatorOverview,
     OperatorServices,
+    OperatorStats,
     Alert
   },
   methods: {
