@@ -78,7 +78,7 @@
                   >
                     <div 
                       class="inline-flex items-center justify-center w-2 h-2 text-xs bg-green-700 rounded-full"
-                      :class="{ 'text-orange-700': (departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack') }"
+                      :class="{ 'bg-orange-700': (departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack') }"
                     >&nbsp;</div>
                     Realtime 
                   </div>
