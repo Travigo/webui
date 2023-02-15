@@ -48,7 +48,9 @@ export default {
   },
   data () {
     return {
-      stats: undefined
+      stats: undefined,
+
+      refreshTimer: undefined
     }
   },
   methods: {
@@ -66,6 +68,10 @@ export default {
   },
   mounted () {
     this.getStats()
-  }
+    this.refreshTimer = setInterval(this.getStats, 250000)
+  },
+  beforeRouteLeave() {  
+    clearInterval(this.refreshTimer)
+  }, 
 }
 </script>

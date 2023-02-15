@@ -18,6 +18,17 @@
 
       <div class="clear-both" />
     </PageTitle>
+
+    <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
+      <Alert type="warning" v-if="stat.Rating == 'POOR'">
+        Realtime data from <strong>{{ operator }}</strong> is low quality
+      </Alert>
+
+      <Alert type="error" v-if="stat.Rating == 'TEMPORARY-ISSUES'">
+        Realtime data from <strong>{{ operator }}</strong> is currently experiencing temporary issues
+      </Alert>
+    </div>
+
     <div class="flex flex-col-reverse md:flex-row h-full">
       <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
         <Card>
@@ -119,6 +130,8 @@ export default {
       departures: null,
       loadingDepartures: true,
 
+      operatorStats: undefined,
+
       error: undefined,
 
       zoom: 13,
@@ -142,6 +155,8 @@ export default {
           this.stop = response.data
 
           this.center = this.stop.Location.coordinates
+
+          this.getOperatorStats()
         })
         .catch(error => {
           console.log(error)
@@ -165,6 +180,34 @@ export default {
           // this.error = error
         })
         .finally(() => this.loadingDepartures = false)
+    },
+    getOperatorStats() {
+      console.log("Get operator stats")
+
+      let operators = []
+
+      for (let index = 0; index < this.stop.Services.length; index++) {
+        const service = this.stop.Services[index]
+        let operatorID = service.OperatorRef
+
+        if (!operators.includes(operatorID)) {
+          operators.push(operatorID)
+        }
+      }
+
+      axios
+        .get(`${API.URL}/stats/identification_rate`, {
+          params: {
+            'operators': operators.join(',')
+          }
+        })
+        .then(response => {
+          this.operatorStats = response.data.Operators
+        })
+        .catch(error => {
+          console.log(error)
+          // this.error = error
+        })
     },
     getData() {
       this.getStop()
