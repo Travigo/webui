@@ -21,11 +21,13 @@
 
     <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
       <Alert type="warning" v-if="stat.Rating == 'POOR'">
-        Realtime data from <strong>{{ operator }}</strong> is low quality
+        <strong>Notice</strong><br/>
+        Data provided by <strong>{{ operator }}</strong> is low quality
       </Alert>
 
       <Alert type="error" v-if="stat.Rating == 'TEMPORARY-ISSUES'">
-        Realtime data from <strong>{{ operator }}</strong> is currently experiencing temporary issues
+        <strong>Notice</strong><br/>
+        Realtime tracking of <strong>{{ operator }}</strong> services is currently experiencing issues
       </Alert>
     </div>
 
@@ -87,7 +89,7 @@
           </div>
         </Card>
       </div>
-      <div class="basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
+      <div class="hidden md:block basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
         <mapbox-map 
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
           style="height: 100%"
