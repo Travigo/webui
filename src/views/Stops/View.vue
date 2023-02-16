@@ -74,19 +74,19 @@
                   <div 
                     class="text-xs text-green-700" 
                     v-if="departure.Type == 'RealtimeTracked'"
-                    :class="{ 'text-orange-700': (departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack') }"
+                    :class="{ 'text-orange-400': (departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack') }"
                   >
                     <div 
-                      class="inline-flex items-center justify-center w-2 h-2 text-xs bg-green-700 rounded-full"
-                      :class="{ 'bg-orange-700': (departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack') }"
+                      class="inline-flex items-center justify-center w-1 h-1 text-xs bg-green-700 rounded-full"
+                      :class="{ 'bg-orange-400': (departure.Journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack') }"
                     >&nbsp;</div>
                     Realtime 
                   </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400" v-else-if="departure.Type == 'Scheduled'">
                     Scheduled
                   </div>
-                   <div class="text-xs text-orange-600" v-else-if="departure.Type == 'Estimated'">
-                    <div class="inline-flex items-center justify-center w-2 h-2 text-xs bg-orange-600 rounded-full">&nbsp;</div>
+                   <div class="text-xs text-orange-500" v-else-if="departure.Type == 'Estimated'">
+                    <div class="inline-flex items-center justify-center w-1 h-1 text-xs bg-orange-500 rounded-full">&nbsp;</div>
                     Estimated
                   </div>
                 </router-link>
