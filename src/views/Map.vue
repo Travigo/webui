@@ -10,6 +10,7 @@
     <mapbox-map
       ref="map"
       accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+      mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
       height="100%"
       :center="initialCenter"
       :zoom="initialZoom"

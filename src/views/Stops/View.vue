@@ -98,6 +98,7 @@
       <div class="hidden md:block basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
         <mapbox-map 
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+          mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
           style="height: 100%"
           :zoom="zoom"
           :center="center"
