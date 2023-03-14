@@ -22,7 +22,7 @@
     <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
       <Alert type="warning" v-if="stat.Rating == 'POOR'">
         <strong>Notice</strong><br/>
-        Data provided by <strong>{{ operator }}</strong> is low quality
+        Realtime tracking is not available for all <strong>{{ operator }}</strong> services
       </Alert>
 
       <Alert type="error" v-if="stat.Rating == 'TEMPORARY-ISSUES'">
