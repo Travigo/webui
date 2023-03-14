@@ -6,69 +6,86 @@
     </span>
   </PageTitle> -->
   <div v-if="loading">Loading...</div>
-  <div v-else class="h-full">
-    <div>
-      <mapbox-map
-        ref="map"
-        accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-        height="600px"
-        :center="initialCenter"
-        :zoom="initialZoom"
-        @loaded="mapLoaded"
-        @update:center="mapPositionUpdate"
-        @update:zoom="zoomUpdate"
+  <div v-else class="fullscreen-map">
+    <mapbox-map
+      ref="map"
+      accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+      height="100%"
+      :center="initialCenter"
+      :zoom="initialZoom"
+      @loaded="mapLoaded"
+      @update:center="mapPositionUpdate"
+      @update:zoom="zoomUpdate"
+    >
+      <mapbox-navigation-control position="bottom-left" />
+      <mapbox-geolocate-control position="bottom-left" />
+
+      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
+        <mapbox-popup>
+          <div>
+            <p>
+              <strong>{{ stop.PrimaryName }}</strong>
+            </p>
+            {{ stop.OtherNames.Indicator }} {{ stop.OtherNames.Landmark }}
+
+            <p>
+              <router-link :to="{'name': 'stops/view', params: {'id': stop.PrimaryIdentifier}}">View</router-link>
+            </p>
+          </div>
+        </mapbox-popup>
+      </mapbox-marker>
+
+      <mapbox-marker
+        :lngLat="vehicle.VehicleLocation.coordinates"
+        :rotation="vehicle.VehicleBearing-90"
+        v-for="(vehicle, i) in this.vehicles"
+        v-bind:key="i"
       >
-        <mapbox-navigation-control position="bottom-left" />
-        <mapbox-geolocate-control />
+        <template v-slot:icon>
+          <img src="/icons/bus-svgrepo-com-24x24.png">
+        </template>
 
-        <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
-          <mapbox-popup>
+        <mapbox-popup>
+          <div>
+            <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
             <div>
-              <p>
-                <strong>{{ stop.PrimaryName }}</strong>
-              </p>
-              {{ stop.OtherNames.Indicator }} {{ stop.OtherNames.Landmark }}
-
-              <p>
-                <router-link :to="{'name': 'stops/view', params: {'id': stop.PrimaryIdentifier}}">View</router-link>
-              </p>
+              {{ vehicle.Journey.Service.ServiceName }} / {{ vehicle.Journey.Operator.PrimaryName }}
             </div>
-          </mapbox-popup>
-        </mapbox-marker>
 
-        <mapbox-marker
-          :lngLat="vehicle.VehicleLocation.coordinates"
-          :rotation="vehicle.VehicleBearing-90"
-          v-for="(vehicle, i) in this.vehicles"
-          v-bind:key="i"
-        >
-          <template v-slot:icon>
-            <img src="/icons/bus-svgrepo-com-24x24.png">
-          </template>
+            <p>
+              <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.Journey.PrimaryIdentifier}}">View</router-link>
+            </p>
+          </div>
+        </mapbox-popup>
+      </mapbox-marker>
+    </mapbox-map>
 
-          <mapbox-popup>
-            <div>
-              <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
-              <div>
-                {{ vehicle.Journey.Service.ServiceName }} / {{ vehicle.Journey.Operator.PrimaryName }}
-              </div>
+    <div class="map-control-buttons">
+      <input type="checkbox" id="showStops" v-model="this.showStops">
+      <label for="showStops">Show Stops</label>
 
-              <p>
-                <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.Journey.PrimaryIdentifier}}">View</router-link>
-              </p>
-            </div>
-          </mapbox-popup>
-        </mapbox-marker>
-      </mapbox-map>
+      <input type="checkbox" id="showVehicles" v-model="this.showVehicles">
+      <label for="showVehicles">Show Vehicles</label>
     </div>
-
-    <input type="checkbox" id="showStops" v-model="this.showStops">
-    <label for="showStops">Show Stops</label>
-
-    <input type="checkbox" id="showVehicles" v-model="this.showVehicles">
-    <label for="showVehicles">Show Vehicles</label>
   </div>
 </template>
+
+<style scoped lang="scss">
+.fullscreen-map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-control-buttons {
+  position: absolute;
+  bottom: 24px;
+  right: 6px;
+}
+</style>
+
 
 <script>
 import PageTitle from '@/components/PageTitle.vue'
@@ -115,6 +132,8 @@ export default {
   methods: {
     mapLoaded(map) {
       this.mapboxObject = map
+
+      map.resize()
 
       this.refreshData()
     },

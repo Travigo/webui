@@ -1,6 +1,7 @@
 {
   "name": "britbus-web",
   "version": "0.0.0",
+  "license": "MIT",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
@@ -13,7 +14,7 @@
     "sass-loader": "^13.2.0",
     "vue": "^3.2.47",
     "vue-gtag": "^2.0.1",
-    "vue-mapbox-ts": "^0.9.7",
+    "vue-mapbox-ts": "britbus/vue-mapbox-ts#d43954b1f56bc72356e62c21561afdd9e83824b3",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
