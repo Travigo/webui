@@ -22,6 +22,9 @@
       <mapbox-geolocate-control position="bottom-left" />
 
       <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
+        <template v-slot:icon>
+          <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
+        </template>
         <mapbox-popup>
           <div>
             <p>
