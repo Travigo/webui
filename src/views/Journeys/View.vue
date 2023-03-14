@@ -246,6 +246,8 @@ export default {
     mapLoaded(map) {
       this.mapboxObject = map
 
+      map.resize()
+
       this.setBounds()
     },
     setBounds() {
