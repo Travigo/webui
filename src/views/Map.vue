@@ -165,7 +165,7 @@ export default {
       // TODO: For now just dont load anything if you're too zoomed out
       if (this.showStops && updateStops && (this.currentZoom >= this.dataLoadMinZoom)) {
         axios
-          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}&transport_type=Bus`)
           .then(response => {
             let newStops = response.data
 
