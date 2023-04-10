@@ -14,6 +14,10 @@ export default {
             route: { name: 'map' }
           },
           {
+            name: 'Journey Planner',
+            route: { name: 'journeyplanner' }
+          },
+          {
             name: 'Operators',
             route: { name: 'operators/home' }
           },

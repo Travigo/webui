@@ -44,7 +44,7 @@
             No upcoming departures at this stop
           </span>
 
-          <span v-if="!this.stop.Services" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
+          <span v-if="!this.stop.Services && !this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
             No services run at this stop
           </span>
 
