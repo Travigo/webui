@@ -195,6 +195,10 @@ export default {
 
       let operators = []
 
+      if (this.stop.Services === null) {
+        return
+      }
+
       for (let index = 0; index < this.stop.Services.length; index++) {
         const service = this.stop.Services[index]
         let operatorID = service.OperatorRef
