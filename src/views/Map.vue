@@ -30,7 +30,8 @@
             <p>
               <strong>{{ stop.PrimaryName }}</strong>
             </p>
-            {{ stop.OtherNames.Indicator }} {{ stop.OtherNames.Landmark }}
+            {{ stop.OtherNames.Indicator }} {{ stop.OtherNames.Landmark }}<br/>
+            {{ stop.TransportTypes }}
 
             <p>
               <router-link :to="{'name': 'stops/view', params: {'id': stop.PrimaryIdentifier}}">View</router-link>
@@ -165,7 +166,7 @@ export default {
       // TODO: For now just dont load anything if you're too zoomed out
       if (this.showStops && updateStops && (this.currentZoom >= this.dataLoadMinZoom)) {
         axios
-          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}&transport_type=Bus`)
+          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
             let newStops = response.data
 
