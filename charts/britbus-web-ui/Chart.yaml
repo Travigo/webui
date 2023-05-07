@@ -1,6 +1,6 @@
 apiVersion: v2
-name: britbus-web-ui
-description: A Helm chart for BritBus web UI
+name: travigo-web-ui
+description: A Helm chart for Travigo web UI
 
 # A chart can be either an 'application' or a 'library' chart.
 #

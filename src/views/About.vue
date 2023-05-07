@@ -9,7 +9,7 @@ import Card from '@/components/Card.vue'
       About
     </PageTitle>
     <Card>
-      BritBus is an app that uses open datasets to provide realtime &amp; up to date information on bus transport within Great Britain.
+      Travigo is an app that uses open datasets to provide realtime &amp; up to date information on public transport within Great Britain.
     </Card>
     <PageTitle>
       Datasets Used

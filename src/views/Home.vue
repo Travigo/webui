@@ -5,7 +5,7 @@
     </h1>
 
     <p>
-      BritBus is an app that provides realtime &amp; up to date information on bus transport within Great Britain.
+      Travigo is an app that provides realtime &amp; up to date information on public transport within Great Britain.
     </p>
 
     <p class="pt-4">

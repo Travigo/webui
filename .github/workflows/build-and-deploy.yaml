@@ -52,7 +52,7 @@ jobs:
   deploy-helm:
     if: github.ref == 'refs/heads/main'
   
-    name: Deploy to BritBus Kubernetes
+    name: Deploy to Kubernetes
     runs-on: ubuntu-latest
     environment: 
       name: production
@@ -85,4 +85,4 @@ jobs:
 
     - name: Helm upgrade
       run: |-
-        helm upgrade -i britbus-web-ui ./charts/britbus-web-ui --set image.tag=sha-${{ github.sha }}
+        helm upgrade -i travigo-web-ui ./charts/travigo-web-ui --set image.tag=sha-${{ github.sha }}

@@ -43,9 +43,9 @@ export default {
         handler(to, from) {
           this.hamburgerMenuOpen = false
           if (to.meta.title === undefined) {
-            document.title = 'BritBus';
+            document.title = 'Travigo';
           } else {
-            document.title = 'BritBus / ' + to.meta.title;
+            document.title = 'Travigo / ' + to.meta.title;
           }
         }
       },
@@ -74,11 +74,11 @@ export default {
           <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
             <router-link :to="{ path: '/' }">
               <div class="flex-shrink-0 text-white text-2xl tracking-wider">
-                <span class="text-unionjack-red">
-                  <span class="dark:text-red-400">Brit</span>
+                <span class="text-brand-travi">
+                  <span class="dark:text-red-400">Travi</span>
                 </span>
-                <span class="text-unionjack-blue">
-                  <span class="dark:text-blue-400">Bus</span>
+                <span class="text-brand-go">
+                  <span class="dark:text-blue-400">go</span>
                 </span>
                 <span v-if="this.isDev" class="text-xs font-semibold inline-block px-2 uppercase rounded text-red-600">
                   Dev

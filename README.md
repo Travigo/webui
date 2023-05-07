@@ -1,4 +1,4 @@
-# Britbus Web Interface
+# Travigo Web Interface
 
 ## Getting Started
 ```sh

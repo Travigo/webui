@@ -10,9 +10,9 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       registerType: 'autoUpdate',
       manifest: {
-        name: 'BritBus',
-        short_name: 'BritBus',
-        description: 'Provides realtime and scheduled information on bus travel in Great Britain',
+        name: 'Travigo',
+        short_name: 'Travigo',
+        description: 'Provides realtime and scheduled information on public transport',
         theme_color: '#f3f4f6',
         icons: [
           {

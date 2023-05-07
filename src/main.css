@@ -2,9 +2,9 @@
 @import "leaflet.markercluster/dist/MarkerCluster.css";
 @import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
-.text-unionjack-blue {
-  color: #012169
+.text-brand-travi {
+  color: #eb6ea5;
 }
-.text-unionjack-red {
-  color: #C8102E
+.text-brand-go {
+  color: #696aad;
 }
