@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="520">
+ <title>TfL white roundel</title>
+ <g fill="none">
+  <circle stroke="white" cx="320" cy="260" r="215" stroke-width="90"/>
+  <path stroke="white" d="M 0,260 H 640" stroke-width="100"/>
+ </g>
+</svg>

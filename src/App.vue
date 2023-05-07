@@ -75,10 +75,10 @@ export default {
             <router-link :to="{ path: '/' }">
               <div class="flex-shrink-0 text-white text-2xl tracking-wider">
                 <span class="text-brand-travi">
-                  <span class="dark:text-red-400">Travi</span>
+                  <span>Travi</span>
                 </span>
                 <span class="text-brand-go">
-                  <span class="dark:text-blue-400">go</span>
+                  <span>go</span>
                 </span>
                 <span v-if="this.isDev" class="text-xs font-semibold inline-block px-2 uppercase rounded text-red-600">
                   Dev

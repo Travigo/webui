@@ -57,6 +57,7 @@
                 class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
                 style="line-height: 44px"
                 :service="departure.Journey.Service"
+                :short="true"
               />
               <div class="flex-auto my-auto">
                 <div>
