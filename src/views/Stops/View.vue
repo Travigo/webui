@@ -8,12 +8,21 @@
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
 
-      <div class="md:float-right inline">
-        <ServiceIcon
-          class="ml-2"
-          v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier" 
-          :service="service" 
-        />
+      <div class="md:float-right inline overflow-x-scroll w-full">
+        <!-- <div class="whitespace-nowrap w-full">
+          <ServiceIcon
+            class="ml-2"
+            v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier" 
+            :service="service" 
+          />
+        </div>   -->
+          <div class="dx overflow-y-hidden w-full whitespace-nowrap text-right">
+            <ServiceIcon
+              class="ml-2"
+              v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier" 
+              :service="service" 
+            />
+          </div>
       </div>
 
       <div class="clear-both" />
