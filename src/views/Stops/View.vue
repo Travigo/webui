@@ -2,7 +2,7 @@
   <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
   <div v-if="loadingStop">Loading...</div>
   <div v-else class="h-full">
-    <PageTitle>
+    <PageTitle paddingStyle="pb-0 py-2 md:py-4 lg:py-6">
       {{ this.stop.PrimaryName }}
       <span class="text-sm text-gray-700">
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
