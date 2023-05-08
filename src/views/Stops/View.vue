@@ -187,7 +187,7 @@ export default {
       axios
         .get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {
           params: {
-            'count': 15,
+            'count': 25,
             'datetime': this.$route.query.datetime
           }
         })
