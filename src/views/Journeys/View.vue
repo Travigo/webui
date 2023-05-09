@@ -3,7 +3,10 @@
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
     <Page-Title>
-      {{ journey.Service.ServiceName }} - {{ journey.DestinationDisplay }}
+      <ServiceIcon
+        class="ml-2"
+        :service="journey.Service" 
+      /> {{ journey.DestinationDisplay }}
 
       <p
         class="text-sm font-medium text-gray-500"
@@ -197,6 +200,7 @@
 import PageTitle from "@/components/PageTitle.vue"
 import Card from "@/components/Card.vue"
 import NavTabBar from "@/components/NavTabBar.vue"
+import ServiceIcon from '@/components/ServiceIcon.vue'
 import Alert from "@/components/Alert.vue"
 import axios from "axios"
 import API from "@/API"
@@ -241,7 +245,8 @@ export default {
     PageTitle,
     Card,
     NavTabBar,
-    Alert
+    Alert,
+    ServiceIcon
   },
   methods: {
     mapLoaded(map) {
