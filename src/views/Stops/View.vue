@@ -21,88 +21,98 @@
       <div class="clear-both" />
     </PageTitle>
 
-    <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
-      <Alert type="warning" v-if="stat.Rating == 'POOR'">
-        <strong>Notice</strong><br/>
-        Realtime tracking is not available for all <strong>{{ operator }}</strong> services
-      </Alert>
+    <div class="mmin-h-screen flex flex-col">
+      <div>
+        <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
+          <Alert type="warning" v-if="stat.Rating == 'POOR'">
+            <strong>Notice</strong><br/>
+            Realtime tracking is not available for all <strong>{{ operator }}</strong> services
+          </Alert>
 
-      <Alert type="error" v-if="stat.Rating == 'TEMPORARY-ISSUES'">
-        <strong>Notice</strong><br/>
-        Realtime tracking of <strong>{{ operator }}</strong> services is currently experiencing issues
-      </Alert>
-    </div>
+          <Alert type="error" v-if="stat.Rating == 'TEMPORARY-ISSUES'">
+            <strong>Notice</strong><br/>
+            Realtime tracking of <strong>{{ operator }}</strong> services is currently experiencing issues
+          </Alert>
+        </div>
 
-    <div class="flex flex-col-reverse md:flex-row h-full">
-      <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
-        <Card>
-          <template #title>
-            Departures
-          </template>
-          <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
-            Loading...
-          </span>
-          <span v-else-if="!this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
-            No upcoming departures at this stop
-          </span>
+        <div class="flex flex-col-reverse md:flex-row h-full">
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
+            <Card>
+              <template #title>
+                Departures
+              </template>
+              <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+                Loading...
+              </span>
+              <span v-else-if="!this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+                No upcoming departures at this stop
+              </span>
 
-          <span v-if="!this.stop.Services && !this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
-            No services run at this stop
-          </span>
+              <span v-if="!this.stop.Services && !this.departures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
+                No services run at this stop
+              </span>
 
-          <div class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
-            <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
-              {{ this.pretty.day(departure.Time) }}
-            </div>
-            <div class="flex">
-              <ServiceIcon 
-                class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
-                style="line-height: 44px"
-                :service="departure.Journey.Service"
-                :short="true"
-              />
-              <div class="flex-auto my-auto">
-                <div>
-                  {{ departure.DestinationDisplay }}
+              <div class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
+                <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
+                  {{ this.pretty.day(departure.Time) }}
                 </div>
-                <div class="text-xs">
-                  <router-link :to="{'name': 'operators/view', params: {'id': departure.Journey.Operator.PrimaryIdentifier}}">
-                    {{ departure.Journey.Operator.PrimaryName }}
-                  </router-link>
+                <div class="flex">
+                  <ServiceIcon 
+                    class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
+                    style="line-height: 44px"
+                    :service="departure.Journey.Service"
+                    :short="true"
+                  />
+                  <div class="flex-auto my-auto">
+                    <div>
+                      {{ departure.DestinationDisplay }}
+                    </div>
+                    <div class="text-xs">
+                      <router-link :to="{'name': 'operators/view', params: {'id': departure.Journey.Operator.PrimaryIdentifier}}">
+                        {{ departure.Journey.Operator.PrimaryName }}
+                      </router-link>
+                    </div>
+                  </div>
+                  <div class="my-auto text-right">
+                    <router-link 
+                      :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}" 
+                      v-if="departure.Journey.PrimaryIdentifier !=''"
+                    >
+                      <DepartureTimeView :departure="departure" />
+                    </router-link>
+                    <DepartureTimeView :departure="departure" v-else />
+                  </div>
                 </div>
               </div>
-              <div class="my-auto text-right">
-                <router-link 
-                  :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}" 
-                  v-if="departure.Journey.PrimaryIdentifier !=''"
-                >
-                  <DepartureTimeView :departure="departure" />
-                </router-link>
-                <DepartureTimeView :departure="departure" v-else />
-              </div>
-            </div>
+            </Card>
           </div>
-        </Card>
+          <div class="hidden md:block basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
+            <mapbox-map 
+              accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+              mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
+              style="height: 100%"
+              :zoom="zoom"
+              :center="center"
+            >
+              <mapbox-marker :lngLat="center">
+                <mapbox-popup>
+                  <div>
+                    <p>
+                      <strong>{{ this.stop.PrimaryName }}</strong>
+                    </p>
+                    {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
+                  </div>
+                </mapbox-popup>
+              </mapbox-marker>
+            </mapbox-map>
+          </div>
+        </div>
       </div>
-      <div class="hidden md:block basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
-        <mapbox-map 
-          accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-          mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
-          style="height: 100%"
-          :zoom="zoom"
-          :center="center"
-        >
-          <mapbox-marker :lngLat="center">
-            <mapbox-popup>
-              <div>
-                <p>
-                  <strong>{{ this.stop.PrimaryName }}</strong>
-                </p>
-                {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
-              </div>
-            </mapbox-popup>
-          </mapbox-marker>
-        </mapbox-map>
+
+      <div class="sticky bottom-0 z-50">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-600 p-4">
+          test2
+        </div>
       </div>
     </div>
   </div>
