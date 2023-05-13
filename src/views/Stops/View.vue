@@ -110,13 +110,19 @@
       </div>
 
       <div class="sticky bottom-0 z-50">
-        <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-600 p-4">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-600 p-4 bottom-nav-bar">
           test2
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.bottom-nav-bar {
+  margin-bottom: max(env(safe-area-inset-bottom), 1px)
+}
+</style>
 
 <script>
 import PageTitle from '@/components/PageTitle.vue'
