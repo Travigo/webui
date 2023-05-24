@@ -25,7 +25,7 @@
   </Card>
 
   <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-4 sm:grid-cols-4 mt-2">
-    <Stat-Card title="Buses Currently Tracked" :value="this.stats?.ActiveRealtimeJourneys.Current.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card title="Vehicles Currently Tracked" :value="this.stats?.ActiveRealtimeJourneys.Current.toLocaleString('en', {useGrouping:true})" />
     <Stat-Card class="mt-2 sm:mt-0" title="Stops" :value="this.stats?.Stops.toLocaleString('en', {useGrouping:true})" />
     <Stat-Card class="mt-2 sm:mt-0" title="Services" :value="this.stats?.Services.toLocaleString('en', {useGrouping:true})" />
     <Stat-Card class="mt-2 sm:mt-0" title="Historical Journeys" value="N/A" />

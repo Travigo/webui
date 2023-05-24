@@ -120,7 +120,7 @@
 
 <style scoped>
 .bottom-nav-bar {
-  margin-bottom: max(env(safe-area-inset-bottom), 1px)
+  margin-bottom: max(env(safe-area-inset-bottom), 8px)
 }
 </style>
 
