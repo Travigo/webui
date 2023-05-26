@@ -109,11 +109,11 @@
         </div>
       </div>
 
-      <div class="sticky bottom-0 z-50">
+      <!-- <div class="sticky bottom-0 z-50">
         <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-600 p-4 bottom-nav-bar">
           test2
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
