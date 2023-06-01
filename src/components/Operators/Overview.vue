@@ -45,7 +45,7 @@
       </router-link>
     </div>
 
-    <div v-if="this.operator.OtherNames.length > 0" class="mt-4">
+    <div v-if="this.operator.OtherNames?.length > 0" class="mt-4">
       <span class="font-bold">Also know as:</span>
 
       <ul class="list-disc">

@@ -184,7 +184,7 @@
           <mapbox-marker 
             :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
             :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
-            v-if="this.journey.RealtimeJourney"
+            v-if="this.journey.RealtimeJourney && this.journey.RealtimeJourney.VehicleLocation.coordinates.length == 2"
           >
             <template v-slot:icon>
               <img src="/icons/bus-svgrepo-com-32x32.png">
