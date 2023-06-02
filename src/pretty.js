@@ -1,5 +1,9 @@
 export default {
   time(datetimeString) {
+    if (datetimeString == "0001-01-01T00:00:00Z") {
+      return "--"
+    }
+
     let datetime = new Date(datetimeString)
 
     let hours = this.padToTwo(datetime.getHours())
