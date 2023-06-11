@@ -5,6 +5,7 @@
     <Page-Title>
       <ServiceIcon
         class="ml-2"
+        v-if="journey.Service!==undefined"
         :service="journey.Service" 
       /> {{ journey.DestinationDisplay }}
 

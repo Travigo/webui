@@ -60,6 +60,7 @@
                   <ServiceIcon 
                     class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
                     style="line-height: 44px"
+                    v-if="departure.Journey.Service!==undefined"
                     :service="departure.Journey.Service"
                     :short="departure.Journey.Service.BrandDisplayMode=='short'"
                   />
