@@ -18,6 +18,10 @@
     <div class="inline-flex items-center justify-center w-1 h-1 text-xs bg-orange-500 rounded-full">&nbsp;</div>
     Estimated
   </div>
+
+  <div class="text-xs text-gray-800" v-if="departure.Platform">
+    Platform {{ departure.Platform }}
+  </div>
 </template>
 
 <script>

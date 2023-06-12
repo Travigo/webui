@@ -110,9 +110,9 @@
                         text-gray-400
                       "
                     >
-                      <!-- <span v-for="activity in point.activity" v-bind:key="activity" class="text-xs p-1 rounded text-amber-600 bg-amber-200 mr-1 last:mr-0">
-                        {{ activity }}
-                      </span> -->
+                      <span class="text-xs text-gray-500" v-if="point.platform">
+                        Platform {{ point.platform }} (Estimated)
+                      </span>
                     </div>
                   </div>
                   <div class="text-base font-normal text-right">
@@ -340,6 +340,7 @@ export default {
           activity: element.OriginActivity,
           track: track,
           realtime: journey.RealtimeJourney?.Stops[element.OriginStopRef],
+          platform: element.OriginPlatform,
         })
 
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
@@ -349,12 +350,12 @@ export default {
           journeyPoints.push({
             stop: element.DestinationStop,
             arrivalTime: element.DestinationArrivalTime,
-            location: element.OriginStop.Location.coordinates,
+            location: element.DestinationStop.Location.coordinates,
             departureTime: null,
             activity: element.DestinationActivity,
             track: null,
-            realtime:
-              journey.RealtimeJourney?.Stops[element.DestinationStopRef],
+            realtime: journey.RealtimeJourney?.Stops[element.DestinationStopRef],
+            platform: element.DestinationPlatform
           })
         }
       }
