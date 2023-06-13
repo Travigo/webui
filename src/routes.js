@@ -103,12 +103,20 @@ export const routes = [
     component: () => import('./views/Statistics/Home.vue')
   },
   {
-    name: 'journeyplanner',
+    name: 'journeyplanner/home',
     path: '/planner',
     meta: { 
       title: 'Planner'
     },
     component: () => import('./views/Planner/Home.vue')
+  },
+  {
+    name: 'journeyplanner/search',
+    path: '/planner/search',
+    meta: { 
+      title: 'Planner'
+    },
+    component: () => import('./views/Planner/Search.vue')
   },
 
   { path: '/:path(.*)', component: NotFound },

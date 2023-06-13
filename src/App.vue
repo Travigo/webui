@@ -15,7 +15,7 @@ export default {
           },
           {
             name: 'Journey Planner',
-            route: { name: 'journeyplanner' }
+            route: { name: 'journeyplanner/home' }
           },
           {
             name: 'Operators',
