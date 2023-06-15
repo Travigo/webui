@@ -25,7 +25,7 @@
                   <div class="text-xs font-light">Scheduled</div>
                 </div>
 
-                <div class="inline-block">
+                <div class="inline-block text-center w-[7rem]">
                 ->  
                 </div>
 
@@ -47,7 +47,7 @@
               </div>
             </div>
             <div class="text-xs">
-               to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
+              {{ journeyPlan.RouteItems[0].Journey.TransportType }} to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
             </div>
             <div class="text-xs">
               <span v-if="journeyPlan.RouteItems.length==1">Direct</span>
