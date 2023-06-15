@@ -47,7 +47,7 @@
               </div>
             </div>
             <div class="text-xs">
-              {{ journeyPlan.RouteItems[0].Journey.TransportType }} to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
+              {{ journeyPlan.RouteItems[0].Journey.Service.TransportType }} to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
             </div>
             <div class="text-xs">
               <span v-if="journeyPlan.RouteItems.length==1">Direct</span>
