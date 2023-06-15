@@ -3,6 +3,11 @@
     <PageTitle>
       Search Results
     </PageTitle>
+    <div class="text-gray-900 dark:text-gray-200">
+      <span class="font-black">{{ this.results.OriginStop.PrimaryName }}</span>
+       -> 
+      <span class="font-black">{{ this.results.DestinationStop.PrimaryName }}</span>
+    </div>
     <Card>
       <span 
         v-if="this.loadingResults"
@@ -10,7 +15,7 @@
       >
         Loading Results
       </span>
-      <div class="mb-4 last:mb-0 " v-for="(journeyPlan, index) in this.journeyPlans" v-bind:key="index">
+      <div class="mb-4 last:mb-0 " v-for="(journeyPlan, index) in this.results.JourneyPlans" v-bind:key="index">
         <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
           {{ this.pretty.day(journeyPlan.StartTime) }}
         </div>
@@ -18,18 +23,18 @@
           <div class="flex-auto my-auto">
             <div class="flex">
               <div>
-                <div class="inline-block w-[5rem] text-center">
+                <div class="inline-block w-[4rem] text-center">
                   <div class="text-xl font-black">
                     {{ this.pretty.time(journeyPlan.StartTime) }}
                   </div>
                   <div class="text-xs font-light">Scheduled</div>
                 </div>
 
-                <div class="inline-block text-center w-[7rem]">
+                <div class="inline-block text-center w-[9rem]">
                 ->  
                 </div>
 
-                <div class="inline-block w-[5rem] text-center">
+                <div class="inline-block w-[4rem] text-center">
                   <div class="text-xl font-black">
                     {{ this.pretty.time(journeyPlan.ArrivalTime) }}
                   </div>
@@ -46,7 +51,7 @@
                 </div>
               </div>
             </div>
-            <div class="text-xs">
+            <div class="text-xs mt-2">
               {{ journeyPlan.RouteItems[0].Journey.Service.TransportType }} to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
             </div>
             <div class="text-xs">
@@ -79,7 +84,7 @@ export default {
   data () {
     return {
       pretty: Pretty,
-      journeyPlans: [],
+      results: [],
       loadingResults: true,
       earliestArrivalJourneyID: 0
     }
@@ -89,11 +94,11 @@ export default {
       axios
         .get(`${API.URL}/core/planner/${this.$route.query.origin}/${this.$route.query.destination}`)
         .then(response => {
-          this.journeyPlans = response.data
+          this.results = response.data
 
           let earliestTime = undefined
-          for (let index = 0; index < this.journeyPlans.length; index++) {
-            const element = this.journeyPlans[index]
+          for (let index = 0; index < this.results.JourneyPlans.length; index++) {
+            const element = this.results.JourneyPlans[index]
             let datetime = new Date(element.ArrivalTime)
             
             if ((earliestTime === undefined) || (datetime < earliestTime)) {
@@ -116,10 +121,10 @@ export default {
       if (index == 0) {
         comparisonDateTime = new Date(Date.now())
       } else {
-        comparisonDateTime = new Date(Date.parse(this.journeyPlans[index-1].StartTime))
+        comparisonDateTime = new Date(Date.parse(this.results.JourneyPlans[index-1].StartTime))
       }
 
-      let currentDateTime = new Date(Date.parse(this.journeyPlans[index].StartTime))
+      let currentDateTime = new Date(Date.parse(this.results.JourneyPlans[index].StartTime))
 
       return comparisonDateTime.getDate() != currentDateTime.getDate()
     }
