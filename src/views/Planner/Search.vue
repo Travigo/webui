@@ -4,9 +4,9 @@
       Search Results
     </PageTitle>
     <div class="text-gray-900 dark:text-gray-200">
-      <span class="font-black">{{ this.results.OriginStop.PrimaryName }}</span>
+      <span class="font-black">{{ this.results.OriginStop?.PrimaryName }}</span>
        -> 
-      <span class="font-black">{{ this.results.DestinationStop.PrimaryName }}</span>
+      <span class="font-black">{{ this.results.DestinationStop?.PrimaryName }}</span>
     </div>
     <Card>
       <span 

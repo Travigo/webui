@@ -3,6 +3,7 @@
 <!-- Created with Vectornator (http://vectornator.io/) -->
 <svg height="100%" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 1024 1024" width="100%" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:vectornator="http://vectornator.io" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs/>
+<path d="M0 0L1024 0L1024 1024L0 1024L0 0Z" fill="#ffffff" fill-rule="nonzero" opacity="1" stroke="none"/>
 <g id="Layer-1" vectornator:layerName="Layer 1">
 <g fill="#eb6ea5" opacity="1" stroke="none">
 <path d="M312.83 207.872L312.83 242.051L216.15 242.051L216.15 494.786L176.697 494.786L176.697 242.051L80.0171 242.051L80.0171 207.872L312.83 207.872Z"/>
