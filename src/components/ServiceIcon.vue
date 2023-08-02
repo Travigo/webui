@@ -10,7 +10,12 @@
         :src="service.BrandIcon"
         :class="{'mr-1': !short, 'h-5': !short, 'w-5': !short, 'h-7': short, 'w-7': short}"
       />
-      <span v-if="(service.ServiceName != '' && !short) || (service.BrandIcon == '' && short)">{{ service.ServiceName }}</span>
+      <span
+        class="w-full"
+        v-if="(service.ServiceName != '' && !short) || (service.BrandIcon == '' && short)"
+      >
+        {{ service.ServiceName }}
+      </span>
     </div>
   </div>
 </template>
