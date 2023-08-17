@@ -11,7 +11,7 @@
 
       <p
         class="text-sm font-medium text-gray-500"
-        v-if="journey.RealtimeJourney"
+        v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked"
       >
         <span
           v-if="journey.RealtimeJourney"
