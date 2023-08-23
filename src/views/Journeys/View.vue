@@ -339,7 +339,7 @@ export default {
           departureTime: element.OriginDepartureTime,
           activity: element.OriginActivity,
           track: track,
-          realtime: journey.RealtimeJourney?.Stops[element.OriginStopRef],
+          realtime: journey.RealtimeJourney?.Stops?[element.OriginStopRef],
           platform: element.OriginPlatform,
         })
 
@@ -354,7 +354,7 @@ export default {
             departureTime: null,
             activity: element.DestinationActivity,
             track: null,
-            realtime: journey.RealtimeJourney?.Stops[element.DestinationStopRef],
+            realtime: journey.RealtimeJourney?.Stops?[element.DestinationStopRef],
             platform: element.DestinationPlatform
           })
         }
