@@ -45,6 +45,9 @@
           Low Accuracy
         </span>
         Last location update at {{ this.pretty.time(journey.RealtimeJourney.ModificationDateTime) }}
+        <span v-if="journey.RealtimeJourney.VehicleLocationDescription">
+          | {{ journey.RealtimeJourney.VehicleLocationDescription }}
+        </span>
       </p>
     </Page-Title>
     <div class="md:hidden">
