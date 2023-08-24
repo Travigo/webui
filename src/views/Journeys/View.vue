@@ -46,7 +46,7 @@
         </span>
         Last location update at {{ this.pretty.time(journey.RealtimeJourney.ModificationDateTime) }}
         <span v-if="journey.RealtimeJourney.VehicleLocationDescription">
-          | {{ journey.RealtimeJourney.VehicleLocationDescription }}
+          &#x2022; {{ journey.RealtimeJourney.VehicleLocationDescription }}
         </span>
       </p>
     </Page-Title>
