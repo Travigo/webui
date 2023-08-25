@@ -50,6 +50,12 @@
         </span>
       </p>
     </Page-Title>
+
+    <Alert type="warning" v-if="journey?.RealtimeJourney?.Annotations?.['LateReasonText'] != ''">
+      <strong>Journey Delay</strong><br/>
+      {{ journey.RealtimeJourney.Annotation['LateReasonText'] }}
+    </Alert>
+
     <div class="md:hidden">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
