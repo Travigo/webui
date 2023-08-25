@@ -122,7 +122,8 @@
                     <p
                       v-if="
                         point.realtime &&
-                        point.arrivalTime !== point.realtime.ArrivalTime
+                        point.arrivalTime !== point.realtime.ArrivalTime &&
+                        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
                       "
                     >
                       <span class="text-xs line-through">
@@ -152,7 +153,34 @@
                         point.departureTime != null
                       "
                     >
-                      Departs {{ this.pretty.time(point.departureTime) }}
+                      <span
+                        v-if="
+                          point.realtime &&
+                          point.departureTime !== point.realtime.DepartureTime &&
+                          point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
+                        "
+                      >
+                        Departs 
+                        <span class="text-xs line-through">
+                          {{ this.pretty.time(point.departureTime) }}
+                        </span>
+                        <span class="text-red-500">
+                          {{ this.pretty.time(point.realtime.DepartureTime) }}
+                        </span>
+                      </span>
+                      <span
+                        v-else-if="
+                          point.realtime &&
+                          point.departureTime === point.realtime.DepartureTime
+                        "
+                      >
+                        <span class="text-green-700">
+                          Departs {{ this.pretty.time(point.departureTime) }}
+                        </span>
+                      </span>
+                      <span v-else>
+                        Departs {{ this.pretty.time(point.departureTime) }}
+                      </span>
                     </p>
                   </div>
                 </div>
