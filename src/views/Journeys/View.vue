@@ -53,7 +53,7 @@
 
     <Alert type="warning" v-if="journey?.RealtimeJourney?.Annotations?.['LateReasonText'] != ''">
       <strong>Journey Delay</strong><br/>
-      {{ journey.RealtimeJourney.Annotation['LateReasonText'] }}
+      {{ journey.RealtimeJourney.Annotations['LateReasonText'] }}
     </Alert>
 
     <div class="md:hidden">
