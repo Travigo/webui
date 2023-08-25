@@ -51,14 +51,20 @@
       </p>
     </Page-Title>
 
-    <Alert type="warning" v-if="journey?.RealtimeJourney?.Annotations?.['LateReasonText'] != ''">
-      <strong>Journey Delay</strong><br/>
-      {{ journey.RealtimeJourney.Annotations['LateReasonText'] }}
-    </Alert>
-
     <Alert type="error" v-if="journey?.RealtimeJourney?.Cancelled">
       <strong>Journey Cancelled</strong><br/>
       {{ journey.RealtimeJourney.Annotations['CancelledReasonText'] }}
+    </Alert>
+
+    <Alert 
+      type="warning"
+      v-if="
+        journey?.RealtimeJourney?.Annotations?.['LateReasonText'] != '' && 
+        (journey?.RealtimeJourney?.Annotations?.['LateReasonID'] !== journey?.RealtimeJourney?.Annotations?.['CancelledReasonID'])
+      "
+    >
+      <strong>Journey Delay</strong><br/>
+      {{ journey.RealtimeJourney.Annotations['LateReasonText'] }}
     </Alert>
 
     <div class="md:hidden">
