@@ -114,7 +114,7 @@
                       "
                     >
                       <span class="text-xs text-gray-500" v-if="point.platform">
-                        Platform {{ point.platform }} (Estimated)
+                        Platform {{ point.platform }} <span v-if="point.platformType != 'ACTUAL'">(Estimated)</span>
                       </span>
                     </div>
                   </div>
@@ -335,6 +335,14 @@ export default {
           ],
         }
 
+        let platform = element.OriginPlatform
+        let platformType = 'ESTIMATED'
+
+        if (journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform != "") {
+          platform = journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform
+          platformType = 'ACTUAL'
+        }
+
         journeyPoints.push({
           stop: element.OriginStop,
           location: element.OriginStop.Location.coordinates,
@@ -343,13 +351,21 @@ export default {
           activity: element.OriginActivity,
           track: track,
           realtime: journey.RealtimeJourney?.Stops?.[element.OriginStopRef],
-          platform: element.OriginPlatform,
+          platform: platform,
+          platformType: platformType,
         })
 
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
 
         // if last one in list then append the destination stop
         if (index == journey.Path.length - 1) {
+          let platform = element.DestinationPlatform
+          let platformType = 'ESTIMATED'
+
+          if (journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform != "") {
+            platform = journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform
+            platformType = 'ACTUAL'
+          }
           journeyPoints.push({
             stop: element.DestinationStop,
             arrivalTime: element.DestinationArrivalTime,
@@ -358,7 +374,8 @@ export default {
             activity: element.DestinationActivity,
             track: null,
             realtime: journey.RealtimeJourney?.Stops?.[element.DestinationStopRef],
-            platform: element.DestinationPlatform
+            platform: platform,
+            platformType: platformType,
           })
         }
       }
