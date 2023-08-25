@@ -18,8 +18,7 @@
     <div class="inline-flex items-center justify-center w-1 h-1 text-xs bg-orange-500 rounded-full">&nbsp;</div>
     Estimated
   </div>
-  <div class="text-xs text-red-500" v-else-if="departure.Type == 'Cancelled'">
-    <div class="inline-flex items-center justify-center w-1 h-1 text-xs bg-red-500 rounded-full">&nbsp;</div>
+  <div class="text-xs px-2 rounded text-red-600 bg-red-200" v-else-if="departure.Type == 'Cancelled'">
     CANCELLED
   </div>
 
