@@ -56,6 +56,11 @@
       {{ journey.RealtimeJourney.Annotations['LateReasonText'] }}
     </Alert>
 
+    <Alert type="error" v-if="journey?.RealtimeJourney?.Cancelled">
+      <strong>Journey Cancelled</strong><br/>
+      {{ journey.RealtimeJourney.Annotations['CancelledReasonText'] }}
+    </Alert>
+
     <div class="md:hidden">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
