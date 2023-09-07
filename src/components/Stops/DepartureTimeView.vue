@@ -22,7 +22,7 @@
     CANCELLED
   </div>
 
-  <div class="text-xs text-gray-800" v-if="departure.Platform">
+  <div class="text-xs text-gray-800" v-if="departure.Platform && departure.Type != 'Cancelled'">
     Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
   </div>
 </template>
