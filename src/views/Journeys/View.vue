@@ -425,7 +425,7 @@ export default {
         }
       }
 
-      let activeStop = journey.RealtimeJourney == undefined
+      let activeStop = journey.RealtimeJourney == undefined || journey.RealtimeJourney?.NextStopRef == ""
 
       if (!activeStop) {
         this.hasHiddenStops = true
