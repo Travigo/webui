@@ -8,28 +8,28 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.5.0",
     "leaflet.markercluster": "^1.5.3",
-    "sass": "^1.64.2",
+    "sass": "^1.68.0",
     "sass-loader": "^13.3.2",
     "vue": "^3.3.4",
     "vue-gtag": "^2.0.1",
     "vue-mapbox-ts": "travigo/vue-mapbox-ts#d43954b1f56bc72356e62c21561afdd9e83824b3",
-    "vue-router": "^4.2.4"
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@headlessui/vue": "^1.7.15",
+    "@headlessui/vue": "^1.7.16",
     "@heroicons/vue": "^2.0.18",
     "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@tailwindcss/forms": "^0.5.4",
+    "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/typography": "^0.5.9",
+    "@tailwindcss/typography": "^0.5.10",
     "@types/tailwindcss": "^3.0.11",
-    "@vitejs/plugin-vue": "^4.2.3",
+    "@vitejs/plugin-vue": "^4.3.4",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
-    "autoprefixer": "^10.4.14",
+    "autoprefixer": "^10.4.16",
     "tailwindcss": "^3.3.3",
-    "vite": "^4.4.8",
-    "vite-plugin-pwa": "^0.16.4"
+    "vite": "^4.4.9",
+    "vite-plugin-pwa": "^0.16.5"
   }
 }
