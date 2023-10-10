@@ -35,6 +35,13 @@
           </Alert>
         </div>
 
+        <div class="service-alerts">
+          <Alert type="warning" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id">
+            <strong>{{ serviceAlert.AlertType }}</strong><br/>
+            {{ serviceAlert.Text }}
+          </Alert>
+        </div>
+
         <div class="flex flex-col-reverse md:flex-row h-full">
           <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
             <Card>
@@ -148,13 +155,16 @@ export default {
 
       operatorStats: undefined,
 
+      serviceAlerts: [],
+
       error: undefined,
 
       zoom: 13,
       center: [0.1356, 52.2065],
       currentZoom: 11.5,
 
-      refreshTimer: null
+      refreshTimer: null,
+      serviceAlertsRefreshTimer: null
     }
   },
   components: {
@@ -198,6 +208,17 @@ export default {
         })
         .finally(() => this.loadingDepartures = false)
     },
+    getServiceAlerts() {
+      axios
+        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id}`)
+        .then(response => {
+          this.serviceAlerts = response.data
+        })
+        .catch(error => {
+          console.log(error)
+          // this.error = error
+        })
+    },
     getOperatorStats() {
       console.log("Get operator stats")
 
@@ -233,6 +254,7 @@ export default {
     getData() {
       this.getStop()
       this.getDepartures()
+      this.getServiceAlerts()
     },
     departureDayChange(index) {
       let comparisonDateTime;
@@ -250,12 +272,13 @@ export default {
     }
   },
   mounted () {
-    console.log(this.$route.query.datetime)
     this.getData()
     this.refreshTimer = setInterval(this.getDepartures, 30000)
+    this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
   },
   beforeRouteLeave() {  
     clearInterval(this.refreshTimer)
+    clearInterval(this.serviceAlertsRefreshTimer)
   }, 
 }
 </script>
