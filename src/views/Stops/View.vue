@@ -36,10 +36,7 @@
         </div>
 
         <div class="service-alerts">
-          <Alert type="warning" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id">
-            <strong>{{ serviceAlert.AlertType }}</strong><br/>
-            {{ serviceAlert.Text }}
-          </Alert>
+          <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
         </div>
 
         <div class="flex flex-col-reverse md:flex-row h-full">
@@ -136,6 +133,7 @@
 import PageTitle from '@/components/PageTitle.vue'
 import Card from '@/components/Card.vue'
 import ServiceIcon from '@/components/ServiceIcon.vue'
+import ServiceAlert from '@/components/ServiceAlert.vue'
 import Alert from '@/components/Alert.vue'
 import DepartureTimeView from '@/components/Stops/DepartureTimeView.vue'
 import axios from 'axios'
@@ -171,6 +169,7 @@ export default {
     PageTitle,
     Card,
     ServiceIcon,
+    ServiceAlert,
     Alert,
     DepartureTimeView,
   },
@@ -210,7 +209,7 @@ export default {
     },
     getServiceAlerts() {
       axios
-        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id}`)
+        .get(`${API.URL}/core/service_alerts/stop/${this.$route.params.id}`)
         .then(response => {
           this.serviceAlerts = response.data
         })
