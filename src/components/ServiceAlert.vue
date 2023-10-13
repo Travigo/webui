@@ -1,6 +1,8 @@
 <template>
   <Alert :type="this.styles[alert.AlertType]['alertType']">
-    <strong>{{ this.styles[alert.AlertType]['title'] }}</strong><br/>
+    <strong v-if="alert.Title != ''">{{ alert.Title }}</strong>
+    <strong v-else>{{ this.styles[alert.AlertType]['title'] }}</strong>
+    <br/>
     {{ alert.Text }}
   </Alert>
 </template>
