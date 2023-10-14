@@ -1,56 +1,61 @@
 <script>
+import UserOrLogin from '@/components/UserOrLogin.vue'
+
 export default {
-    name: 'App',
-    computed: {
-      isDev() { return process.env.NODE_ENV === 'development' },
-      isFullscreen() { return this.$route.meta.fullscreen === true }
-    },
-    data () {
-      return {
-        hamburgerMenuOpen: false,
-        navItems: [
-          {
-            name: 'Map',
-            route: { name: 'map' }
-          },
-          {
-            name: 'Journey Planner',
-            route: { name: 'journeyplanner/home' }
-          },
-          {
-            name: 'Operators',
-            route: { name: 'operators/home' }
-          },
-          {
-            name: 'Timetables',
-            route: { name: 'timetables/home' }
-          },
-          {
-            name: 'Statistics',
-            route: { name: 'statistics/home' }
-          }
-        ]
-      }
-    },
-    methods: {
-      hamburgerMenuToggle() {
-        this.hamburgerMenuOpen = !this.hamburgerMenuOpen;
-      }
-    },
-    watch: {
-      $route: {
-        immediate: true,
-        handler(to, from) {
-          this.hamburgerMenuOpen = false
-          if (to.meta.title === undefined) {
-            document.title = 'Travigo';
-          } else {
-            document.title = 'Travigo / ' + to.meta.title;
-          }
+  name: 'App',
+  components: {
+    UserOrLogin
+  },
+  computed: {
+    isDev() { return process.env.NODE_ENV === 'development' },
+    isFullscreen() { return this.$route.meta.fullscreen === true }
+  },
+  data () {
+    return {
+      hamburgerMenuOpen: false,
+      navItems: [
+        {
+          name: 'Map',
+          route: { name: 'map' }
+        },
+        {
+          name: 'Journey Planner',
+          route: { name: 'journeyplanner/home' }
+        },
+        {
+          name: 'Operators',
+          route: { name: 'operators/home' }
+        },
+        {
+          name: 'Timetables',
+          route: { name: 'timetables/home' }
+        },
+        {
+          name: 'Statistics',
+          route: { name: 'statistics/home' }
         }
-      },
+      ]
     }
-};
+  },
+  methods: {
+    hamburgerMenuToggle() {
+      this.hamburgerMenuOpen = !this.hamburgerMenuOpen
+    }
+  },
+  watch: {
+    $route: {
+      immediate: true,
+      handler(to, from) {
+        this.hamburgerMenuOpen = false
+        if (to.meta.title === undefined) {
+          document.title = 'Travigo'
+        } else {
+          document.title = 'Travigo / ' + to.meta.title
+        }
+      }
+    },
+  }
+}
 </script>
 
 <template>
@@ -102,6 +107,10 @@ export default {
               </div>
             </div>
           </div>
+
+          <div class="hidden sm:block sm:ml-6">
+            <UserOrLogin />
+          </div>
         </div>
       </div>
     
@@ -116,6 +125,8 @@ export default {
           >
             {{ navItem.name }}
           </router-link>
+
+          <UserOrLogin />
         </div>
       </div>
     </nav>
