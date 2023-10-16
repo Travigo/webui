@@ -10,6 +10,7 @@
   "dependencies": {
     "@auth0/auth0-vue": "^2.3.1",
     "axios": "^1.5.1",
+    "firebase": "^10.5.0",
     "leaflet.markercluster": "^1.5.3",
     "sass": "^1.69.3",
     "sass-loader": "^13.3.2",

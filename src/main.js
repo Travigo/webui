@@ -47,3 +47,38 @@ const updateServiceWorker = useRegisterSW({
     }, intervalMS)
   }
 })
+
+// Firebase setup
+import { initializeApp } from "firebase/app"
+import { getMessaging, getToken } from "firebase/messaging";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAKk3Q9o38bKB5pQUGt0r8OL0KoXMpCre4",
+  authDomain: "travigo-cdd36.firebaseapp.com",
+  projectId: "travigo-cdd36",
+  storageBucket: "travigo-cdd36.appspot.com",
+  messagingSenderId: "190413192330",
+  appId: "1:190413192330:web:15315e66725a50ed834173",
+  measurementId: "G-3L94RGJK7N"
+}
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig)
+const messaging = getMessaging(firebaseApp)
+getToken(messaging, {vapidKey: "BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2"}).then((currentToken) => {
+  if (currentToken) {
+    console.log(currentToken)
+  } else {
+    // Show permission request UI
+    console.log('No registration token available. Request permission to generate one.');
+    // ...
+  }
+}).catch((err) => {
+  console.log('An error occurred while retrieving token. ', err);
+  // ...
+})
+
