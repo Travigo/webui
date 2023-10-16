@@ -15,12 +15,12 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig)
-const messaging = firebase.getMessaging(app)
+const messaging = firebase.messaging().getMessaging(app)
 
 function resetUI() {
   // Get registration token. Initially this makes a network call, once retrieved
   // subsequent calls to getToken will return from cache.
-  firebase.getToken(messaging, {vapidKey: 'BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2'}).then((currentToken) => {
+  firebase.messaging().getToken(messaging, {vapidKey: 'BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2'}).then((currentToken) => {
     if (currentToken) {
       // sendTokenToServer(currentToken);
       // updateUIForPushEnabled(currentToken);
