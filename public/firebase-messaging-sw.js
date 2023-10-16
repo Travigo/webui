@@ -15,7 +15,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig)
-const messaging = firebase.messaging().getMessaging(app)
 
 function resetUI() {
   // Get registration token. Initially this makes a network call, once retrieved
