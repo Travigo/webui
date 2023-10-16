@@ -118,6 +118,14 @@ export const routes = [
     },
     component: () => import('./views/Planner/Search.vue')
   },
+  {
+    name: 'account/home',
+    path: '/account',
+    meta: { 
+      title: 'Account'
+    },
+    component: () => import('./views/Account/Home.vue')
+  },
 
   { path: '/:path(.*)', component: NotFound },
 ]

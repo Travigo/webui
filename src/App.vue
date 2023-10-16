@@ -33,6 +33,10 @@ export default {
         {
           name: 'Statistics',
           route: { name: 'statistics/home' }
+        },
+        {
+          name: 'Account',
+          route: { name: 'account/home' }
         }
       ]
     }

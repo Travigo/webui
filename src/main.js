@@ -70,28 +70,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig)
 const messaging = getMessaging(firebaseApp)
 
-function resetUI() {
-  // Get registration token. Initially this makes a network call, once retrieved
-  // subsequent calls to getToken will return from cache.
-  getToken(messaging, {vapidKey: 'BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2aPxP1S5E'}).then((currentToken) => {
-    if (currentToken) {
-      console.log('push token', currentToken)
-      // sendTokenToServer(currentToken);
-      // updateUIForPushEnabled(currentToken);
-    } else {
-      // Show permission request.
-      console.log('No registration token available. Request permission to generate one.');
-      // Show permission UI.
-      requestPermission();
-      // setTokenSentToServer(false);
-    }
-  }).catch((err) => {
-    console.log('An error occurred while retrieving token. ', err)
-    // setTokenSentToServer(false);
-  });
-}
-
-resetUI()
+app.config.globalProperties.$messaging = messaging
 
 function requestPermission() {
   console.log('Requesting permission...');
