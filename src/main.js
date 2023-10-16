@@ -73,8 +73,9 @@ const messaging = getMessaging(firebaseApp)
 function resetUI() {
   // Get registration token. Initially this makes a network call, once retrieved
   // subsequent calls to getToken will return from cache.
-  getToken(messaging, {vapidKey: 'BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2'}).then((currentToken) => {
+  getToken(messaging, {vapidKey: 'BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2aPxP1S5E'}).then((currentToken) => {
     if (currentToken) {
+      console.log('push token', currentToken)
       // sendTokenToServer(currentToken);
       // updateUIForPushEnabled(currentToken);
     } else {
