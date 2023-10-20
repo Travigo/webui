@@ -40,9 +40,24 @@ export default {
           'title': 'Service Suspended',
           'icon': ''
         },
-        'Disruption': {
+        'ServicePartSuspended': {
+          'alertType': 'error',
+          'title': 'Service Part Suspended',
+          'icon': ''
+        },
+        'SevereDelays': {
+          'alertType': 'error',
+          'title': 'Severe Delays',
+          'icon': ''
+        },
+        'Delays': {
           'alertType': 'warning',
-          'title': 'Disruption',
+          'title': 'Delays',
+          'icon': ''
+        },
+        'MinorDelays': {
+          'alertType': 'warning',
+          'title': 'Minor Delays',
           'icon': ''
         },
         'Planned': {
