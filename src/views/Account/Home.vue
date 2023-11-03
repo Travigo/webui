@@ -11,6 +11,7 @@
       >
         Setup Notifications
       </button>
+      <p>{{ token }}</p>
     </Card>
   </div>
 </template>
@@ -26,6 +27,11 @@ export default {
     Card,
     PageTitle,
   },
+  data() {
+    return {
+      token: 'Click button',
+    }
+  },
   methods: {
     setupNotifications() {
       // Get registration token. Initially this makes a network call, once retrieved
@@ -33,6 +39,7 @@ export default {
       getToken(this.$messaging, {vapidKey: 'BLbDyMEaWm3gNuSdan4mGyihI-R5vEUB-ANqH5pp8AczAOWSt7mVamXD4CiRREXV0Xh0qlPKa7jVyv2aPxP1S5E'}).then((currentToken) => {
         if (currentToken) {
           console.log('push token', currentToken)
+          this.token = currentToken
           // sendTokenToServer(currentToken);
           // updateUIForPushEnabled(currentToken);
         } else {
