@@ -64,7 +64,17 @@ export default {
           'alertType': 'info',
           'title': 'Planned Notice',
           'icon': ''
-        }
+        },
+        'JourneyDelayed': {
+          'alertType': 'warning',
+          'title': 'Journey Delayed',
+          'icon': ''
+        },
+        'JourneyCancelled': {
+          'alertType': 'error',
+          'title': 'Journey Cancelled',
+          'icon': ''
+        },
       }
     }
   }

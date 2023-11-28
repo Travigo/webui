@@ -67,6 +67,10 @@
       {{ journey.RealtimeJourney.Annotations['LateReasonText'] }}
     </Alert>
 
+    <div class="service-alerts">
+      <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
+    </div>
+
     <div class="md:hidden">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
@@ -251,6 +255,7 @@ import Card from "@/components/Card.vue"
 import NavTabBar from "@/components/NavTabBar.vue"
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import Alert from "@/components/Alert.vue"
+import ServiceAlert from '@/components/ServiceAlert.vue'
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
@@ -260,6 +265,8 @@ export default {
     return {
       journey: null,
       journeyPoints: null,
+
+      serviceAlerts: [],
 
       loading: true,
       error: undefined,
@@ -273,6 +280,7 @@ export default {
       bounds: undefined,
 
       refreshTimer: null,
+      serviceAlertsRefreshTimer: null,
 
       expandInactiveStops: false,
       hasHiddenStops: false,
@@ -295,7 +303,8 @@ export default {
     Card,
     NavTabBar,
     Alert,
-    ServiceIcon
+    ServiceIcon,
+    ServiceAlert
   },
   methods: {
     mapLoaded(map) {
@@ -337,6 +346,10 @@ export default {
         
         this.mapboxObject.fitBounds(this.bounds)
       }
+    },
+    getData() {
+      this.getJourney()
+      this.getServiceAlerts()
     },
     getJourney() {
       axios
@@ -446,6 +459,17 @@ export default {
 
       return journeyPoints
     },
+    getServiceAlerts() {
+      axios
+        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id}`)
+        .then(response => {
+          this.serviceAlerts = response.data
+        })
+        .catch(error => {
+          console.log(error)
+          // this.error = error
+        })
+    },
     changeTab(newTab) {
       this.currentTab = newTab
     },
@@ -457,11 +481,13 @@ export default {
     },
   },
   mounted() {
-    this.getJourney();
+    this.getData();
     this.refreshTimer = setInterval(this.getJourney, 30000)
+    this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
   },
   beforeRouteLeave() {
     clearInterval(this.refreshTimer)
+    clearInterval(this.serviceAlertsRefreshTimer)
   },
 };
 </script>
