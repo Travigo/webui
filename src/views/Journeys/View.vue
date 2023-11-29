@@ -460,8 +460,15 @@ export default {
       return journeyPoints
     },
     getServiceAlerts() {
+      // TODO get correct date - this might be wrong when looking at future journey or on journeys that span 2 days
+      let yourDate = new Date()
+      const offset = yourDate.getTimezoneOffset()
+      yourDate = new Date(yourDate.getTime() - (offset*60*1000))
+      let journeyRunDate = yourDate.toISOString().split('T')[0]
+
+      let dayinstanceof = 'DAYINSTANCEOF:' + journeyRunDate + ':' + this.$route.params.id
       axios
-        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id}`)
+        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id},${dayinstanceof}`)
         .then(response => {
           this.serviceAlerts = response.data
         })
