@@ -18,8 +18,8 @@
       </h1>
 
       <ul class="list-disc pl-5">
-        <li>You can explore the <b>Map</b> using the navigation menu above, select a bus stop and view upcoming scheduled buses &amp; realtime tracked buses with accurate estimated arrivals</li>
-        <li>Visit <b>Operators</b> for a list of all bus operators in your region.</li>
+        <li>You can explore the <b>Map</b> using the navigation menu above, select a bus stop and view upcoming scheduled journeys &amp; realtime tracked journeys with accurate estimated arrivals</li>
+        <li>Visit <b>Operators</b> for a list of all transport operators in your region.</li>
       </ul>
     </div>
   </Card>

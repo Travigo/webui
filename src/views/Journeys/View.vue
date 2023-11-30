@@ -127,64 +127,65 @@
                     <p
                       v-if="
                         point.realtime &&
-                        point.arrivalTime !== point.realtime.ArrivalTime &&
-                        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
+                        point.departureTime !== point.realtime.DepartureTime &&
+                        point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
                       "
                     >
                       <span class="text-xs line-through">
-                        {{ this.pretty.time(point.arrivalTime) }}
+                        {{ this.pretty.time(point.departureTime) }}
                       </span>
                       <span class="text-red-500">
-                        {{ this.pretty.time(point.realtime.ArrivalTime) }}
+                        {{ this.pretty.time(point.realtime.DepartureTime) }}
                       </span>
                     </p>
                     <p
                       v-else-if="
                         point.realtime &&
-                        point.arrivalTime === point.realtime.ArrivalTime
+                        point.departureTime === point.realtime.DepartureTime
                       "
                     >
                       <span class="text-green-700">
-                        {{ this.pretty.time(point.arrivalTime) }}
+                        {{ this.pretty.time(point.departureTime) }}
                       </span>
                     </p>
                     <p v-else>
-                      {{ this.pretty.time(point.arrivalTime) }}
+                      {{ this.pretty.time(point.departureTime) }}
                     </p>
+                    <!-- SWAPPY SWAPPY -->
                     <p
                       class="text-xs"
                       v-if="
                         point.arrivalTime != point.departureTime &&
-                        point.departureTime != null
+                        point.arrivalTime != null
                       "
                     >
                       <span
                         v-if="
                           point.realtime &&
-                          point.departureTime !== point.realtime.DepartureTime &&
-                          point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
+                          point.arrivalTime !== point.realtime.ArrivalTime &&
+                          point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
                         "
                       >
-                        Departs 
+                        Arrives
                         <span class="text-xs line-through">
-                          {{ this.pretty.time(point.departureTime) }}
+                          {{ this.pretty.time(point.arrivalTime) }}
                         </span>
                         <span class="text-red-500">
-                          {{ this.pretty.time(point.realtime.DepartureTime) }}
+                          {{ this.pretty.time(point.realtime.ArrivalTime) }}
                         </span>
                       </span>
                       <span
                         v-else-if="
                           point.realtime &&
-                          point.departureTime === point.realtime.DepartureTime
+                          point.arrivalTime === point.realtime.ArrivalTime
                         "
                       >
                         <span class="text-green-700">
-                          Departs {{ this.pretty.time(point.departureTime) }}
+                          Arrives {{ this.pretty.time(point.arrivalTime) }}
                         </span>
                       </span>
                       <span v-else>
-                        Departs {{ this.pretty.time(point.departureTime) }}
+                        Arrives {{ this.pretty.time(point.arrivalTime) }}
                       </span>
                     </p>
                   </div>
@@ -342,6 +343,7 @@ export default {
           let newJourney = response.data
 
           this.journeyPoints = this.extractJourneyPoints(newJourney)
+          console.log(this.journeyPoints)
 
           this.journey = newJourney
 
@@ -408,11 +410,16 @@ export default {
             platform = journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform
             platformType = 'ACTUAL'
           }
+          // TODO this is a little hack?
+          if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== undefined) {
+            journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = element.DestinationArrivalTime
+          }
+
           journeyPoints.push({
             stop: element.DestinationStop,
             arrivalTime: element.DestinationArrivalTime,
             location: element.DestinationStop.Location.coordinates,
-            departureTime: null,
+            departureTime: element.DestinationArrivalTime,
             activity: element.DestinationActivity,
             track: null,
             realtime: journey.RealtimeJourney?.Stops?.[element.DestinationStopRef],
