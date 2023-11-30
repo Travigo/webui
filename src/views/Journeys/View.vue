@@ -382,7 +382,9 @@ export default {
         let platform = element.OriginPlatform
         let platformType = 'ESTIMATED'
 
-        if (journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform != "") {
+        if (journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== "" 
+            && journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== undefined) {
+          console.log(journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform)
           platform = journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform
           platformType = 'ACTUAL'
         }
@@ -411,7 +413,8 @@ export default {
             platformType = 'ACTUAL'
           }
           // TODO this is a little hack?
-          if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== undefined) {
+          if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== undefined
+              && journey.RealtimeJourney.Stops[element.DestinationStopRef] !== undefined) {
             journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = element.DestinationArrivalTime
           }
 
