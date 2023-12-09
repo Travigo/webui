@@ -384,7 +384,6 @@ export default {
 
         if (journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== "" 
             && journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== undefined) {
-          console.log(journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform)
           platform = journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform
           platformType = 'ACTUAL'
         }
