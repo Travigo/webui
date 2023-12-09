@@ -343,7 +343,6 @@ export default {
           let newJourney = response.data
 
           this.journeyPoints = this.extractJourneyPoints(newJourney)
-          console.log(this.journeyPoints)
 
           this.journey = newJourney
 
@@ -384,7 +383,6 @@ export default {
 
         if (journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== "" 
             && journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== undefined) {
-          console.log(journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform)
           platform = journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform
           platformType = 'ACTUAL'
         }
