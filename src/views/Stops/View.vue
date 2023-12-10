@@ -78,7 +78,7 @@
                       </router-link>
                     </div>
                   </div>
-                  <div class="my-auto text-right">
+                  <div class="my-auto text-right flex-shrink-0">
                     <router-link 
                       :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}" 
                       v-if="departure.Journey.PrimaryIdentifier !=''"
