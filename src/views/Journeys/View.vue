@@ -411,7 +411,7 @@ export default {
             platformType = 'ACTUAL'
           }
           // TODO this is a little hack?
-          if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== undefined
+          if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== null && journey.RealtimeJourney?.Stops !== undefined
               && journey.RealtimeJourney.Stops[element.DestinationStopRef] !== undefined) {
             journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = element.DestinationArrivalTime
           }

@@ -16,6 +16,9 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+router.afterEach(to => {
+  localStorage.setItem('last_route', JSON.stringify(to));
+})
 app.use(router)
 
 app.use(VueGtag, {config: { id: "G-X0ZSSZCPYX" }})
