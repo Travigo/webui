@@ -1,11 +1,35 @@
 <template>
-  <Alert :type="this.styles[alert.AlertType]['alertType']">
+  <Alert :type="this.styles[alert.AlertType]['alertType']" class="t-service-alert">
     <strong v-if="alert.Title != ''">{{ alert.Title }}</strong>
     <strong v-else>{{ this.styles[alert.AlertType]['title'] }}</strong>
     <br/>
-    {{ alert.Text }}
+    <div v-html="alert.Text"></div>
   </Alert>
 </template>
+
+<style lang="scss">
+.t-service-alert {
+  a:link {
+    color: blue;
+    text-decoration: underline;
+  }
+
+  /* visited link */
+  a:visited {
+    color: blue;
+  }
+
+  /* mouse over link */
+  a:hover {
+    color: rgb(49, 21, 125);
+  }
+
+  /* selected link */
+  a:active {
+    color: blue;
+  }
+}
+</style>
 
 <script>
 import Alert from '@/components/Alert.vue'
