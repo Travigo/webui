@@ -23,7 +23,7 @@
 
     <div class="mmin-h-screen flex flex-col">
       <div>
-        <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
+        <!-- <div v-for="(stat, operator) in this.operatorStats" v-bind:key="operator">
           <Alert type="warning" v-if="stat.Rating == 'POOR'">
             <strong>Notice</strong><br/>
             Realtime tracking is not available for all <strong>{{ operator }}</strong> services
@@ -33,7 +33,7 @@
             <strong>Notice</strong><br/>
             Realtime tracking of <strong>{{ operator }}</strong> services is currently experiencing issues
           </Alert>
-        </div>
+        </div> -->
 
         <div class="service-alerts">
           <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
@@ -182,7 +182,7 @@ export default {
 
           this.center = this.stop.Location.coordinates
 
-          this.getOperatorStats()
+          // this.getOperatorStats()
         })
         .catch(error => {
           console.log(error)
