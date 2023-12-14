@@ -21,7 +21,7 @@
       <mapbox-navigation-control position="bottom-left" />
       <mapbox-geolocate-control position="bottom-left" />
 
-      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier">
+      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier" @click="openStopSheet(stop)">
         <template v-slot:icon>
           <span v-for="icon in this.getUniqueServiceIcons(stop.Services)" class="w-6 h-6 text-center">
             <span 
@@ -42,7 +42,7 @@
             pin_drop
           </span>
         </template>
-        <mapbox-popup>
+        <!-- <mapbox-popup>
           <div>
             <p>
               <strong>{{ stop.PrimaryName }}</strong>
@@ -53,7 +53,7 @@
               <router-link :to="{'name': 'stops/view', params: {'id': stop.PrimaryIdentifier}}">View</router-link>
             </p>
           </div>
-        </mapbox-popup>
+        </mapbox-popup> -->
       </mapbox-marker>
 
       <mapbox-marker
@@ -89,6 +89,23 @@
       <label for="showVehicles">Show Vehicles</label>
     </div>
   </div>
+
+  <vue-bottom-sheet ref="stopInfoSheet" maxHeight="380">
+    <div v-if="currentViewedStop !== undefined" class="px-4" style="min-height: 200px">
+      <StopStatus :currentViewedStop="currentViewedStop" />
+      <PageTitle>Departures</PageTitle>
+      <i>Click view more for departures</i>
+      <p class="mt-2">
+        <router-link 
+          :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          View More
+        </router-link>
+      </p>
+    </div>
+    <div style="height: 380px" v-else></div>
+  </vue-bottom-sheet>
 </template>
 
 <style scoped lang="scss">
@@ -110,12 +127,19 @@
 
 <script>
 import PageTitle from '@/components/PageTitle.vue'
+import ServiceIcon from '@/components/ServiceIcon.vue'
+import StopStatus from '@/components/StopStatus.vue'
 import Modal from '@/components/Modal.vue'
 import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
 
 import { MapboxMap } from "vue-mapbox-ts";
+
+
+import VueBottomSheet from "@webzlodimir/vue-bottom-sheet";
+import  "@webzlodimir/vue-bottom-sheet/dist/style.css";
+
 
 export default {
   name: 'StopsView',
@@ -140,15 +164,21 @@ export default {
       showStops: undefined,
       showVehicles: undefined,
 
-      mapboxObject: undefined
+      mapboxObject: undefined,
+
+      currentViewedStop: undefined
     }
   },
   components: {
     PageTitle,
     Card,
     Modal,
+    ServiceIcon,
+    StopStatus,
 
-    MapboxMap
+    MapboxMap,
+
+    VueBottomSheet
   },
   methods: {
     mapLoaded(map) {
@@ -253,6 +283,10 @@ export default {
       });
 
       return serviceIcons
+    },
+    openStopSheet(stop) {
+      this.currentViewedStop = stop
+      this.$refs.stopInfoSheet.open()
     }
   },
   created() {

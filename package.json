@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.3.1",
+    "@webzlodimir/vue-bottom-sheet": "^3.0.5",
     "axios": "^1.5.1",
     "firebase": "^10.5.0",
     "leaflet.markercluster": "^1.5.3",
