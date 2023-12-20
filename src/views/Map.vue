@@ -90,12 +90,15 @@
     </div>
   </div>
 
-  <vue-bottom-sheet ref="stopInfoSheet" maxHeight="380">
+  <vue-bottom-sheet ref="stopInfoSheet" maxHeight="380" class="relative">
     <div v-if="currentViewedStop !== undefined" class="px-4" style="min-height: 200px">
       <StopStatus :currentViewedStop="currentViewedStop" />
-      <PageTitle>Departures</PageTitle>
-      <i>Click view more for departures</i>
-      <p class="mt-2">
+      <PageTitle paddingStyle="pb-2">Departures</PageTitle>
+      <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+        Loading...
+      </span>
+      <DeparturesList v-else :stop="currentViewedStop" :departures="currentViewedStopDepartures"/>
+      <div class="absolute bottom-5 right-3">
         <router-link
           @click="this.$refs.stopInfoSheet.close()"
           :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
@@ -103,7 +106,7 @@
         >
           View More
         </router-link>
-      </p>
+      </div>
     </div>
     <div style="height: 380px" v-else></div>
   </vue-bottom-sheet>
@@ -130,6 +133,7 @@
 import PageTitle from '@/components/PageTitle.vue'
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import StopStatus from '@/components/StopStatus.vue'
+import DeparturesList from '@/components/DeparturesList.vue'
 import Modal from '@/components/Modal.vue'
 import Card from '@/components/Card.vue'
 import axios from 'axios'
@@ -167,7 +171,10 @@ export default {
 
       mapboxObject: undefined,
 
-      currentViewedStop: undefined
+      currentViewedStop: undefined,
+
+      loadingDepartures: true,
+      currentViewedStopDepartures: []
     }
   },
   components: {
@@ -176,6 +183,7 @@ export default {
     Modal,
     ServiceIcon,
     StopStatus,
+    DeparturesList,
 
     MapboxMap,
 
@@ -287,7 +295,29 @@ export default {
     },
     openStopSheet(stop) {
       this.currentViewedStop = stop
+      this.currentViewedStopDepartures = []
+      this.loadingDepartures = true
+
+      this.getDepartures()
+
       this.$refs.stopInfoSheet.open()
+    },
+    getDepartures() {
+      axios
+        .get(`${API.URL}/core/stops/${this.currentViewedStop.PrimaryIdentifier}/departures`, {
+          params: {
+            'count': 10,
+            // 'datetime': this.$route.query.datetime
+          }
+        })
+        .then(response => {
+          this.currentViewedStopDepartures = response.data
+        })
+        .catch(error => {
+          console.log(error)
+          // this.error = error
+        })
+        .finally(() => this.loadingDepartures = false)
     }
   },
   created() {
