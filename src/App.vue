@@ -71,12 +71,9 @@ export default {
         <div class="relative flex items-center justify-between h-16">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <!-- Mobile menu button-->
-            <button @click="hamburgerMenuToggle" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
+            <button @click="$router.go(-1)" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 focus:outline-none transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
               <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <path d="M16.74 21.24a0.539 0.539 0 1 0 0.72 -0.8l-7.74 -7c-0.2 -0.18 -0.2 -0.44 0 -0.62l7.74 -6.76a0.559 0.559 0 0 0 0.06 -0.76 0.559 0.559 0 0 0 -0.76 -0.06l-7.74 6.78a1.462 1.462 0 0 0 -0.02 2.22l7.74 7z"/>
               </svg>
             </button>
           </div>
@@ -114,6 +111,17 @@ export default {
 
           <div class="hidden sm:block sm:ml-6">
             <UserOrLogin />
+          </div>
+          <div class="absolute inset-y-0 right-0 flex items-center sm:hidden">
+            <!-- Mobile menu button-->
+            <button @click="hamburgerMenuToggle" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
+              <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
