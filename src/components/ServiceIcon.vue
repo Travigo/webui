@@ -1,6 +1,6 @@
 <template>
   <div
-    class="text-sm text-center inline-block py-0 px-2 rounded bg-blue-200 min-h-8 min-w-[1rem]"
+    class="text-sm text-center inline-block py-0 px-2 rounded bg-blue-200 min-h-8 min-w-[1rem] border-solid border border-gray-300 dark:border-gray-600"
     :class="{'text-gray-800': darkText, 'text-white': !darkText}"
     :style="[service.BrandColour ? {'background': service.BrandColour} : {}]"
     v-if="service.ServiceName != '' || service.BrandIcon != ''"
@@ -14,6 +14,7 @@
       <span
         class="w-full"
         v-if="(service.ServiceName != '' && !short) || (service.BrandIcon == '' && short)"
+        :style="[service.SecondaryBrandColour ? {'color': service.SecondaryBrandColour} : {}]"
       >
         {{ service.ServiceName }}
       </span>
