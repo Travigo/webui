@@ -1,4 +1,5 @@
 <template>
+  <SearchBar />
   <Card class="m-4">
     <h1 class="text-3xl font-bold leading-tight text-gray-900 mb-4 dark:text-gray-200">
       Welcome
@@ -34,6 +35,7 @@
 <script>
 import Card from '@/components/Card.vue'
 import StatCard from '@/components/StatCard.vue'
+import SearchBar from '@/components/SearchBar.vue'
 
 import axios from 'axios'
 import API from '@/API'
@@ -43,6 +45,7 @@ export default {
   components: {
     Card,
     StatCard,
+    SearchBar
   },
   data () {
     return {

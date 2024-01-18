@@ -3,6 +3,7 @@
     <PageTitle>
       Operators
     </PageTitle>
+    <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     <Card>
       <div v-for="(region, id) in this.operatorRegions" v-bind:key="id" class="mt-4 first:mt-0">
         <h3 class="text-xl font-bold">{{ region.Name }}</h3>
@@ -21,6 +22,7 @@
 
 <script>
 import PageTitle from '@/components/PageTitle.vue'
+import NavTabBar from "@/components/NavTabBar.vue"
 import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
@@ -32,13 +34,29 @@ export default {
       operatorRegions: null,
       loading: true,
       error: null,
+
+      currentTab: "bus",
+      tabs: [
+        {
+          id: "bus",
+          name: "Bus",
+        },
+        {
+          id: "rail",
+          name: "Rail",
+        },
+      ]
     }
   },
   components: {
     PageTitle,
-    Card
+    Card,
+    NavTabBar
   },
   methods: {
+    changeTab(newTab) {
+      this.currentTab = newTab
+    },
     getOperators() {
       axios
       .get(`${API.URL}/core/operators`)
