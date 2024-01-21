@@ -14,14 +14,18 @@
       <router-link
           :to="{'name': 'stops/view', params: {'id': result.PrimaryIdentifier}}"
       >
-        <div>
-          {{ result.TransportTypes }}
+        <div class="flex">
+          <StopIcon :stop="result"/>
 
-          <span class="text-xl font-medium">{{ result.PrimaryName }}</span>
-        </div>
-        <div class="font-light">
-          <span v-if="'Crs' in result.OtherIdentifiers">{{ result.OtherIdentifiers['Crs'] }}</span>
-          <span v-else-if="'AtcoCode' in result.OtherIdentifiers">{{ result.OtherIdentifiers['AtcoCode'] }}</span>
+          <div class="flex-auto my-auto text-xl font-medium ml-2">
+            <div>
+              {{ result.PrimaryName }}
+            </div>
+            <div class="text-xs font-ligh">
+              <span v-if="'Crs' in result.OtherIdentifiers">{{ result.OtherIdentifiers['Crs'] }}</span>
+              <span v-else-if="'AtcoCode' in result.OtherIdentifiers">{{ result.OtherIdentifiers['AtcoCode'] }}</span>
+            </div>
+          </div>
         </div>
       </router-link>
     </li>
@@ -32,8 +36,12 @@
 import search from "@/views/Planner/Search.vue";
 import axios from "axios";
 import API from "@/API";
+import ServiceIcon from "@/components/ServiceIcon.vue";
+import DepartureTimeView from "@/components/Stops/DepartureTimeView.vue";
+import StopIcon from "@/components/StopIcon.vue";
 
 export default {
+  components: {StopIcon, DepartureTimeView, ServiceIcon},
   computed: {
     search() {
       return search
