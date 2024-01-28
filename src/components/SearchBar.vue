@@ -51,7 +51,7 @@ export default {
   },
   data () {
     return {
-      searchTerm: 'Waterlo',
+      searchTerm: '',
       loadingResults: false,
       results: {}
     }
