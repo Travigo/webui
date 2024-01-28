@@ -3,6 +3,20 @@ export default {
   name: 'StopIcon',
   props: {
     stop: {},
+    size: {
+      default: 6
+    }
+  },
+  computed: {
+    width() {
+      return "w-" + this.size
+    },
+    height() {
+      return "h-" + this.size
+    },
+    textStyle() {
+      return { 'font-size': Math.round(this.size*3.6)+ 'px', 'line-height': (Math.round(this.size*3.6)+2)+ 'px' }
+    }
   },
   data() {
     return {}
@@ -25,8 +39,8 @@ export default {
       let serviceIconsFound = {}
 
       services?.forEach(service => {
-        let serviceID = ""
-        let serviceIcon = {}
+        let serviceID
+        let serviceIcon
         if (service.BrandIcon === "") {
           serviceID = service.TransportType
 
@@ -57,21 +71,25 @@ export default {
 </script>
 
 <template>
-  <span v-for="icon in this.getUniqueServiceIcons(stop.Services)" class="w-6 h-6 text-center">
+  <span v-for="icon in this.getUniqueServiceIcons(stop.Services)" class="text-center" :class="[width, height]">
     <span
-        v-if="icon['type'] == 'TextIcon'"
-        class="text-[22px] material-symbols-outlined bg-blue-500 rounded-lg text-white font-light leading-[24px]"
+      v-if="icon['type'] === 'TextIcon'"
+      class="material-symbols-outlined bg-blue-500 rounded-lg text-white font-light"
+      :class="[width, height]"
+      :style="textStyle"
     >
       {{ icon['value'] }}
     </span>
-    <span v-else-if="icon['type'] == 'Image'">
-      <img :src="icon['value']" class="w-6 h-6" />
+    <span v-else-if="icon['type'] === 'Image'">
+      <img :src="icon['value']" :alt="icon['value']" :class="[width, height]" />
     </span>
   </span>
 
   <span
-  v-if="this.getUniqueServiceIcons(stop.Services).length == 0"
-  class="text-[22px] material-symbols-outlined bg-gray-400 rounded-lg text-white font-light leading-[24px] w-6 h-6 text-center"
+    v-if="this.getUniqueServiceIcons(stop.Services).length === 0"
+    class="material-symbols-outlined bg-gray-400 rounded-lg text-white font-light text-center"
+    :class="[width, height]"
+    :style="textStyle"
   >
     pin_drop
   </span>

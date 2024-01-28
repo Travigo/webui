@@ -15,9 +15,11 @@
           :to="{'name': 'stops/view', params: {'id': result.PrimaryIdentifier}}"
       >
         <div class="flex">
-          <StopIcon :stop="result"/>
+          <div class="mt-0.5">
+            <StopIcon :stop="result" size="10" />
+          </div>
 
-          <div class="flex-auto my-auto text-xl font-medium ml-2">
+          <div class="flex-auto my-auto text-xl font-medium ml-2 dark:text-white">
             <div>
               {{ result.PrimaryName }}
             </div>
@@ -49,7 +51,7 @@ export default {
   },
   data () {
     return {
-      searchTerm: '',
+      searchTerm: 'Waterlo',
       loadingResults: false,
       results: {}
     }
