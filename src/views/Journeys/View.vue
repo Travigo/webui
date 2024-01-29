@@ -107,7 +107,11 @@
                 >
                   <div class="flex-auto my-auto min-h-[40px]">
                     <div class="mb-1 font-normal">
-                      {{ point.stop.PrimaryName }}
+                      <router-link
+                          :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
+                      >
+                        {{ point.stop.PrimaryName }}
+                      </router-link>
                     </div>
                     <div
                       class="
