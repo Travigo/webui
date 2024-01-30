@@ -19,6 +19,11 @@ export default {
 
     return `${hours}:${minutes}`
   },
+  date(datetimeString) {
+    let datetime = new Date(datetimeString)
+
+    return `${this.padToTwo(datetime.getDate())}/${this.padToTwo(datetime.getMonth()+1)}/${datetime.getFullYear()}`
+  },
   day(datetimeString) {
     let datetime = new Date(datetimeString)
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]

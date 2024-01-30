@@ -1,8 +1,11 @@
 <template>
   <Alert :type="this.styles[alert.AlertType]['alertType']" class="t-service-alert">
-    <strong v-if="alert.Title != ''">{{ alert.Title }}</strong>
-    <strong v-else>{{ this.styles[alert.AlertType]['title'] }}</strong>
-    <br/>
+    <div>
+      <strong v-if="alert.Title != ''">{{ alert.Title }}</strong>
+      <strong v-else>{{ this.styles[alert.AlertType]['title'] }}</strong>
+
+      <span class="pl-1 text-blue-500 text-xs">{{ pretty.date(alert.CreationDateTime) }}</span>
+    </div>
     <div v-html="alert.Text"></div>
   </Alert>
 </template>
@@ -33,6 +36,7 @@
 
 <script>
 import Alert from '@/components/Alert.vue'
+import Pretty from '@/pretty'
 
 export default {
   props: {
@@ -43,6 +47,7 @@ export default {
   },
   data () {
     return {
+      pretty: Pretty,
       styles: {
         'Information': {
           'alertType': 'info',
