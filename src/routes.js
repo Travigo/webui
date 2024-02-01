@@ -126,6 +126,13 @@ export const routes = [
     },
     component: () => import('./views/Account/Home.vue')
   },
-
+  {
+    name: 'services/view',
+    path: '/services/:id',
+    meta: {
+      title: 'Service'
+    },
+    component: () => import('./views/Services/View.vue')
+  },
   { path: '/:path(.*)', component: NotFound },
 ]

@@ -10,13 +10,17 @@
       {{ this.pretty.day(departure.Time) }}
     </div>
     <div class="flex">
-      <ServiceIcon 
-        class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
-        style="line-height: 44px"
-        v-if="departure.Journey.Service!==undefined"
-        :service="departure.Journey.Service"
-        :short="departure.Journey.Service.BrandDisplayMode=='short'"
-      />
+      <router-link
+          :to="{'name': 'services/view', params: {'id': departure.Journey.Service.PrimaryIdentifier}}"
+          v-if="departure.Journey.Service!==undefined"
+      >
+        <ServiceIcon
+          class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
+          style="line-height: 44px"
+          :service="departure.Journey.Service"
+          :short="departure.Journey.Service.BrandDisplayMode=='short'"
+        />
+      </router-link>
       <div class="flex-auto my-auto">
         <div>
           {{ departure.DestinationDisplay }}

@@ -10,11 +10,15 @@
 
       <div class="md:float-right inline overflow-x-scroll w-full">
         <div class="dx overflow-y-hidden w-full whitespace-nowrap text-right">
-          <ServiceIcon
-            class="ml-2"
-            v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier" 
-            :service="service" 
-          />
+          <router-link
+              :to="{'name': 'services/view', params: {'id': service.PrimaryIdentifier}}"
+              v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier"
+          >
+            <ServiceIcon
+              class="ml-2"
+              :service="service"
+            />
+          </router-link>
         </div>
       </div>
 
