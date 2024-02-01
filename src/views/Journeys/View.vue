@@ -29,7 +29,7 @@
           Realtime
         </span>
         <span
-          v-if="journey.RealtimeJourney?.Reliability == 'LocationWithoutTrack'"
+          v-if="journey.RealtimeJourney?.Reliability === 'LocationWithoutTrack'"
           class="
             text-base text-center
             inline-block
@@ -61,7 +61,7 @@
     <div class="flex flex-col-reverse md:flex-row h-full">
       <div
         class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block"
-        v-bind:class="{ hidden: this.currentTab != 'timeline' }"
+        v-bind:class="{ hidden: this.currentTab !== 'timeline' }"
       >
         <Card>
           <a
@@ -123,7 +123,7 @@
                       "
                     >
                       <span class="text-xs text-gray-500" v-if="point.platform">
-                        Platform {{ point.platform }} <span v-if="point.platformType != 'ACTUAL'">(Estimated)</span>
+                        Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Estimated)</span>
                       </span>
                     </div>
                   </div>
@@ -159,7 +159,7 @@
                     <p
                       class="text-xs"
                       v-if="
-                        point.arrivalTime != point.departureTime &&
+                        point.arrivalTime !== point.departureTime &&
                         point.arrivalTime != null
                       "
                     >
@@ -201,7 +201,7 @@
       </div>
       <div
         class="basis-full md:basis-1/2 md:ml-2 h-[450px] md:h-[400px] md:block"
-        v-bind:class="{ hidden: this.currentTab != 'map' }"
+        v-bind:class="{ hidden: this.currentTab !== 'map' }"
       >
         <mapbox-map
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
@@ -226,7 +226,7 @@
           <mapbox-marker 
             :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
             :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
-            v-if="this.journey.RealtimeJourney && this.journey.RealtimeJourney.VehicleLocation.coordinates.length == 2"
+            v-if="this.journey.RealtimeJourney && this.journey.RealtimeJourney.VehicleLocation.coordinates.length === 2"
           >
             <template v-slot:icon>
               <img src="/icons/bus-svgrepo-com-32x32.png">
@@ -406,11 +406,11 @@ export default {
         // TODO: is it possible for the path to be broken? eg originstop != last departure stop
 
         // if last one in list then append the destination stop
-        if (index == journey.Path.length - 1) {
+        if (index === journey.Path.length - 1) {
           let platform = element.DestinationPlatform
           let platformType = 'ESTIMATED'
 
-          if (journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform != "") {
+          if (journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform !== "") {
             platform = journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform
             platformType = 'ACTUAL'
           }
