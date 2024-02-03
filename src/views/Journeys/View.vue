@@ -358,6 +358,28 @@ export default {
         })
         .finally(() => (this.loading = false))
     },
+    getRealtimeJourney() {
+      if (this.journey == null) {
+        return
+      }
+
+      axios
+        .get(`${API.URL}/core/journeys/${this.$route.params.id}?realtime_only=true`)
+        .then((response) => {
+          let newRealtimeJourney = response.data
+
+          this.journey.RealtimeJourney = newRealtimeJourney
+
+          this.journeyPoints = this.extractJourneyPoints(this.journey)
+
+          this.setBounds()
+        })
+        .catch((error) => {
+          console.log(error)
+          this.error = error
+        })
+        .finally(() => (this.loading = false))
+    },
     extractJourneyPoints(journey) {
       let journeyPoints = []
 
@@ -485,7 +507,7 @@ export default {
   },
   mounted() {
     this.getData();
-    this.refreshTimer = setInterval(this.getJourney, 30000)
+    this.refreshTimer = setInterval(this.getRealtimeJourney, 10000)
     this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
   },
   beforeRouteLeave() {
