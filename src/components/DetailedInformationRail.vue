@@ -68,7 +68,7 @@ export default {
       </div>
       <div class="text-gray-900 dark:text-gray-200">{{ carriage.ID }}</div>
     </div>
-  </div>>
+  </div>
 </template>
 
 <style scoped lang="scss">
