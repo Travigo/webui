@@ -51,6 +51,8 @@
       </p>
     </Page-Title>
 
+    <DetailedInformationRail :info="journey?.RealtimeJourney?.DetailedRailInformation"/>
+
     <div class="service-alerts">
       <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
     </div>
@@ -245,6 +247,7 @@ import NavTabBar from "@/components/NavTabBar.vue"
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import Alert from "@/components/Alert.vue"
 import ServiceAlert from '@/components/ServiceAlert.vue'
+import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
@@ -293,7 +296,8 @@ export default {
     NavTabBar,
     Alert,
     ServiceIcon,
-    ServiceAlert
+    ServiceAlert,
+    DetailedInformationRail
   },
   methods: {
     mapLoaded(map) {
