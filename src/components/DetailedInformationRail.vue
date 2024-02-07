@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="info !== undefined">
+  <div v-if="info !== undefined" class="dx overflow-y-hidden w-full whitespace-nowrap">
     <div class="carriage text-center" v-for="(carriage, index) in info.Carriages">
       <div
         class="carriage-icon"
