@@ -65,6 +65,10 @@ export default {
         v-bind:class="{ 'carriage-icon-front': isFrontTrain(carriage, index), 'carriage-icon-rear': isRearTrain(carriage, index) }"
       >
         {{ occupancyDescription(carriage.Occupancy) }}
+        <div v-for="toilet in carriage.Toilets">
+          <span class="material-symbols-outlined text-base">wc</span>
+          <span class="material-symbols-outlined text-base" v-if="toilet.Type=='Accessible'">accessible</span>
+        </div>
       </div>
       <div class="text-gray-900 dark:text-gray-200">{{ carriage.ID }}</div>
     </div>
@@ -79,6 +83,7 @@ export default {
   .carriage-icon {
     background: white;
     border: 1px solid gray;
+    height: 50px;
   }
   .carriage-icon-front {
     border-top-left-radius: 20px;
