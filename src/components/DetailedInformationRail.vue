@@ -1,4 +1,6 @@
 <script>
+import Pretty from "@/pretty"
+
 export default {
   name: 'DetailedInformationRail',
   props: {
@@ -8,22 +10,11 @@ export default {
 
   },
   data() {
-    return {}
+    return {
+      pretty: Pretty,
+    }
   },
   methods: {
-    occupancyDescription(occupancy) {
-      if (occupancy < 20) {
-        return 'Empty'
-      } else if (occupancy < 40) {
-        return 'Space'
-      } if (occupancy < 70) {
-        return 'Busy'
-      } if (occupancy < 90) {
-        return 'Very Busy'
-      } else {
-        return 'Full'
-      }
-    },
     isNumericChar(c) { return /\d/.test(c); },
     isFrontTrain(carriage, index) {
       if (index===0) {
@@ -64,7 +55,7 @@ export default {
         class="carriage-icon"
         v-bind:class="{ 'carriage-icon-front': isFrontTrain(carriage, index), 'carriage-icon-rear': isRearTrain(carriage, index) }"
       >
-        {{ occupancyDescription(carriage.Occupancy) }}
+        {{ pretty.occupancyDescription(carriage.Occupancy) }}
         <div v-for="toilet in carriage.Toilets">
           <span class="material-symbols-outlined text-base">wc</span>
           <span class="material-symbols-outlined text-base" v-if="toilet.Type=='Accessible'">accessible</span>

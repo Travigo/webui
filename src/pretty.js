@@ -19,6 +19,19 @@ export default {
 
     return `${hours}:${minutes}`
   },
+  occupancyDescription(occupancy) {
+    if (occupancy < 20) {
+      return 'Empty'
+    } else if (occupancy < 40) {
+      return 'Space'
+    } if (occupancy < 70) {
+      return 'Busy'
+    } if (occupancy < 90) {
+      return 'Very Busy'
+    } else {
+      return 'Full'
+    }
+  },
   date(datetimeString) {
     let datetime = new Date(datetimeString)
 

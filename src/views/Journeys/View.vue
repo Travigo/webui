@@ -205,6 +205,21 @@
         class="basis-full md:basis-1/2 md:ml-2 h-[450px] md:h-[400px] md:block"
         v-bind:class="{ hidden: this.currentTab !== 'map' }"
       >
+        <div v-if="journey?.RealtimeJourney?.Occupancy.OccupancyAvailable">
+          <Card class="mb-4">
+            <div><strong>Occupancy: </strong> {{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</div>
+            <div v-if="journey?.RealtimeJourney?.Occupancy.ActualValues">
+              <div v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
+                <strong>Seats: </strong>
+                {{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}
+              </div>
+              <div v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
+                <strong>Wheelchair Spaces: </strong>
+                {{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}
+              </div>
+            </div>
+          </Card>
+        </div>
         <mapbox-map
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
           mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
