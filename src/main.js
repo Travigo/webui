@@ -30,7 +30,8 @@ app.use(
     domain: 'travigo.uk.auth0.com',
     clientId: 'Vh6gHFJv724xjISfxHJK3bp8XvLqkw4K',
     authorizationParams: {
-      redirect_uri: window.location.origin
+      redirect_uri: window.location.origin,
+      audience: 'https://api.travigo.app'
     }
   })
 )
