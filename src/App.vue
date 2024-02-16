@@ -1,5 +1,7 @@
 <script>
 import UserOrLogin from '@/components/UserOrLogin.vue'
+import { useAuth0 } from '@auth0/auth0-vue'
+import notify from "@/notify"
 
 export default {
   name: 'App',
@@ -12,6 +14,8 @@ export default {
   },
   data () {
     return {
+      auth0: useAuth0(),
+      notify: notify,
       hamburgerMenuOpen: false,
       navItems: [
         {
@@ -58,6 +62,11 @@ export default {
         }
       }
     },
+  },
+  mounted() {
+    this.$nextTick(function () {
+      notify.setupNotifications(this.auth0, this.$messaging)
+    })
   }
 }
 </script>
