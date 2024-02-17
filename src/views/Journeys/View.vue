@@ -148,6 +148,13 @@
                         CANCELLED
                       </div>
                     </p>
+                    <p v-else-if="
+                      point.activity?.length == 1 &&
+                      point.activity[0] == 'Setdown' &&
+                      !point?.lastOne
+                    ">
+                      --:--
+                    </p>
                     <p
                       v-else-if="
                         point.realtime &&
@@ -489,6 +496,7 @@ export default {
             realtime: journey.RealtimeJourney?.Stops?.[element.DestinationStopRef],
             platform: platform,
             platformType: platformType,
+            lastOne: true
           })
         }
       }
