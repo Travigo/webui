@@ -124,9 +124,17 @@
                         text-gray-400
                       "
                     >
-                      <span class="text-xs text-gray-500" v-if="point.platform">
-                        Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Estimated)</span>
-                      </span>
+                      <div class="text-xs text-gray-500">
+                        <span v-if="point.platform">
+                          Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Estimated)</span>
+                        </span>
+                        <span v-if="point.activity?.length == 1 && point.platform"> &#8226; </span>
+                        <span>
+                          <span v-if="point.activity?.length == 1">
+                            {{ point.activity[0] }} only
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div class="text-base font-normal text-right">
