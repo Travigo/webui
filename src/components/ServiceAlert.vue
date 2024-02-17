@@ -99,6 +99,11 @@ export default {
           'title': 'Journey Delayed',
           'icon': ''
         },
+        'JourneyPartiallyCancelled': {
+          'alertType': 'error',
+          'title': 'Journey Partially Cancelled',
+          'icon': ''
+        },
         'JourneyCancelled': {
           'alertType': 'error',
           'title': 'Journey Cancelled',
