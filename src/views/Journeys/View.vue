@@ -133,6 +133,16 @@
                     <p
                       v-if="
                         point.realtime &&
+                        point.realtime.Cancelled
+                      "
+                    >
+                      <div class="text-xs px-2 rounded text-red-200 bg-red-600">
+                        CANCELLED
+                      </div>
+                    </p>
+                    <p
+                      v-else-if="
+                        point.realtime &&
                         point.departureTime !== point.realtime.DepartureTime &&
                         point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
                       "
@@ -162,7 +172,7 @@
                       class="text-xs"
                       v-if="
                         point.arrivalTime !== point.departureTime &&
-                        point.arrivalTime != null
+                        point.arrivalTime != null && !(point.realtime && point.realtime?.Cancelled)
                       "
                     >
                       <span
