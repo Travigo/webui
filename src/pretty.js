@@ -20,7 +20,9 @@ export default {
     return `${hours}:${minutes}`
   },
   occupancyDescription(occupancy) {
-    if (occupancy < 20) {
+    if (occupancy == -1) {
+      return ''
+    } else if (occupancy < 20) {
       return 'Empty'
     } else if (occupancy < 40) {
       return 'Space'
