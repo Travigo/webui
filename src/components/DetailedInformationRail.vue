@@ -1,56 +1,12 @@
-<script>
-import Pretty from "@/pretty"
-
-export default {
-  name: 'DetailedInformationRail',
-  props: {
-    info: {},
-  },
-  computed: {
-
-  },
-  data() {
-    return {
-      pretty: Pretty,
-    }
-  },
-  methods: {
-    isNumericChar(c) { return /\d/.test(c); },
-    isFrontTrain(carriage, index) {
-      if (index===0) {
-        return true
-      }
-
-      let previousCarriage = this.info.Carriages[index-1]
-      let currentCarriageFirstChar = carriage.ID[0]
-      let previousCarriageFirstChar = previousCarriage.ID[0]
-
-      if (!this.isNumericChar(currentCarriageFirstChar) && !this.isNumericChar(previousCarriageFirstChar) && 
-          currentCarriageFirstChar !== previousCarriageFirstChar) {
-        return true
-      }
-    },
-    isRearTrain(carriage, index) {
-      if (index===this.info.Carriages.length-1) {
-        return true
-      }
-
-      let nextCarriage = this.info.Carriages[index+1]
-      let currentCarriageFirstChar = carriage.ID[0]
-      let nextCarriageFirstChar = nextCarriage.ID[0]
-
-      if (!this.isNumericChar(currentCarriageFirstChar) && !this.isNumericChar(nextCarriageFirstChar) && 
-          currentCarriageFirstChar !== nextCarriageFirstChar) {
-        return true
-      }
-    }
-  }
-}
-</script>
-
 <template>
-  <div v-if="info !== undefined" class="dx overflow-y-hidden w-full whitespace-nowrap">
-    <div class="carriage text-center" v-for="(carriage, index) in info.Carriages">
+  <div v-if="journey?.DetailedRailInformation?.ReplacementBus">
+    <Alert type="info">
+      This is a rail replacement bus
+    </Alert>
+  </div>
+
+  <div v-if="journey?.RealtimeJourney?.DetailedRailInformation !== undefined" class="dx overflow-y-hidden w-full whitespace-nowrap">
+    <div class="carriage text-center" v-for="(carriage, index) in journey?.RealtimeJourney?.DetailedRailInformation.Carriages">
       <div
         class="carriage-icon"
         v-bind:class="{ 'carriage-icon-front': isFrontTrain(carriage, index), 'carriage-icon-rear': isRearTrain(carriage, index) }"
@@ -65,6 +21,60 @@ export default {
     </div>
   </div>
 </template>
+
+<script>
+import Pretty from "@/pretty"
+import Alert from "@/components/Alert.vue"
+
+export default {
+  name: 'DetailedInformationRail',
+  props: {
+    journey: {},
+  },
+  computed: {
+
+  },
+  components: {
+    Alert,
+  },
+  data() {
+    return {
+      pretty: Pretty,
+    }
+  },
+  methods: {
+    isNumericChar(c) { return /\d/.test(c); },
+    isFrontTrain(carriage, index) {
+      if (index===0) {
+        return true
+      }
+
+      let previousCarriage = this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages[index-1]
+      let currentCarriageFirstChar = carriage.ID[0]
+      let previousCarriageFirstChar = previousCarriage.ID[0]
+
+      if (!this.isNumericChar(currentCarriageFirstChar) && !this.isNumericChar(previousCarriageFirstChar) && 
+          currentCarriageFirstChar !== previousCarriageFirstChar) {
+        return true
+      }
+    },
+    isRearTrain(carriage, index) {
+      if (index===this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages.length-1) {
+        return true
+      }
+
+      let nextCarriage = this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages[index+1]
+      let currentCarriageFirstChar = carriage.ID[0]
+      let nextCarriageFirstChar = nextCarriage.ID[0]
+
+      if (!this.isNumericChar(currentCarriageFirstChar) && !this.isNumericChar(nextCarriageFirstChar) && 
+          currentCarriageFirstChar !== nextCarriageFirstChar) {
+        return true
+      }
+    }
+  }
+}
+</script>
 
 <style scoped lang="scss">
 .carriage {

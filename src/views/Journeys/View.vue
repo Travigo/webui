@@ -51,7 +51,7 @@
       </p>
     </Page-Title>
 
-    <DetailedInformationRail :info="journey?.RealtimeJourney?.DetailedRailInformation"/>
+    <DetailedInformationRail :journey="journey"/>
 
     <div class="service-alerts">
       <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
@@ -248,17 +248,32 @@
 
         <div v-if="journey?.DetailedRailInformation">
           <Card class="mb-4">
-            <div v-if="journey.DetailedRailInformation.ReplacementBus">
-              This is a rail replacement bus
-            </div>
-
-            <strong>{{ journey.DetailedRailInformation.VehicleType }}</strong>
+            <strong>{{ journey.DetailedRailInformation.VehicleType }} ({{ journey.DetailedRailInformation.VehicleTypeName }})</strong>
             <div>
               <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
             </div>
 
             <div>
               <strong>Seating: </strong> {{ journey.DetailedRailInformation.Seating }}
+            </div>
+
+            <div>
+              <strong>WiFi: </strong> {{ journey.DetailedRailInformation.WiFi }}
+            </div>
+            <div>
+              <strong>Toilets: </strong> {{ journey.DetailedRailInformation.Toilets }}
+            </div>
+            <div>
+              <strong>Power Plugs: </strong> {{ journey.DetailedRailInformation.PowerPlugs }}
+            </div>
+            <div>
+              <strong>USB Plugs: </strong> {{ journey.DetailedRailInformation.USBPlugs }}
+            </div>
+            <div>
+              <strong>Disabled Access: </strong> {{ journey.DetailedRailInformation.DisabledAccess }}
+            </div>
+            <div>
+              <strong>Bicycle Spaces: </strong> {{ journey.DetailedRailInformation.BicycleSpaces }}
             </div>
 
             <div>
