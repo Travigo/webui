@@ -245,6 +245,58 @@
             </div>
           </Card>
         </div>
+
+        <div v-if="journey?.DetailedRailInformation">
+          <Card class="mb-4">
+            <strong>{{ journey.DetailedRailInformation.VehicleType }}</strong>
+            <div>
+              <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
+            </div>
+
+            <div>
+              <strong>Seating: </strong> {{ journey.DetailedRailInformation.Seating }}
+            </div>
+
+            <div>
+              <strong>Sleepers: </strong> {{ journey.DetailedRailInformation.SleeperAvailable }}
+            </div>
+            <div v-if="journey.DetailedRailInformation.SleeperAvailable">
+              <strong>Sleeper for: </strong> {{ journey.DetailedRailInformation.Sleepers }}
+            </div>
+
+            <div>
+              <strong>Air Conditioning: </strong> {{ journey.DetailedRailInformation.AirConditioning }}
+            </div>
+            <div>
+              <strong>Heating: </strong> {{ journey.DetailedRailInformation.Heating }}
+            </div>
+
+            <div>
+              <strong>Catering: </strong> {{ journey.DetailedRailInformation.CateringAvailable }}
+            </div>
+            <div v-if="journey.DetailedRailInformation.CateringAvailable">
+              <strong>Catering Description: </strong> {{ journey.DetailedRailInformation.CateringDescription }}
+            </div>
+
+            <div>
+              <strong>Driver only: </strong> {{ journey.DetailedRailInformation.DriverOnly }}
+            </div>
+            <div>
+              <strong>Guard required: </strong> {{ journey.DetailedRailInformation.GuardRequired }}
+            </div>
+
+            <div>
+              <strong>Reservation Required: </strong> {{ journey.DetailedRailInformation.ReservationRequired }}
+            </div>
+            <div>
+              <strong>Reservation Required for bike: </strong> {{ journey.DetailedRailInformation.ReservationBikeRequired }}
+            </div>
+            <div>
+              <strong>Reservation Recommended: </strong> {{ journey.DetailedRailInformation.ReservationRecommended }}
+            </div>
+          </Card>
+        </div>
+
         <mapbox-map
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
           mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
