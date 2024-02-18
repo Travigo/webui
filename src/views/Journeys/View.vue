@@ -248,6 +248,10 @@
 
         <div v-if="journey?.DetailedRailInformation">
           <Card class="mb-4">
+            <div v-if="journey.DetailedRailInformation.ReplacementBus">
+              This is a rail replacement bus
+            </div>
+
             <strong>{{ journey.DetailedRailInformation.VehicleType }}</strong>
             <div>
               <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
