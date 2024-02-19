@@ -93,7 +93,15 @@ export default {
   },
   computed: {
     carriages() {
-      return this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages || this.journey?.DetailedRailInformation.Carriages
+      if (this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages.length > 0) {
+        return this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages
+      }
+      
+      if (this.journey?.DetailedRailInformation.Carriages.length > 0) {
+        return this.journey?.DetailedRailInformation.Carriages
+      }
+
+      return []
     }
   },
   components: {
