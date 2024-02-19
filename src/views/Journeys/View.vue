@@ -286,9 +286,6 @@
             <div>
               <strong>Air Conditioning: </strong> {{ journey.DetailedRailInformation.AirConditioning }}
             </div>
-            <div>
-              <strong>Heating: </strong> {{ journey.DetailedRailInformation.Heating }}
-            </div>
 
             <div>
               <strong>Catering: </strong> {{ journey.DetailedRailInformation.CateringAvailable }}
