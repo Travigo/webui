@@ -248,7 +248,6 @@
 
         <div v-if="journey?.DetailedRailInformation">
           <Card class="mb-4">
-            <strong>{{ journey.DetailedRailInformation.VehicleType }} ({{ journey.DetailedRailInformation.VehicleTypeName }})</strong>
             <div>
               <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
             </div>
@@ -258,38 +257,12 @@
             </div>
 
             <div>
-              <strong>WiFi: </strong> {{ journey.DetailedRailInformation.WiFi }}
-            </div>
-            <div>
-              <strong>Toilets: </strong> {{ journey.DetailedRailInformation.Toilets }}
-            </div>
-            <div>
-              <strong>Power Plugs: </strong> {{ journey.DetailedRailInformation.PowerPlugs }}
-            </div>
-            <div>
-              <strong>USB Plugs: </strong> {{ journey.DetailedRailInformation.USBPlugs }}
-            </div>
-            <div>
-              <strong>Disabled Access: </strong> {{ journey.DetailedRailInformation.DisabledAccess }}
-            </div>
-            <div>
-              <strong>Bicycle Spaces: </strong> {{ journey.DetailedRailInformation.BicycleSpaces }}
-            </div>
-
-            <div>
               <strong>Sleepers: </strong> {{ journey.DetailedRailInformation.SleeperAvailable }}
             </div>
             <div v-if="journey.DetailedRailInformation.SleeperAvailable">
               <strong>Sleeper for: </strong> {{ journey.DetailedRailInformation.Sleepers }}
             </div>
 
-            <div>
-              <strong>Air Conditioning: </strong> {{ journey.DetailedRailInformation.AirConditioning }}
-            </div>
-
-            <div>
-              <strong>Catering: </strong> {{ journey.DetailedRailInformation.CateringAvailable }}
-            </div>
             <div v-if="journey.DetailedRailInformation.CateringAvailable">
               <strong>Catering Description: </strong> {{ journey.DetailedRailInformation.CateringDescription }}
             </div>

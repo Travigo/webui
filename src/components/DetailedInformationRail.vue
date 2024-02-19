@@ -1,12 +1,72 @@
 <template>
-  <div v-if="journey?.DetailedRailInformation?.ReplacementBus">
+  <div v-if="journey.DetailedRailInformation?.ReplacementBus">
     <Alert type="info">
       This is a rail replacement bus
     </Alert>
   </div>
 
-  <div v-if="journey?.RealtimeJourney?.DetailedRailInformation !== undefined" class="dx overflow-y-hidden w-full whitespace-nowrap">
-    <div class="carriage text-center" v-for="(carriage, index) in journey?.RealtimeJourney?.DetailedRailInformation.Carriages">
+  <div class="text-white text-base">
+    <div class="inline-block mr-4">
+      <span v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
+        {{ journey.DetailedRailInformation.VehicleTypeName }}
+      </span>
+      <span v-else>
+        {{ journey.DetailedRailInformation.VehicleType }}
+      </span>
+    </div>
+
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.AirConditioning"
+    >
+      ac_unit
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.WiFi"
+    >
+      wifi
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.PowerPlugs"
+    >
+      power
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.USBPlugs"
+    >
+      usb
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.BicycleSpaces"
+    >
+      pedal_bike
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.DisabledAccess"
+    >
+      accessible
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation?.Toilets"
+    >
+      wc
+    </span>
+    <span 
+      class="material-symbols-outlined text-base" 
+      v-if="journey.DetailedRailInformation.CateringAvailable"
+    >
+      restaurant
+    </span>
+  </div>
+
+  <div v-if="this.carriages.length > 0" class="dx overflow-y-hidden w-full whitespace-nowrap">
+    <div class="carriage text-center" v-for="(carriage, index) in this.carriages">
       <div
         class="carriage-icon"
         v-bind:class="{ 'carriage-icon-front': isFrontTrain(carriage, index), 'carriage-icon-rear': isRearTrain(carriage, index) }"
@@ -32,7 +92,9 @@ export default {
     journey: {},
   },
   computed: {
-
+    carriages() {
+      return this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages || this.journey?.DetailedRailInformation.Carriages
+    }
   },
   components: {
     Alert,
@@ -49,7 +111,7 @@ export default {
         return true
       }
 
-      let previousCarriage = this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages[index-1]
+      let previousCarriage = this.carriages[index-1]
       let currentCarriageFirstChar = carriage.ID[0]
       let previousCarriageFirstChar = previousCarriage.ID[0]
 
@@ -59,11 +121,11 @@ export default {
       }
     },
     isRearTrain(carriage, index) {
-      if (index===this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages.length-1) {
+      if (index===this.carriages.length-1) {
         return true
       }
 
-      let nextCarriage = this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages[index+1]
+      let nextCarriage = this.carriages[index+1]
       let currentCarriageFirstChar = carriage.ID[0]
       let nextCarriageFirstChar = nextCarriage.ID[0]
 
