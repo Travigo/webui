@@ -158,7 +158,7 @@
                     <p
                       v-else-if="
                         point.realtime &&
-                        point.departureTime !== point.realtime.DepartureTime &&
+                        this.pretty.time(point.departureTime) !== this.pretty.time(point.realtime.DepartureTime) &&
                         point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
                       "
                     >
@@ -172,7 +172,7 @@
                     <p
                       v-else-if="
                         point.realtime &&
-                        point.departureTime === point.realtime.DepartureTime
+                        this.pretty.time(point.departureTime) === this.pretty.time(point.realtime.DepartureTime)
                       "
                     >
                       <span class="text-green-700">
@@ -186,14 +186,14 @@
                     <p
                       class="text-xs"
                       v-if="
-                        point.arrivalTime !== point.departureTime &&
+                        this.pretty.time(point.arrivalTime) !== this.pretty.time(point.departureTime) &&
                         point.arrivalTime != null && !(point.realtime && point.realtime?.Cancelled)
                       "
                     >
                       <span
                         v-if="
                           point.realtime &&
-                          point.arrivalTime !== point.realtime.ArrivalTime &&
+                          this.pretty.time(point.arrivalTime) !== this.pretty.time(point.realtime.ArrivalTime) &&
                           point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
                         "
                       >
@@ -208,7 +208,7 @@
                       <span
                         v-else-if="
                           point.realtime &&
-                          point.arrivalTime === point.realtime.ArrivalTime
+                          this.pretty.time(point.arrivalTime) === this.pretty.time(point.realtime.ArrivalTime)
                         "
                       >
                         <span class="text-green-700">
