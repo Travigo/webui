@@ -5,7 +5,7 @@
     </Alert>
   </div>
 
-  <div class="text-white text-base">
+  <div class="text-gray-900 dark:text-gray-200 text-base">
     <div class="inline-block mr-4">
       <span v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
         {{ journey.DetailedRailInformation.VehicleTypeName }}
