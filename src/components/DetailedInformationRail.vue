@@ -7,7 +7,7 @@
     </div>
 
     <div class="text-gray-900 dark:text-gray-200 text-base">
-      <div class="inline-block mr-4">
+      <div class="inline-block mr-4 text-sm font-medium text-gray-500">
         <span v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
           {{ journey.DetailedRailInformation.VehicleTypeName }}
         </span>

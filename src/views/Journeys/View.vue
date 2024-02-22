@@ -2,24 +2,25 @@
   <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
-    <Page-Title>
+    <h1 class="py-2 text-xl font-medium leading-tight text-gray-900 dark:text-gray-200">
       <DepartureTypeIcon :journey="journey"/> {{ journey.DestinationDisplay }}
-      <div>
-        <ServiceIcon
-          v-if="journey.Service!==undefined"
-          :service="journey.Service" 
-        /> 
-      </div>
+    </h1>
 
-      <p
-        class="text-sm font-medium text-gray-500"
-        v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked"
-      >
-        <span v-if="journey.RealtimeJourney.VehicleLocationDescription">
-          {{ journey.RealtimeJourney.VehicleLocationDescription }}
-        </span>
-      </p>
-    </Page-Title>
+    <div>
+      <ServiceIcon
+        v-if="journey.Service!==undefined"
+        :service="journey.Service" 
+      /> 
+    </div>
+
+    <p
+      class="text-sm font-medium text-gray-500"
+      v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked"
+    >
+      <span v-if="journey.RealtimeJourney.VehicleLocationDescription">
+        {{ journey.RealtimeJourney.VehicleLocationDescription }}
+      </span>
+    </p>
 
     <div v-if="!journey?.RealtimeJourney?.Cancelled">
       <DetailedInformationRail :journey="journey"/>
