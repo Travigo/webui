@@ -1,68 +1,70 @@
 <template>
-  <div v-if="journey.DetailedRailInformation?.ReplacementBus">
-    <Alert type="info">
-      This is a rail replacement bus
-    </Alert>
-  </div>
-
-  <div class="text-gray-900 dark:text-gray-200 text-base">
-    <div class="inline-block mr-4">
-      <span v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
-        {{ journey.DetailedRailInformation.VehicleTypeName }}
-      </span>
-      <span v-else>
-        {{ journey.DetailedRailInformation.VehicleType }}
-      </span>
+  <div v-if="journey?.Service?.TransportType == 'Rail'">
+    <div v-if="journey.DetailedRailInformation?.ReplacementBus">
+      <Alert type="info">
+        This is a rail replacement bus
+      </Alert>
     </div>
 
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.AirConditioning"
-    >
-      ac_unit
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.WiFi"
-    >
-      wifi
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.PowerPlugs"
-    >
-      power
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.USBPlugs"
-    >
-      usb
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.BicycleSpaces"
-    >
-      pedal_bike
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.DisabledAccess"
-    >
-      accessible
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation?.Toilets"
-    >
-      wc
-    </span>
-    <span 
-      class="material-symbols-outlined text-base" 
-      v-if="journey.DetailedRailInformation.CateringAvailable"
-    >
-      restaurant
-    </span>
+    <div class="text-gray-900 dark:text-gray-200 text-base">
+      <div class="inline-block mr-4">
+        <span v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
+          {{ journey.DetailedRailInformation.VehicleTypeName }}
+        </span>
+        <span v-else>
+          {{ journey.DetailedRailInformation.VehicleType }}
+        </span>
+      </div>
+
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.AirConditioning"
+      >
+        ac_unit
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.WiFi"
+      >
+        wifi
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.PowerPlugs"
+      >
+        power
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.USBPlugs"
+      >
+        usb
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.BicycleSpaces"
+      >
+        pedal_bike
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.DisabledAccess"
+      >
+        accessible
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation?.Toilets"
+      >
+        wc
+      </span>
+      <span 
+        class="material-symbols-outlined text-base" 
+        v-if="journey.DetailedRailInformation.CateringAvailable"
+      >
+        restaurant
+      </span>
+    </div>
   </div>
 
   <div v-if="this.carriages.length > 0" class="dx overflow-y-hidden w-full whitespace-nowrap">
@@ -93,12 +95,12 @@ export default {
   },
   computed: {
     carriages() {
-      if (this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages.length > 0) {
-        return this.journey?.RealtimeJourney?.DetailedRailInformation.Carriages
+      if (this.journey?.RealtimeJourney?.DetailedRailInformation?.Carriages.length > 0) {
+        return this.journey?.RealtimeJourney?.DetailedRailInformation?.Carriages
       }
       
-      if (this.journey?.DetailedRailInformation.Carriages.length > 0) {
-        return this.journey?.DetailedRailInformation.Carriages
+      if (this.journey?.DetailedRailInformation?.Carriages.length > 0) {
+        return this.journey?.DetailedRailInformation?.Carriages
       }
 
       return []

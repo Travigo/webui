@@ -3,55 +3,27 @@
   <div v-if="loading">Loading...</div>
   <div v-else class="h-full">
     <Page-Title>
-      <ServiceIcon
-        class="ml-2"
-        v-if="journey.Service!==undefined"
-        :service="journey.Service" 
-      /> {{ journey.DestinationDisplay }}
+      <DepartureTypeIcon :journey="journey"/> {{ journey.DestinationDisplay }}
+      <div>
+        <ServiceIcon
+          v-if="journey.Service!==undefined"
+          :service="journey.Service" 
+        /> 
+      </div>
 
       <p
         class="text-sm font-medium text-gray-500"
         v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked"
       >
-        <span
-          v-if="journey.RealtimeJourney"
-          class="
-            text-base text-center
-            inline-block
-            px-2
-            rounded
-            text-blue-600
-            bg-blue-200
-            h-6
-            min-w-[1rem]
-          "
-        >
-          Realtime
-        </span>
-        <span
-          v-if="journey.RealtimeJourney?.Reliability === 'LocationWithoutTrack'"
-          class="
-            text-base text-center
-            inline-block
-            px-2
-            rounded
-            text-orange-600
-            bg-orange-200
-            ml-2
-            h-6
-            min-w-[1rem]
-          "
-        >
-          Low Accuracy
-        </span>
-        Last location update at {{ this.pretty.time(journey.RealtimeJourney.ModificationDateTime) }}
         <span v-if="journey.RealtimeJourney.VehicleLocationDescription">
-          &#x2022; {{ journey.RealtimeJourney.VehicleLocationDescription }}
+          {{ journey.RealtimeJourney.VehicleLocationDescription }}
         </span>
       </p>
     </Page-Title>
 
-    <DetailedInformationRail :journey="journey"/>
+    <div v-if="!journey?.RealtimeJourney?.Cancelled">
+      <DetailedInformationRail :journey="journey"/>
+    </div>
 
     <div class="service-alerts">
       <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
@@ -329,6 +301,7 @@ import ServiceIcon from '@/components/ServiceIcon.vue'
 import Alert from "@/components/Alert.vue"
 import ServiceAlert from '@/components/ServiceAlert.vue'
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
+import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
@@ -378,7 +351,8 @@ export default {
     Alert,
     ServiceIcon,
     ServiceAlert,
-    DetailedInformationRail
+    DetailedInformationRail,
+    DepartureTypeIcon
   },
   methods: {
     mapLoaded(map) {
