@@ -339,6 +339,10 @@ export default {
           name: "Timeline",
         },
         {
+          id: "details",
+          name: "Details",
+        },
+        {
           id: "map",
           name: "Map",
         },

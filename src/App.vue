@@ -77,7 +77,7 @@ export default {
       class="mt-2 sm:mt-3 lg:mt-4 mx-2 sm:mx-6 lg:mx-8 bg-white rounded-lg border border-gray-200 shadow-md sticky top-0 z-50 dark:bg-gray-800 dark:border-gray-600"
     >
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div class="relative flex items-center justify-between h-16">
+        <div class="relative flex items-center justify-between h-12 lg:h-16">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <!-- Mobile menu button-->
             <button @click="$router.go(-1)" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 focus:outline-none transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
