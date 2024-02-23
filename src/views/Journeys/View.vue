@@ -33,9 +33,9 @@
     <div class="md:hidden">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
-    <div class="flex flex-col-reverse md:flex-row h-full">
+    <div class="flex flex-col-reverse mt-2 md:flex-row h-full">
       <div
-        class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0 md:block"
+        class="basis-full md:basis-1/2 md:mr-2 md:mt-0 md:block"
         v-bind:class="{ hidden: this.currentTab !== 'timeline' }"
       >
         <Card>
@@ -201,94 +201,106 @@
       </div>
       <div
         class="basis-full md:basis-1/2 md:ml-2 h-[450px] md:h-[400px] md:block"
-        v-bind:class="{ hidden: this.currentTab !== 'map' }"
       >
-        <div v-if="journey?.RealtimeJourney?.Occupancy.OccupancyAvailable">
-          <Card class="mb-4">
-            <div><strong>Occupancy: </strong> {{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</div>
-            <div v-if="journey?.RealtimeJourney?.Occupancy.ActualValues">
-              <div v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
-                <strong>Seats: </strong>
-                {{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}
+        <div class="md:block" v-bind:class="{ hidden: this.currentTab !== 'details' }">
+          <div v-if="journey?.RealtimeJourney?.Occupancy.OccupancyAvailable">
+            <Card class="mb-4">
+              <div><strong>Occupancy: </strong> {{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</div>
+              <div v-if="journey?.RealtimeJourney?.Occupancy.ActualValues">
+                <div v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
+                  <strong>Seats: </strong>
+                  {{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}
+                </div>
+                <div v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
+                  <strong>Wheelchair Spaces: </strong>
+                  {{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}
+                </div>
               </div>
-              <div v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
-                <strong>Wheelchair Spaces: </strong>
-                {{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div v-if="journey?.DetailedRailInformation">
-          <Card class="mb-4">
-            <div>
-              <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
-            </div>
-
-            <div>
-              <strong>Seating: </strong> {{ journey.DetailedRailInformation.Seating }}
-            </div>
-
-            <div>
-              <strong>Sleepers: </strong> {{ journey.DetailedRailInformation.SleeperAvailable }}
-            </div>
-            <div v-if="journey.DetailedRailInformation.SleeperAvailable">
-              <strong>Sleeper for: </strong> {{ journey.DetailedRailInformation.Sleepers }}
-            </div>
-
-            <div v-if="journey.DetailedRailInformation.CateringAvailable">
-              <strong>Catering Description: </strong> {{ journey.DetailedRailInformation.CateringDescription }}
-            </div>
-
-            <div>
-              <strong>Driver only: </strong> {{ journey.DetailedRailInformation.DriverOnly }}
-            </div>
-            <div>
-              <strong>Guard required: </strong> {{ journey.DetailedRailInformation.GuardRequired }}
-            </div>
-
-            <div>
-              <strong>Reservation Required: </strong> {{ journey.DetailedRailInformation.ReservationRequired }}
-            </div>
-            <div>
-              <strong>Reservation Required for bike: </strong> {{ journey.DetailedRailInformation.ReservationBikeRequired }}
-            </div>
-            <div>
-              <strong>Reservation Recommended: </strong> {{ journey.DetailedRailInformation.ReservationRecommended }}
-            </div>
-          </Card>
-        </div>
-
-        <mapbox-map
-          accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-          mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
-          style="height: 100%"
-          :zoom="zoom"
-          :center="center"
-          @loaded="mapLoaded"
-        >
-          <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-            <mapbox-marker :lngLat="point.location">
-              <template v-slot:icon>
-                <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
-              </template>
-            </mapbox-marker>
-
-            <mapbox-geogeometry-raw :source="point.track" v-if="point.track">
-              <mapbox-geogeometry-line :width="5" :color="point.active ? 'green' : 'gray'" />
-            </mapbox-geogeometry-raw>
+            </Card>
           </div>
 
-          <mapbox-marker 
-            :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
-            :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
-            v-if="this.journey.RealtimeJourney && this.journey.RealtimeJourney.VehicleLocation.coordinates.length === 2"
+          <div v-if="journey?.DetailedRailInformation">
+            <Card class="mb-4">
+              <div v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
+                <strong>Vehicle: </strong> {{ journey.DetailedRailInformation.VehicleTypeName }}
+              </div>
+              <div v-else>
+                <strong>Vehicle ID: </strong> {{ journey.DetailedRailInformation.VehicleType }}
+              </div>
+              <div>
+                <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
+              </div>
+              <div>
+                <strong>Fuel: </strong> {{ journey.DetailedRailInformation.PowerType }}
+              </div>
+
+              <div>
+                <strong>Seating: </strong> {{ journey.DetailedRailInformation.Seating }}
+              </div>
+
+              <div>
+                <strong>Sleepers: </strong> {{ journey.DetailedRailInformation.SleeperAvailable }}
+              </div>
+              <div v-if="journey.DetailedRailInformation.SleeperAvailable">
+                <strong>Sleeper for: </strong> {{ journey.DetailedRailInformation.Sleepers }}
+              </div>
+
+              <div v-if="journey.DetailedRailInformation.CateringAvailable">
+                <strong>Catering Description: </strong> {{ journey.DetailedRailInformation.CateringDescription }}
+              </div>
+
+              <div>
+                <strong>Driver only: </strong> {{ journey.DetailedRailInformation.DriverOnly }}
+              </div>
+              <div>
+                <strong>Guard required: </strong> {{ journey.DetailedRailInformation.GuardRequired }}
+              </div>
+
+              <div>
+                <strong>Reservation Required: </strong> {{ journey.DetailedRailInformation.ReservationRequired }}
+              </div>
+              <div>
+                <strong>Reservation Required for bike: </strong> {{ journey.DetailedRailInformation.ReservationBikeRequired }}
+              </div>
+              <div>
+                <strong>Reservation Recommended: </strong> {{ journey.DetailedRailInformation.ReservationRecommended }}
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        <div class="md:block h-[400px]" v-bind:class="{ hidden: this.currentTab !== 'map' }">
+          <mapbox-map
+            accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+            mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
+            style="height: 100%"
+            :zoom="zoom"
+            :center="center"
+            @loaded="mapLoaded"
           >
-            <template v-slot:icon>
-              <img src="/icons/bus-svgrepo-com-32x32.png">
-            </template>
-          </mapbox-marker>
-        </mapbox-map>
+            <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
+              <mapbox-marker :lngLat="point.location">
+                <template v-slot:icon>
+                  <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
+                </template>
+              </mapbox-marker>
+
+              <mapbox-geogeometry-raw :source="point.track" v-if="point.track">
+                <mapbox-geogeometry-line :width="5" :color="point.active ? 'green' : 'gray'" />
+              </mapbox-geogeometry-raw>
+            </div>
+
+            <mapbox-marker 
+              :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
+              :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
+              v-if="this.journey.RealtimeJourney && this.journey.RealtimeJourney.VehicleLocation.coordinates.length === 2"
+            >
+              <template v-slot:icon>
+                <img src="/icons/bus-svgrepo-com-32x32.png">
+              </template>
+            </mapbox-marker>
+          </mapbox-map>
+        </div>
       </div>
     </div>
   </div>

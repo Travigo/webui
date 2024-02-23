@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 mb-4 text-sm" v-bind:class="typeClasses[type]">
+  <div class="p-4 text-sm" v-bind:class="typeClasses[type]">
     <slot></slot>
   </div>
 </template>

@@ -8,14 +8,14 @@
         {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
       </span>
 
-      <div class="md:float-right inline overflow-x-scroll w-full">
-        <div class="dx overflow-y-hidden w-full whitespace-nowrap text-right">
+      <div class="inline overflow-x-scroll w-full">
+        <div class="dx overflow-y-hidden w-full whitespace-nowrap">
           <router-link
               :to="{'name': 'services/view', params: {'id': service.PrimaryIdentifier}}"
               v-for="service in this.stop.Services" v-bind:key="service.PrimaryIdentifier"
           >
             <ServiceIcon
-              class="ml-2"
+              class="mr-2"
               :service="service"
             />
           </router-link>
@@ -43,16 +43,20 @@
           <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
         </div>
 
+        <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
+
         <div class="flex flex-col-reverse md:flex-row h-full">
-          <div class="basis-full md:basis-1/2 md:mr-2 mt-4 md:mt-0">  
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'departures' }">  
             <Card>
-              <template #title>
-                Departures
-              </template>
               <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
                 Loading...
               </span>
               <DeparturesList v-else :stop="this.stop" :departures="this.departures"/>
+            </Card>
+          </div>
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'arrivals' }">  
+            <Card>
+              Not implemented yet
             </Card>
           </div>
           <div class="hidden md:block basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
@@ -100,6 +104,7 @@ import ServiceIcon from '@/components/ServiceIcon.vue'
 import DeparturesList from '@/components/DeparturesList.vue'
 import ServiceAlert from '@/components/ServiceAlert.vue'
 import Alert from '@/components/Alert.vue'
+import NavTabBar from "@/components/NavTabBar.vue"
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -126,7 +131,19 @@ export default {
       currentZoom: 11.5,
 
       refreshTimer: null,
-      serviceAlertsRefreshTimer: null
+      serviceAlertsRefreshTimer: null,
+
+      currentTab: "departures",
+      tabs: [
+        {
+          id: "departures",
+          name: "Departures",
+        },
+        {
+          id: "arrivals",
+          name: "Arrivals",
+        }
+      ]
     }
   },
   components: {
@@ -136,8 +153,12 @@ export default {
     ServiceAlert,
     Alert,
     DeparturesList,
+    NavTabBar
   },
   methods: {
+    changeTab(newTab) {
+      this.currentTab = newTab
+    },
     getStop() {
       axios
         .get(`${API.URL}/core/stops/${this.$route.params.id}`)
