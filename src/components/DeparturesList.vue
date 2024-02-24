@@ -33,7 +33,7 @@
       </div>
       <div class="my-auto text-right flex-shrink-0">
         <router-link 
-          :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}}" 
+          :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}" 
           v-if="departure.Journey.PrimaryIdentifier !=''"
         >
           <DepartureTimeView :departure="departure" />
@@ -78,6 +78,10 @@ export default {
       let currentDateTime = new Date(Date.parse(this.departures[index].Time))
 
       return comparisonDateTime.getDate() != currentDateTime.getDate()
+    },
+    journeyRunDate(departure) {
+      let date = new Date(Date.parse(departure.Time))
+      return `${date.getFullYear()}-${Pretty.padToTwo(date.getMonth())}-${Pretty.padToTwo(date.getDate())}`
     }
   }
 }

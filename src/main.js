@@ -32,7 +32,8 @@ app.use(
     authorizationParams: {
       redirect_uri: window.location.origin,
       audience: 'https://api.travigo.app'
-    }
+    },
+    cacheLocation: 'localstorage'
   })
 )
 

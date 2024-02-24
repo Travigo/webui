@@ -54,7 +54,7 @@
               <DeparturesList v-else :stop="this.stop" :departures="this.departures"/>
             </Card>
           </div>
-          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'arrivals' }">  
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab == 'departures' }">  
             <Card>
               Not implemented yet
             </Card>
@@ -142,6 +142,10 @@ export default {
         {
           id: "arrivals",
           name: "Arrivals",
+        },
+        {
+          id: "details",
+          name: "Details",
         }
       ]
     }
