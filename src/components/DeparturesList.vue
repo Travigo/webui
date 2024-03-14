@@ -26,7 +26,7 @@
           {{ departure.DestinationDisplay }}
         </div>
         <div class="text-xs">
-          <router-link :to="{'name': 'operators/view', params: {'id': departure.Journey.Operator.PrimaryIdentifier}}">
+          <router-link :to="{'name': 'operators/view', params: {'id': departure.Journey.Operator.PrimaryIdentifier}}" v-if="departure.Journey.Operator !== undefined">
             {{ departure.Journey.Operator.PrimaryName }}
           </router-link>
         </div>

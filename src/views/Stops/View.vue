@@ -5,7 +5,7 @@
     <PageTitle paddingStyle="pb-0 py-2 md:py-4 lg:py-6">
       {{ this.stop.PrimaryName }}
       <span class="text-sm text-gray-700">
-        {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
+        {{ this.stop.OtherNames?.Indicator }} {{ this.stop.OtherNames?.Landmark }}
       </span>
 
       <div class="inline overflow-x-scroll w-full">
@@ -73,7 +73,7 @@
                     <p>
                       <strong>{{ this.stop.PrimaryName }}</strong>
                     </p>
-                    {{ this.stop.OtherNames.Indicator }} {{ this.stop.OtherNames.Landmark }}
+                    {{ this.stop.OtherNames?.Indicator }} {{ this.stop.OtherNames?.Landmark }}
                   </div>
                 </mapbox-popup>
               </mapbox-marker>

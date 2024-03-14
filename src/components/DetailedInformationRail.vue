@@ -51,7 +51,7 @@
       </span>
       <span 
         class="material-symbols-outlined text-base" 
-        v-if="journey.DetailedRailInformation.CateringAvailable"
+        v-if="journey.DetailedRailInformation?.CateringAvailable"
       >
         restaurant
       </span>
