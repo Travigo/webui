@@ -9,8 +9,6 @@ export default {
     let hours = this.padToTwo(datetime.getHours())
     let minutes = this.padToTwo(datetime.getMinutes())
 
-    console.log(datetimeString)
-
     const regex = /\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2}):(\d{2})(Z|\+\d{2}:\d{2})/;
     let regexMatch = datetimeString.match(regex)
 

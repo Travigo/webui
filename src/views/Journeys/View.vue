@@ -290,6 +290,10 @@
               </mapbox-geogeometry-raw>
             </div>
 
+            <mapbox-geogeometry-raw :source="this.convertTrackToFeatureCollection(this.journey.Track)">
+              <mapbox-geogeometry-line :width="5" color="green" />
+            </mapbox-geogeometry-raw>
+
             <mapbox-marker 
               :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
               :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
@@ -456,29 +460,32 @@ export default {
         })
         .finally(() => (this.loading = false))
     },
+    convertTrackToFeatureCollection(track) {
+      return {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: {
+              stroke: "#545454",
+              "stroke-width": 9.6,
+              "stroke-opacity": 1,
+            },
+            geometry: {
+              type: "LineString",
+              coordinates: track.map((x) => x.coordinates),
+            },
+          },
+        ],
+      }
+    },
     extractJourneyPoints(journey) {
       let journeyPoints = []
 
       for (let index = 0; index < journey.Path.length; index++) {
         const element = journey.Path[index]
 
-        let track = {
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              properties: {
-                stroke: "#545454",
-                "stroke-width": 9.6,
-                "stroke-opacity": 1,
-              },
-              geometry: {
-                type: "LineString",
-                coordinates: element.Track.map((x) => x.coordinates),
-              },
-            },
-          ],
-        }
+        let track = this.convertTrackToFeatureCollection(element.Track)
 
         let platform = element.OriginPlatform
         let platformType = 'ESTIMATED'
