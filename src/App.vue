@@ -65,7 +65,9 @@ export default {
   },
   mounted() {
     this.$nextTick(function () {
-      notify.setupNotifications(this.auth0, this.$messaging)
+      if (this.auth0.isAuthenticated) {
+        notify.setupNotifications(this.auth0, this.$messaging)
+      }
     })
   }
 }
