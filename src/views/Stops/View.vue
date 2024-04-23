@@ -43,7 +43,13 @@
           <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
         </div>
 
-        <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
+        <div class="material-symbols-outlined text-base bg-gray-700 text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="openDatetimePicker()" >
+          <input type="datetime-local" @input="updateDatetimePicker" ref="datetime"  hidden>
+          calendar_clock
+        </div>
+        <div class="inline-block">
+          <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
+        </div>
 
         <div class="flex flex-col-reverse md:flex-row h-full">
           <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'departures' }">  
@@ -160,6 +166,18 @@ export default {
     NavTabBar
   },
   methods: {
+    openDatetimePicker() {
+      this.$refs.datetime.showPicker()
+    },
+    updateDatetimePicker(event) {
+      let timestamp = ""
+      if (event.target.value !== "") {
+        timestamp = new Date(event.target.value).toISOString()
+      }
+
+      this.$router.push({query: {datetime: timestamp}})
+      setInterval(this.getDepartures, 500)
+    },
     changeTab(newTab) {
       this.currentTab = newTab
     },
