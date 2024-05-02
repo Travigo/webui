@@ -48,7 +48,7 @@
           calendar_clock
         </a>
         <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.refreshView()">
-          <span v-if="this.loadingDepartures">sync</span><span v-else>cloud_sync</span>
+          <span v-if="this.loadingDepartures">cloud_sync</span><span v-else>sync</span>
         </a>
         <div class="inline-block">
           <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
