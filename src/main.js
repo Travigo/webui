@@ -17,9 +17,40 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
-router.afterEach(to => {
+router.beforeEach((to, from, next) => {
+  const isInStandaloneMode = () => (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || document.referrer.includes('android-app://')
+
+  // Only care about this in PWA world
+  if (!isInStandaloneMode()) {
+    next()
+    return
+  }
+
+  if (from['name'] === undefined && from['href'] === undefined && from['path'] === '/') {
+    console.log("fresh load")
+    if (to['name'] === 'home' && to['href'] === '/'  && to['path'] === '/') {
+      console.log('onto homepage')
+
+      let lastRouteJSON = localStorage.getItem('last_route')
+      if (lastRouteJSON === null) {
+        next()
+        return
+      }
+      let lastRoute = JSON.parse(lastRouteJSON)
+      console.log(lastRoute.name)
+      localStorage.removeItem('last_route')
+      next({ name: lastRoute.name, params: lastRoute.params, query: lastRoute.query })
+      return
+    }
+  }
+
+  console.log(to, from)
+  next()
   localStorage.setItem('last_route', JSON.stringify(to));
 })
+// router.afterEach((to, from) => {
+//   localStorage.setItem('last_route', JSON.stringify(to))
+// })
 app.use(router)
 
 app.use(VueGtag, {config: { id: "G-X0ZSSZCPYX" }})
