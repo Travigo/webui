@@ -55,7 +55,7 @@
         </div>
 
         <div class="flex flex-col-reverse md:flex-row h-full">
-          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'departures' }">  
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2 hidden" v-bind:class="{ visible: this.currentTab == 'departures' }">  
             <Card>
               <span v-if="this.loadingDepartures && this.departures === null" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
                 Loading...
@@ -63,9 +63,14 @@
               <DeparturesList v-else :stop="this.stop" :departures="this.departures"/>
             </Card>
           </div>
-          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab == 'departures' }">  
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2 hidden" v-bind:class="{ visible: this.currentTab == 'arrivals' }">  
             <Card>
-              Not implemented yet
+              Arrivals not implemented yet
+            </Card>
+          </div>
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2 hidden" v-bind:class="{ visible: this.currentTab == 'details' }">  
+            <Card>
+             Details not implemented yet
             </Card>
           </div>
           <div class="hidden md:block basis-full md:basis-1/2 md:ml-2 h-[150px] md:h-[400px]">
@@ -183,10 +188,16 @@ export default {
     },
     changeTab(newTab) {
       this.currentTab = newTab
+
+      this.refreshView()
     },
     refreshView() {
-      // TODO refresh whatever tab is active
-      this.getDepartures()
+      // TODO maybe add some sort of rate limiting here?
+      if (this.currentTab == "departures") {
+        this.getDepartures()
+      } else if (this.currentTab == "arrivals") {
+        this.getArrivals()
+      }
     },
     getStop() {
       axios
@@ -221,6 +232,9 @@ export default {
           // this.error = error
         })
         .finally(() => this.loadingDepartures = false)
+    },
+    getArrivals() {
+      console.log("TODO implement get arrivals")
     },
     getServiceAlerts() {
       axios
