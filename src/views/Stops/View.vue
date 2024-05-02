@@ -134,6 +134,9 @@ export default {
       departures: null,
       loadingDepartures: true,
 
+      arrivals: null,
+      loadingArrivals: true,
+
       operatorStats: undefined,
 
       serviceAlerts: [],
@@ -193,9 +196,9 @@ export default {
     },
     refreshView() {
       // TODO maybe add some sort of rate limiting here?
-      if (this.currentTab == "departures") {
+      if (this.currentTab == "departures" && !this.loadingDepartures) {
         this.getDepartures()
-      } else if (this.currentTab == "arrivals") {
+      } else if (this.currentTab == "arrivals" && !this.loadingArrivals) {
         this.getArrivals()
       }
     },
