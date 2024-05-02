@@ -48,7 +48,7 @@
           calendar_clock
         </div>
         <div class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.refreshView()">
-          sync
+          <span v-if="this.loadingDepartures">sync</span><span v-else>cloud_sync</span>
         </div>
         <div class="inline-block">
           <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
@@ -57,7 +57,7 @@
         <div class="flex flex-col-reverse md:flex-row h-full">
           <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'departures' }">  
             <Card>
-              <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+              <span v-if="this.loadingDepartures && this.departures === null" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
                 Loading...
               </span>
               <DeparturesList v-else :stop="this.stop" :departures="this.departures"/>
@@ -205,6 +205,7 @@ export default {
         .finally(() => this.loadingStop = false)
     },
     getDepartures() {
+      this.loadingDepartures = true
       axios
         .get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {
           params: {
