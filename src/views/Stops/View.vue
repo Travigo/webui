@@ -44,7 +44,7 @@
         </div>
 
         <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.openDatetimePicker()">
-          <input type="datetime-local" @input="updateDatetimePicker" ref="datetime" hidden>
+          <VueDatePicker @update:model-value="updateDatetimePicker" ref="datetimepicker" time-picker-inline teleport-center :teleport="true" hidden />
           calendar_clock
         </a>
         <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.refreshView()">
@@ -119,6 +119,7 @@ import DeparturesList from '@/components/DeparturesList.vue'
 import ServiceAlert from '@/components/ServiceAlert.vue'
 import Alert from '@/components/Alert.vue'
 import NavTabBar from "@/components/NavTabBar.vue"
+import VueDatePicker from '@vuepic/vue-datepicker'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -164,7 +165,9 @@ export default {
           id: "details",
           name: "Details",
         }
-      ]
+      ],
+
+      datetime: null
     }
   },
   components: {
@@ -174,16 +177,18 @@ export default {
     ServiceAlert,
     Alert,
     DeparturesList,
-    NavTabBar
+    NavTabBar,
+    VueDatePicker
   },
   methods: {
     openDatetimePicker() {
-      this.$refs.datetime.showPicker()
+      this.$refs.datetimepicker.openMenu()
     },
     updateDatetimePicker(event) {
+      console.log(event)
       let timestamp = ""
-      if (event.target.value !== "") {
-        timestamp = new Date(event.target.value).toISOString()
+      if (event !== "") {
+        timestamp = new Date(event).toISOString()
       }
 
       this.$router.push({query: {datetime: timestamp}})
@@ -196,9 +201,9 @@ export default {
     },
     refreshView() {
       // TODO maybe add some sort of rate limiting here?
-      if (this.currentTab == "departures" && !this.loadingDepartures) {
+      if (this.currentTab == "departures") {
         this.getDepartures()
-      } else if (this.currentTab == "arrivals" && !this.loadingArrivals) {
+      } else if (this.currentTab == "arrivals") {
         this.getArrivals()
       }
     },
@@ -219,6 +224,10 @@ export default {
         .finally(() => this.loadingStop = false)
     },
     getDepartures() {
+      if (this.loadingDepartures && this.departures !== null) {
+        return
+      }
+      
       this.loadingDepartures = true
       axios
         .get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.3.3",
+    "@vuepic/vue-datepicker": "^8.5.1",
     "@webzlodimir/vue-bottom-sheet": "^3.0.5",
     "axios": "^1.6.8",
     "firebase": "^10.11.1",

@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './tailwind.css'
 import './main.css'
+import '@vuepic/vue-datepicker/dist/main.css'
 // import 'leaflet/dist/leaflet.css'
 import App from './App.vue'
 import { routes } from './routes.js'
