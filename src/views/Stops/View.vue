@@ -63,12 +63,12 @@
               <DeparturesList v-else :stop="this.stop" :departures="this.departures"/>
             </Card>
           </div>
-          <div class="basis-full md:basis-1/2 md:mr-2 mt-2 hidden" v-bind:class="{ hidden: this.currentTab !== 'arrivals', visible: this.currentTab === 'arrivals' }">  
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'arrivals', visible: this.currentTab === 'arrivals' }">  
             <Card>
               Arrivals not implemented yet
             </Card>
           </div>
-          <div class="basis-full md:basis-1/2 md:mr-2 mt-2 hidden" v-bind:class="{ hidden: this.currentTab !== 'details', visible: this.currentTab === 'details' }">  
+          <div class="basis-full md:basis-1/2 md:mr-2 mt-2" v-bind:class="{ hidden: this.currentTab !== 'details', visible: this.currentTab === 'details' }">  
             <Card>
              Details not implemented yet
             </Card>
