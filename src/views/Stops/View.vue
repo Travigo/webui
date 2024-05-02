@@ -43,13 +43,13 @@
           <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
         </div>
 
-        <div class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.$refs.datetime.showPicker()">
+        <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.$refs.datetime.showPicker()">
           <input type="datetime-local" @input="updateDatetimePicker" ref="datetime" hidden>
           calendar_clock
-        </div>
-        <div class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.refreshView()">
+        </a>
+        <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.refreshView()">
           <span v-if="this.loadingDepartures">sync</span><span v-else>cloud_sync</span>
-        </div>
+        </a>
         <div class="inline-block">
           <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
         </div>
