@@ -2,18 +2,15 @@
   <Card>
     <div class="mb-4 last:mb-0 " v-for="service in this.services" v-bind:key="service.PrimaryIdentifier">
       <div class="flex">
-        <ServiceIcon 
-          class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
-          style="line-height: 44px"
-          :service="service"
-        />
-        <div class="flex-auto my-auto">
-          <div>
-            {{ service.OutboundDescription.Description }}
-            <br/>
-            {{ service.InboundDescription.Description }}
-          </div>
-        </div>
+        <router-link
+          :to="{'name': 'services/view', params: {'id': service.PrimaryIdentifier}}"
+        >
+          <ServiceIcon 
+            class="text-xl inline-block py-0 px-2 mr-2 h-11 min-w-[2.5rem]"
+            style="line-height: 44px"
+            :service="service"
+          />
+        </router-link>
       </div>
     </div>
   </Card>
