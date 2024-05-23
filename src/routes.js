@@ -134,5 +134,13 @@ export const routes = [
     },
     component: () => import('./views/Services/View.vue')
   },
+  {
+    name: 'assistant/home',
+    path: '/assistant',
+    meta: { 
+      title: 'Assistant'
+    },
+    component: () => import('./views/Assistant/Home.vue')
+  },
   { path: '/:path(.*)', component: NotFound },
 ]

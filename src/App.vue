@@ -35,8 +35,8 @@ export default {
           route: { name: 'timetables/home' }
         },
         {
-          name: 'Statistics',
-          route: { name: 'statistics/home' }
+          name: 'Assistant',
+          route: { name: 'assistant/home' }
         },
         {
           name: 'Account',

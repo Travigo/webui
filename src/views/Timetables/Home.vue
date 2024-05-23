@@ -7,7 +7,7 @@
       <strong>Coming Soon</strong>
 
       <p>
-        Here you will be able to see scheduled timings for bus services.
+        Here you will be able to see scheduled timings for transport services.
       </p>
     </Card>
   </div>
