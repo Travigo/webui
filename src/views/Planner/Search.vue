@@ -20,48 +20,52 @@
           {{ this.pretty.day(journeyPlan.StartTime) }}
         </div>
         <div class="flex">
-          <div class="flex-auto my-auto">
-            <div class="flex">
-              <div>
-                <div class="inline-block w-[4rem] text-center">
-                  <div class="text-xl font-black">
-                    {{ this.pretty.time(journeyPlan.StartTime) }}
+          <router-link
+            :to="{'name': 'journeys/view', params: {'id': journeyPlan.RouteItems[0].Journey.PrimaryIdentifier}}"
+          >
+            <div class="flex-auto my-auto">
+              <div class="flex">
+                <div>
+                  <div class="inline-block w-[4rem] text-center">
+                    <div class="text-xl font-black">
+                      {{ this.pretty.time(journeyPlan.StartTime) }}
+                    </div>
+                    <div class="text-xs font-light">Scheduled</div>
                   </div>
-                  <div class="text-xs font-light">Scheduled</div>
-                </div>
 
-                <div class="inline-block text-center w-[9rem]">
-                ->  
-                </div>
-
-                <div class="inline-block w-[4rem] text-center">
-                  <div class="text-xl font-black">
-                    {{ this.pretty.time(journeyPlan.ArrivalTime) }}
+                  <div class="inline-block text-center w-[9rem]">
+                  ->  
                   </div>
-                  <div class="text-xs font-ligh">Scheduled</div>
-                </div>
-                
-                <div class="inline-block">
-                  <span 
-                    v-if="index==earliestArrivalJourneyID"
-                    class="text-xs font-semibold inline-block py-1 px-2 rounded text-blue-600 bg-blue-200 mr-1"
-                  >
-                    Earliest
-                  </span>
+
+                  <div class="inline-block w-[4rem] text-center">
+                    <div class="text-xl font-black">
+                      {{ this.pretty.time(journeyPlan.ArrivalTime) }}
+                    </div>
+                    <div class="text-xs font-ligh">Scheduled</div>
+                  </div>
+                  
+                  <div class="inline-block">
+                    <span 
+                      v-if="index==earliestArrivalJourneyID"
+                      class="text-xs font-semibold inline-block py-1 px-2 rounded text-blue-600 bg-blue-200 mr-1"
+                    >
+                      Earliest
+                    </span>
+                  </div>
                 </div>
               </div>
+              <div class="text-xs mt-2">
+                {{ journeyPlan.RouteItems[0].Journey.Service.TransportType }} to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
+              </div>
+              <div class="text-xs">
+                <span v-if="journeyPlan.RouteItems.length==1">Direct</span>
+                <span v-else>{{ journeyPlan.RouteItems.length-1 }} changes</span>, {{ this.pretty.duration(journeyPlan.Duration) }}
+              </div>
             </div>
-            <div class="text-xs mt-2">
-              {{ journeyPlan.RouteItems[0].Journey.Service.TransportType }} to {{ journeyPlan.RouteItems[0].Journey.DestinationDisplay }}
+            <div class="my-auto text-right">
+    
             </div>
-            <div class="text-xs">
-              <span v-if="journeyPlan.RouteItems.length==1">Direct</span>
-              <span v-else>{{ journeyPlan.RouteItems.length-1 }} changes</span>, {{ this.pretty.duration(journeyPlan.Duration) }}
-            </div>
-          </div>
-          <div class="my-auto text-right">
-   
-          </div>
+          </router-link>
         </div>
       </div>
     </Card>
