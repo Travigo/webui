@@ -36,11 +36,13 @@ export default {
         },
         {
           name: 'Assistant',
-          route: { name: 'assistant/home' }
+          route: { name: 'assistant/home' },
+          requiresLogin: true
         },
         {
           name: 'Account',
-          route: { name: 'account/home' }
+          route: { name: 'account/home' },
+          requiresLogin: true
         }
       ]
     }
@@ -107,15 +109,20 @@ export default {
             </router-link>
             <div class="hidden sm:block sm:ml-6">
               <div class="flex">
-                <router-link
+                <span
                   v-for="navItem in navItems"
                   v-bind:key="navItem.name"
-                  :to="navItem.route" 
-                  active-class="active-nav-tab"
-                  class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out dark:text-gray-100"
+                  class="py-2"
                 >
-                  {{ navItem.name }}
-                </router-link>
+                  <router-link
+                    v-if="!navItem.requiresLogin || (navItem.requiresLogin && this.auth0.isAuthenticated)"
+                    :to="navItem.route" 
+                    active-class="active-nav-tab"
+                    class="ml-4 px-3 py-2 rounded-md text-sm font-medium leading-5 text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700 transition duration-150 ease-in-out dark:text-gray-100"
+                  >
+                    {{ navItem.name }}
+                  </router-link>
+                </span>
               </div>
             </div>
           </div>
