@@ -1,6 +1,6 @@
 <template>
-  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
-  <div v-if="loading">Loading...</div>
+  <Alert type="error" class="mt-4" v-if="errorJourney !== undefined">{{ errorJourney }}</Alert>
+  <div v-if="loadingJourney">Loading...</div>
   <div v-else class="h-full">
     <h1 class="py-2 text-xl font-medium leading-tight text-gray-900 dark:text-gray-200">
       <DepartureTypeIcon :journey="journey"/> {{ journey.DestinationDisplay }}
@@ -29,6 +29,11 @@
     <div class="service-alerts">
       <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
     </div>
+
+    <RefreshLoadingButton 
+      :loading="this.loadingRealtime"
+      @click="this.getRealtimeJourney()"
+    ></RefreshLoadingButton>
 
     <div class="md:hidden">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
@@ -319,6 +324,7 @@ import Alert from "@/components/Alert.vue"
 import ServiceAlert from '@/components/ServiceAlert.vue'
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
+import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
@@ -331,8 +337,11 @@ export default {
 
       serviceAlerts: [],
 
-      loading: true,
-      error: undefined,
+      loadingJourney: true,
+      errorJourney: undefined,
+
+      loadingRealtime: false,
+      errorRealtime: undefined,
 
       pretty: Pretty,
 
@@ -373,7 +382,8 @@ export default {
     ServiceIcon,
     ServiceAlert,
     DetailedInformationRail,
-    DepartureTypeIcon
+    DepartureTypeIcon,
+    RefreshLoadingButton
   },
   methods: {
     mapLoaded(map) {
@@ -434,14 +444,20 @@ export default {
         })
         .catch((error) => {
           console.log(error)
-          this.error = error
+          this.errorJourney = error
         })
-        .finally(() => (this.loading = false))
+        .finally(() => (this.loadingJourney = false))
     },
     getRealtimeJourney() {
       if (this.journey == null) {
         return
       }
+
+      if (this.loadingRealtime) {
+        return
+      }
+
+      this.loadingRealtime = true
 
       axios
         .get(`${API.URL}/core/journeys/${this.$route.params.id}?realtime_only=true`)
@@ -456,9 +472,9 @@ export default {
         })
         .catch((error) => {
           console.log(error)
-          this.error = error
+          this.errorRealtime = error
         })
-        .finally(() => (this.loading = false))
+        .finally(() => (this.loadingRealtime = false))
     },
     convertTrackToFeatureCollection(track) {
       return {

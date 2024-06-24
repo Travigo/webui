@@ -47,9 +47,10 @@
           <VueDatePicker @update:model-value="updateDatetimePicker" ref="datetimepicker" time-picker-inline teleport-center :teleport="true" hidden />
           calendar_clock
         </a>
-        <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.refreshView()">
-          <span v-if="this.loadingDepartures">cloud_sync</span><span v-else>sync</span>
-        </a>
+        <RefreshLoadingButton 
+          :loading="this.loadingDepartures"
+          @click="this.refreshView()"
+        ></RefreshLoadingButton>
         <div class="inline-block">
           <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
         </div>
@@ -119,6 +120,7 @@ import DeparturesList from '@/components/DeparturesList.vue'
 import ServiceAlert from '@/components/ServiceAlert.vue'
 import Alert from '@/components/Alert.vue'
 import NavTabBar from "@/components/NavTabBar.vue"
+import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 import VueDatePicker from '@vuepic/vue-datepicker'
 import axios from 'axios'
 import API from '@/API'
@@ -178,7 +180,8 @@ export default {
     Alert,
     DeparturesList,
     NavTabBar,
-    VueDatePicker
+    VueDatePicker,
+    RefreshLoadingButton
   },
   methods: {
     openDatetimePicker() {
