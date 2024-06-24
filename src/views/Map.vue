@@ -171,7 +171,9 @@ export default {
       this.refreshData()
     },
     zoomUpdate(zoom) {
-      this.currentZoom = zoom;
+      this.currentZoom = zoom
+
+      localStorage.map_last_zoom = this.currentZoom
     },
     refreshData(updateStops = true, updateVehicles = true) {
       if (this.$refs.map !== undefined) {
@@ -180,6 +182,8 @@ export default {
     },
     mapPositionUpdate(center) {
       this.currentCenter = center
+
+      localStorage.map_last_center = JSON.stringify(this.currentCenter)
 
       this.getData(true, true)
     },
@@ -307,16 +311,7 @@ export default {
 
         localStorage.map_showVehicles = to
       }
-    },
-    $route: {
-      immediate: true,
-      handler(to, from) {
-        if (this.$refs.map !== undefined) {
-          localStorage.map_last_center = JSON.stringify(this.currentCenter)
-          localStorage.map_last_zoom = this.currentZoom
-        }
-      }
-    },
+    }
   }
 }
 </script>
