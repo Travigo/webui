@@ -35,7 +35,7 @@
       @click="this.getRealtimeJourney()"
     ></RefreshLoadingButton>
 
-    <div class="md:hidden">
+    <div class="md:hidden inline-block">
       <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
     </div>
     <div class="flex flex-col-reverse mt-2 md:flex-row h-full">
