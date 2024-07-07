@@ -47,6 +47,9 @@
           <VueDatePicker @update:model-value="updateDatetimePicker" ref="datetimepicker" time-picker-inline teleport-center :teleport="true" hidden />
           calendar_clock
         </a>
+        <FavouriteButton
+          :favourited="false"
+        />
         <RefreshLoadingButton 
           :loading="this.loadingDepartures"
           @click="this.refreshView()"
@@ -121,6 +124,7 @@ import ServiceAlert from '@/components/ServiceAlert.vue'
 import Alert from '@/components/Alert.vue'
 import NavTabBar from "@/components/NavTabBar.vue"
 import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
+import FavouriteButton from "@/components/FavouriteButton.vue"
 import VueDatePicker from '@vuepic/vue-datepicker'
 import axios from 'axios'
 import API from '@/API'
@@ -181,7 +185,8 @@ export default {
     DeparturesList,
     NavTabBar,
     VueDatePicker,
-    RefreshLoadingButton
+    RefreshLoadingButton,
+    FavouriteButton
   },
   methods: {
     openDatetimePicker() {
