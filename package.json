@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.3.3",
+    "@twilio/conversations": "^2.5.0",
     "@vuepic/vue-datepicker": "^8.8.0",
     "@webzlodimir/vue-bottom-sheet": "^3.0.5",
     "axios": "^1.7.2",

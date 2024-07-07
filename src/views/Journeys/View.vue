@@ -538,7 +538,7 @@ export default {
           // TODO this is a little hack?
           if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== null && journey.RealtimeJourney?.Stops !== undefined
               && journey.RealtimeJourney.Stops[element.DestinationStopRef] !== undefined) {
-            journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = element.DestinationArrivalTime
+            journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = journey.RealtimeJourney.Stops[element.DestinationStopRef].ArrivalTime
           }
 
           journeyPoints.push({
