@@ -541,11 +541,16 @@ export default {
             journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = journey.RealtimeJourney.Stops[element.DestinationStopRef].ArrivalTime
           }
 
+          let destinationArrivalTime = element.DestinationArrivalTime
+          if (destinationArrivalTime == "0001-01-01T00:00:00Z" && journey.RealtimeJourney?.Stops?.[element.DestinationStopRef] !== undefined) {
+            destinationArrivalTime = journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.DepartureTime
+          }
+
           journeyPoints.push({
             stop: element.DestinationStop,
-            arrivalTime: element.DestinationArrivalTime,
+            arrivalTime: destinationArrivalTime,
             location: element.DestinationStop.Location.coordinates,
-            departureTime: element.DestinationArrivalTime,
+            departureTime: destinationArrivalTime,
             activity: element.DestinationActivity,
             track: null,
             realtime: journey.RealtimeJourney?.Stops?.[element.DestinationStopRef],
