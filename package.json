@@ -9,32 +9,32 @@
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.3.3",
-    "@twilio/conversations": "^2.5.0",
-    "@vuepic/vue-datepicker": "^8.8.0",
+    "@twilio/conversations": "^2.6.0",
+    "@vuepic/vue-datepicker": "^9.0.2",
     "@webzlodimir/vue-bottom-sheet": "^3.0.5",
-    "axios": "^1.7.2",
-    "firebase": "^10.12.2",
+    "axios": "^1.7.4",
+    "firebase": "^10.12.5",
     "leaflet.markercluster": "^1.5.3",
-    "sass": "^1.77.6",
-    "sass-loader": "^14.2.1",
-    "vue": "^3.4.30",
+    "sass": "^1.77.8",
+    "sass-loader": "^16.0.0",
+    "vue": "^3.4.38",
     "vue-gtag": "^2.0.1",
     "vue-mapbox-ts": "travigo/vue-mapbox-ts#76e704f6b01d53e68a04a92b9f71f29c772d1303",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.3"
   },
   "devDependencies": {
     "@headlessui/vue": "^1.7.22",
-    "@heroicons/vue": "^2.1.4",
+    "@heroicons/vue": "^2.1.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/typography": "^0.5.13",
-    "@vitejs/plugin-vue": "^5.0.5",
+    "@tailwindcss/typography": "^0.5.14",
+    "@vitejs/plugin-vue": "^5.1.2",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
-    "autoprefixer": "^10.4.19",
-    "tailwindcss": "^3.4.4",
-    "vite": "^5.3.1",
-    "vite-plugin-mkcert": "^1.17.5",
-    "vite-plugin-pwa": "^0.20.0"
+    "autoprefixer": "^10.4.20",
+    "tailwindcss": "^3.4.10",
+    "vite": "^5.4.0",
+    "vite-plugin-mkcert": "^1.17.6",
+    "vite-plugin-pwa": "^0.20.1"
   }
 }

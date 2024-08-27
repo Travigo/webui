@@ -9,13 +9,13 @@ export default {
     let hours = this.padToTwo(datetime.getHours())
     let minutes = this.padToTwo(datetime.getMinutes())
 
-    const regex = /\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2}):(\d{2})(Z|\+\d{2}:\d{2})/;
-    let regexMatch = datetimeString.match(regex)
+    // const regex = /\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2}):(\d{2})(Z|\+\d{2}:\d{2})/;
+    // let regexMatch = datetimeString.match(regex)
 
-    if (regexMatch) {
-      hours = this.padToTwo(regexMatch[1])
-      minutes = this.padToTwo(regexMatch[2])
-    }
+    // if (regexMatch) {
+    //   hours = this.padToTwo(regexMatch[1])
+    //   minutes = this.padToTwo(regexMatch[2])
+    // }
 
     return `${hours}:${minutes}`
   },
