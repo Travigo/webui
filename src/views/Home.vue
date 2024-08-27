@@ -26,26 +26,50 @@
   </Card>
 
   <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-3 sm:grid-cols-3 mt-2">
-    <Stat-Card title="Vehicles Currently Tracked" :value="this.stats?.ActiveRealtimeJourneys.Current.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card
+      title="Vehicles Currently Tracked" :value="this.stats?.ActiveRealtimeJourneys.Current.toLocaleString('en', {useGrouping:true})"
+      @click="openVehicleTrackInfoSheet()"
+    />
     <Stat-Card class="mt-2 sm:mt-0" title="Stops" :value="this.stats?.Stops.toLocaleString('en', {useGrouping:true})" />
     <Stat-Card class="mt-2 sm:mt-0" title="Services" :value="this.stats?.Services.toLocaleString('en', {useGrouping:true})" />
   </div>
+
+  <vue-bottom-sheet ref="vehiclesTrackedInfoSheet" maxHeight="380" class="relative">
+    <div v-if="true" class="px-4" style="min-height: 380px">
+      <PageTitle paddingStyle="pb-1">Transport Types</PageTitle>
+      <div v-for="(count, mode) in this.stats?.ActiveRealtimeJourneys?.TransportTypes">
+        {{ mode }} - {{ count }}
+      </div>
+
+      <PageTitle paddingStyle="py-1">Datasources</PageTitle>
+      <div v-for="(count, datasource) in this.stats?.ActiveRealtimeJourneys?.Datasources">
+        {{ datasource }} - {{ count }}
+      </div>
+    </div>
+    <div style="height: 380px" v-else></div>
+  </vue-bottom-sheet>
 </template>
 
 <script>
 import Card from '@/components/Card.vue'
 import StatCard from '@/components/StatCard.vue'
 import SearchBar from '@/components/SearchBar.vue'
+import PageTitle from '@/components/PageTitle.vue'
+import VueBottomSheet from "@webzlodimir/vue-bottom-sheet"
 
 import axios from 'axios'
 import API from '@/API'
+
+import  "@webzlodimir/vue-bottom-sheet/dist/style.css";
 
 export default {
   name: 'Home',
   components: {
     Card,
     StatCard,
-    SearchBar
+    SearchBar,
+    PageTitle,
+    VueBottomSheet
   },
   data () {
     return {
@@ -55,6 +79,10 @@ export default {
     }
   },
   methods: {
+    openVehicleTrackInfoSheet() {
+      console.log("CUM")
+      this.$refs.vehiclesTrackedInfoSheet.open()
+    },
     getStats() {
       axios
         .get(`${API.URL}/core/stats`)
