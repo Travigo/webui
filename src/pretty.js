@@ -1,23 +1,19 @@
+import { DateTime } from "luxon";
+
 export default {
   time(datetimeString) {
     if (datetimeString == "0001-01-01T00:00:00Z") {
       return "--"
     }
 
-    let datetime = new Date(datetimeString)
+    let datetime = DateTime.fromISO(datetimeString)
 
-    let hours = this.padToTwo(datetime.getHours())
-    let minutes = this.padToTwo(datetime.getMinutes())
-
-    // const regex = /\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2}):(\d{2})(Z|\+\d{2}:\d{2})/;
-    // let regexMatch = datetimeString.match(regex)
-
-    // if (regexMatch) {
-    //   hours = this.padToTwo(regexMatch[1])
-    //   minutes = this.padToTwo(regexMatch[2])
-    // }
-
-    return `${hours}:${minutes}`
+    // return `${hours}:${minutes}`
+    return datetime.toUTC().toISOTime({
+      suppressSeconds: true,
+      suppressMilliseconds: true,
+      includeOffset: false
+    })
   },
   occupancyDescription(occupancy) {
     if (occupancy == -1) {

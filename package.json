@@ -15,6 +15,7 @@
     "axios": "^1.7.4",
     "firebase": "^10.12.5",
     "leaflet.markercluster": "^1.5.3",
+    "luxon": "^3.5.0",
     "sass": "^1.77.8",
     "sass-loader": "^16.0.0",
     "vue": "^3.4.38",
