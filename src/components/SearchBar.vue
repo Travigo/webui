@@ -39,11 +39,10 @@ import search from "@/views/Planner/Search.vue";
 import axios from "axios";
 import API from "@/API";
 import ServiceIcon from "@/components/ServiceIcon.vue";
-import DepartureTimeView from "@/components/Stops/DepartureTimeView.vue";
 import StopIcon from "@/components/StopIcon.vue";
 
 export default {
-  components: {StopIcon, DepartureTimeView, ServiceIcon},
+  components: {StopIcon, ServiceIcon},
   computed: {
     search() {
       return search

@@ -36,9 +36,9 @@
           :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}" 
           v-if="departure.Journey.PrimaryIdentifier !=''"
         >
-          <DepartureTimeView :departure="departure" />
+          <DepartureTimeView :departure="departure" :stop="stop" />
         </router-link>
-        <DepartureTimeView :departure="departure" v-else />
+        <DepartureTimeView :departure="departure" :stop="stop" v-else />
       </div>
     </div>
   </div>

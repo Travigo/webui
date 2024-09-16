@@ -1,5 +1,5 @@
 <template>
-  <DepartureTypeIcon :departure="departure"/><span class="ml-[4px]">{{ this.pretty.time(departure.Time) }}</span>
+  <DepartureTypeIcon :departure="departure"/><span class="ml-[4px]">{{ this.pretty.time(departure.Time, stop.Timezone) }}</span>
 
   <div class="text-xs px-2 rounded text-red-200 bg-red-600" v-if="departure.Type == 'Cancelled'">
     CANCELLED
@@ -21,6 +21,7 @@ export default {
   },
   props: {
     departure: {},
+    stop: {},
   },
   components: {
     DepartureTypeIcon

@@ -1,15 +1,20 @@
 import { DateTime } from "luxon";
 
 export default {
-  time(datetimeString) {
+  time(datetimeString, displayTimezone) {
     if (datetimeString == "0001-01-01T00:00:00Z") {
       return "--"
     }
 
     let datetime = DateTime.fromISO(datetimeString)
 
+    let timezone = "UTC"
+    if (displayTimezone !== undefined) {
+      timezone = displayTimezone
+    }
+
     // return `${hours}:${minutes}`
-    return datetime.toUTC().toISOTime({
+    return datetime.setZone(timezone).toISOTime({
       suppressSeconds: true,
       suppressMilliseconds: true,
       includeOffset: false
