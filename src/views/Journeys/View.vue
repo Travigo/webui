@@ -136,65 +136,65 @@
                     <p
                       v-else-if="
                         point.realtime &&
-                        this.pretty.time(point.departureTime) !== this.pretty.time(point.realtime.DepartureTime) &&
+                        this.pretty.time(point.departureTime, journey.DepartureTimezone) !== this.pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone) &&
                         point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
                       "
                     >
                       <span class="text-xs line-through">
-                        {{ this.pretty.time(point.departureTime) }}
+                        {{ this.pretty.time(point.departureTime, journey.DepartureTimezone) }}
                       </span>
                       <span class="text-red-500">
-                        {{ this.pretty.time(point.realtime.DepartureTime) }}
+                        {{ this.pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone) }}
                       </span>
                     </p>
                     <p
                       v-else-if="
                         point.realtime &&
-                        this.pretty.time(point.departureTime) === this.pretty.time(point.realtime.DepartureTime)
+                        this.pretty.time(point.departureTime, journey.DepartureTimezone) === this.pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone)
                       "
                     >
                       <span class="text-green-700">
-                        {{ this.pretty.time(point.departureTime) }}
+                        {{ this.pretty.time(point.departureTime, journey.DepartureTimezone) }}
                       </span>
                     </p>
                     <p v-else>
-                      {{ this.pretty.time(point.departureTime) }}
+                      {{ this.pretty.time(point.departureTime, journey.DepartureTimezone) }}
                     </p>
                     <!-- SWAPPY SWAPPY -->
                     <p
                       class="text-xs"
                       v-if="
-                        this.pretty.time(point.arrivalTime) !== this.pretty.time(point.departureTime) &&
+                        this.pretty.time(point.arrivalTime, journey.DepartureTimezone) !== this.pretty.time(point.departureTime, journey.DepartureTimezone) &&
                         point.arrivalTime != null && !(point.realtime && point.realtime?.Cancelled)
                       "
                     >
                       <span
                         v-if="
                           point.realtime &&
-                          this.pretty.time(point.arrivalTime) !== this.pretty.time(point.realtime.ArrivalTime) &&
+                          this.pretty.time(point.arrivalTime, journey.DepartureTimezone) !== this.pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone) &&
                           point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
                         "
                       >
                         Arrives
                         <span class="text-xs line-through">
-                          {{ this.pretty.time(point.arrivalTime) }}
+                          {{ this.pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
                         </span>
                         <span class="text-red-500">
-                          {{ this.pretty.time(point.realtime.ArrivalTime) }}
+                          {{ this.pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone) }}
                         </span>
                       </span>
                       <span
                         v-else-if="
                           point.realtime &&
-                          this.pretty.time(point.arrivalTime) === this.pretty.time(point.realtime.ArrivalTime)
+                          this.pretty.time(point.arrivalTime, journey.DepartureTimezone) === this.pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone)
                         "
                       >
                         <span class="text-green-700">
-                          Arrives {{ this.pretty.time(point.arrivalTime) }}
+                          Arrives {{ this.pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
                         </span>
                       </span>
                       <span v-else>
-                        Arrives {{ this.pretty.time(point.arrivalTime) }}
+                        Arrives {{ this.pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
                       </span>
                     </p>
                   </div>
