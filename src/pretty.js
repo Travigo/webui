@@ -14,7 +14,7 @@ export default {
     }
 
     // return `${hours}:${minutes}`
-    return datetime.setZone(timezone).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    return datetime.set({ year: 2024 }).setZone(timezone).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
   },
   occupancyDescription(occupancy) {
     if (occupancy == -1) {
