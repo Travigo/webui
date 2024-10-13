@@ -6,6 +6,11 @@ export default {
       return "--"
     }
 
+    let stupidDatetimeMatch = datetimeString.match(/0000-01-01T(\d{2}:\d{2}):\d{2}Z/)
+    if (stupidDatetimeMatch) {
+      return stupidDatetimeMatch[1]
+    }
+
     let datetime = DateTime.fromISO(datetimeString)
 
     let timezone = "UTC"
@@ -13,8 +18,7 @@ export default {
       timezone = displayTimezone
     }
 
-    // return `${hours}:${minutes}`
-    return datetime.set({ year: 2024 }).setZone(timezone).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    return datetime.setZone(timezone).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
   },
   occupancyDescription(occupancy) {
     if (occupancy == -1) {
