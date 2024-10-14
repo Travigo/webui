@@ -255,13 +255,6 @@
               </div>
 
               <div>
-                <strong>Driver only: </strong> {{ journey.DetailedRailInformation.DriverOnly }}
-              </div>
-              <div>
-                <strong>Guard required: </strong> {{ journey.DetailedRailInformation.GuardRequired }}
-              </div>
-
-              <div>
                 <strong>Reservation Required: </strong> {{ journey.DetailedRailInformation.ReservationRequired }}
               </div>
               <div>

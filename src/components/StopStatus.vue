@@ -2,7 +2,7 @@
   <h1 class="text-lg font-bold">
     {{ currentViewedStop?.PrimaryName }}
     <span class="text-sm text-gray-700">
-      {{ currentViewedStop?.OtherNames?.Indicator }} {{ currentViewedStop?.OtherNames?.Landmark }}
+      {{ currentViewedStop?.Descriptor }}
     </span>
   </h1>
   <div class="inline-block overflow-x-scroll w-full">
