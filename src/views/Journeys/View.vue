@@ -103,6 +103,13 @@
                       "
                     >
                       <div class="text-xs text-gray-500">
+                        <span 
+                          v-if="this.stopServiceAlerts[point.stop.PrimaryIdentifier]?.closed" 
+                          class="text-xs px-2 rounded text-red-200 bg-red-600 w-fit"
+                        >
+                          Stop Closed
+                        </span>
+
                         <span v-if="point.platform">
                           Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Estimated)</span>
                         </span>
@@ -330,6 +337,8 @@ export default {
 
       serviceAlerts: [],
 
+      stopServiceAlerts: {},
+
       loadingJourney: true,
       errorJourney: undefined,
 
@@ -434,12 +443,42 @@ export default {
           this.journey = newJourney
 
           this.setBounds()
+
+          this.getStopAlerts()
         })
         .catch((error) => {
           console.log(error)
           this.errorJourney = error
         })
         .finally(() => (this.loadingJourney = false))
+    },
+    getStopAlerts() {
+      if (this.journey == null) {
+        return
+      }
+
+      for (let i = 0; i < this.journeyPoints.length; i++) {
+        const journeyPoint = this.journeyPoints[i]
+
+        axios
+          .get(`${API.URL}/core/service_alerts/matching/${journeyPoint.stop.PrimaryIdentifier}`)
+          .then(response => {
+            console.log(journeyPoint.stop.PrimaryIdentifier, response.data)
+
+            if (response.data !== null) {
+              for (let index = 0; index < response.data.length; index++) {
+                const serviceAlert = response.data[index];
+                
+                if (serviceAlert.AlertType == "StopClosed") {
+                  this.stopServiceAlerts[journeyPoint.stop.PrimaryIdentifier] = {closed: true}
+                }
+              }
+            }
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      }
     },
     getRealtimeJourney() {
       if (this.journey == null) {
