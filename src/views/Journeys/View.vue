@@ -463,8 +463,6 @@ export default {
         axios
           .get(`${API.URL}/core/service_alerts/matching/${journeyPoint.stop.PrimaryIdentifier}`)
           .then(response => {
-            console.log(journeyPoint.stop.PrimaryIdentifier, response.data)
-
             if (response.data !== null) {
               for (let index = 0; index < response.data.length; index++) {
                 const serviceAlert = response.data[index];
@@ -603,8 +601,10 @@ export default {
         if (
           !activeStop &&
           journey.RealtimeJourney != undefined &&
-          journey.RealtimeJourney.NextStopRef ===
-            journeyPoints[index].stop.PrimaryIdentifier
+          (
+            journey.RealtimeJourney.NextStopRef === journeyPoints[index].stop.PrimaryIdentifier
+            || journeyPoints[index].stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
+          )
         ) {
           activeStop = true
         }
