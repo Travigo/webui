@@ -526,7 +526,7 @@ export default {
       }
     },
     getRealtimeForStop(realtimeUpdates, stop) {
-      if(realtimeUpdates === undefined) {
+      if(realtimeUpdates === undefined || realtimeUpdates === null) {
         return undefined
       }
       
