@@ -525,6 +525,19 @@ export default {
         ],
       }
     },
+    getRealtimeForStop(realtimeUpdates, stop) {
+      if(realtimeUpdates === undefined) {
+        return undefined
+      }
+      
+      for (const [key, value] of Object.entries(realtimeUpdates)) {
+        if(stop.PrimaryIdentifier == key || stop.OtherIdentifiers.includes(key)) {
+          return value
+        }
+      }
+
+      return undefined
+    },
     extractJourneyPoints(journey) {
       let journeyPoints = []
 
@@ -549,7 +562,7 @@ export default {
           departureTime: element.OriginDepartureTime,
           activity: element.OriginActivity,
           track: track,
-          realtime: journey.RealtimeJourney?.Stops?.[element.OriginStopRef],
+          realtime: this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.OriginStop),
           platform: platform,
           platformType: platformType,
         })
@@ -583,7 +596,7 @@ export default {
             departureTime: destinationArrivalTime,
             activity: element.DestinationActivity,
             track: null,
-            realtime: journey.RealtimeJourney?.Stops?.[element.DestinationStopRef],
+            realtime: this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.DestinationStop),
             platform: platform,
             platformType: platformType,
             lastOne: true
