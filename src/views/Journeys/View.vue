@@ -549,9 +549,10 @@ export default {
         let platform = element.OriginPlatform
         let platformType = 'ESTIMATED'
 
-        if (journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== "" 
-            && journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform !== undefined) {
-          platform = journey.RealtimeJourney?.Stops?.[element.OriginStopRef]?.Platform
+        let realtimeStop = this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.OriginStop)
+
+        if (realtimeStop?.Platform !== "" && realtimeStop?.Platform !== undefined) {
+          platform = realtimeStop?.Platform
           platformType = 'ACTUAL'
         }
 
@@ -562,7 +563,7 @@ export default {
           departureTime: element.OriginDepartureTime,
           activity: element.OriginActivity,
           track: track,
-          realtime: this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.OriginStop),
+          realtime: realtimeStop,
           platform: platform,
           platformType: platformType,
         })
@@ -574,8 +575,10 @@ export default {
           let platform = element.DestinationPlatform
           let platformType = 'ESTIMATED'
 
-          if (journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform !== "") {
-            platform = journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.Platform
+          let realtimeStop = this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.DestinationStop)
+
+          if (realtimeStop?.Platform !== "") {
+            platform = realtimeStop?.Platform
             platformType = 'ACTUAL'
           }
           // TODO this is a little hack?
@@ -596,7 +599,7 @@ export default {
             departureTime: destinationArrivalTime,
             activity: element.DestinationActivity,
             track: null,
-            realtime: this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.DestinationStop),
+            realtime: realtimeStop,
             platform: platform,
             platformType: platformType,
             lastOne: true
