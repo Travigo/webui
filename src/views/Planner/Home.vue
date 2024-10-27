@@ -50,8 +50,8 @@ export default {
   },
   data(){
     return {
-      originStop : "GB:ATCO:9100CAMBDGE",
-      destinationStop: "GB:ATCO:9100KNGX"
+      originStop : "gb-atco-9100CAMBDGE",
+      destinationStop: "gb-atco-9100KNGX"
     }
   },
   methods: {
