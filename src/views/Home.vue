@@ -27,22 +27,28 @@
 
   <div class="sm:grid sm:h-32 sm:grid-flow-row sm:gap-3 sm:grid-cols-3 mt-2">
     <Stat-Card
-      title="Realtime Trips Currently Tracked" :value="this.stats?.ActiveRealtimeJourneys.Current.toLocaleString('en', {useGrouping:true})"
-      @click="openVehicleTrackInfoSheet()"
+      title="Realtime Trips Currently Tracked" :value="this.stats?.realtimejourneys.stats.current.toLocaleString('en', {useGrouping:true})"
+      @click="openDetailedStatsSheet('realtimejourneys')"
     />
-    <Stat-Card class="mt-2 sm:mt-0" title="Stops" :value="this.stats?.Stops.toLocaleString('en', {useGrouping:true})" />
-    <Stat-Card class="mt-2 sm:mt-0" title="Services" :value="this.stats?.Services.toLocaleString('en', {useGrouping:true})" />
+    <Stat-Card 
+      class="mt-2 sm:mt-0" title="Stops" :value="this.stats?.stops.stats.total.toLocaleString('en', {useGrouping:true})"
+      @click="openDetailedStatsSheet('stops')"
+    />
+    <Stat-Card 
+      class="mt-2 sm:mt-0" title="Services" :value="this.stats?.services.stats.total.toLocaleString('en', {useGrouping:true})"
+      @click="openDetailedStatsSheet('services')"
+    />
   </div>
 
-  <vue-bottom-sheet ref="vehiclesTrackedInfoSheet" maxHeight="380" class="relative">
+  <vue-bottom-sheet ref="detailedStatsSheet" maxHeight="380" class="relative">
     <div v-if="true" class="px-4" style="min-height: 380px">
       <PageTitle paddingStyle="pb-1">Transport Types</PageTitle>
-      <div v-for="(count, mode) in this.stats?.ActiveRealtimeJourneys?.TransportTypes">
+      <div v-for="(count, mode) in this.stats?.[this.detailedStatsSheetContent].stats.transporttypes">
         {{ mode }} - {{ count }}
       </div>
 
       <PageTitle paddingStyle="py-1">Datasources</PageTitle>
-      <div v-for="(count, datasource) in this.stats?.ActiveRealtimeJourneys?.Datasources">
+      <div v-for="(count, datasource) in this.stats?.[this.detailedStatsSheetContent].stats.datasources">
         {{ datasource }} - {{ count }}
       </div>
     </div>
@@ -74,18 +80,19 @@ export default {
   data () {
     return {
       stats: undefined,
+      detailedStatsSheetContent: 'realtimejourneys',
 
       refreshTimer: undefined
     }
   },
   methods: {
-    openVehicleTrackInfoSheet() {
-      console.log("CUM")
-      this.$refs.vehiclesTrackedInfoSheet.open()
+    openDetailedStatsSheet(viewName) {
+      this.detailedStatsSheetContent = viewName
+      this.$refs.detailedStatsSheet.open()
     },
     getStats() {
       axios
-        .get(`${API.URL}/core/stats`)
+        .get(`${API.URL}/stats/calculated`)
         .then(response => {
           this.stats = response.data
         })

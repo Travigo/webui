@@ -3,7 +3,13 @@
   <div v-if="loadingJourney">Loading...</div>
   <div v-else class="h-full">
     <h1 class="py-2 text-xl font-medium leading-tight text-gray-900 dark:text-gray-200">
-      <DepartureTypeIcon :journey="journey"/> {{ journey.DestinationDisplay }}
+      <DepartureTypeIcon :journey="journey"/> 
+      <span v-if="journey.DestinationDisplay != ''" class="pl-1">
+        {{ journey.DestinationDisplay }}
+      </span>
+      <span v-else class="pl-1">
+        {{ this.journeyPoints[this.journeyPoints.length-1].stop.PrimaryName }}
+      </span>
     </h1>
 
     <div>
