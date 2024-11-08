@@ -47,6 +47,11 @@
         {{ mode }} - {{ count }}
       </div>
 
+      <PageTitle paddingStyle="py-1">Countries</PageTitle>
+      <div v-for="(count, country) in this.stats?.[this.detailedStatsSheetContent].stats.countries">
+        {{ country }} - {{ count }}
+      </div>
+
       <PageTitle paddingStyle="py-1">Datasources</PageTitle>
       <div v-for="(count, datasource) in this.stats?.[this.detailedStatsSheetContent].stats.datasources">
         {{ datasource }} - {{ count }}
