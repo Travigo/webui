@@ -38,6 +38,10 @@
       class="mt-2 sm:mt-0" title="Services" :value="this.stats?.services.stats.total.toLocaleString('en', {useGrouping:true})"
       @click="openDetailedStatsSheet('services')"
     />
+    <Stat-Card 
+      class="mt-2 sm:mt-0" title="Service Alerts" :value="this.stats?.servicealerts.stats.total.toLocaleString('en', {useGrouping:true})"
+      @click="openDetailedStatsSheet('servicealerts')"
+    />
   </div>
 
   <vue-bottom-sheet ref="detailedStatsSheet" maxHeight="380" class="relative">
