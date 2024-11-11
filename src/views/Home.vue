@@ -60,6 +60,11 @@
       <div v-for="(count, datasource) in this.stats?.[this.detailedStatsSheetContent].stats.datasources">
         {{ datasource }} - {{ count }}
       </div>
+
+      <PageTitle paddingStyle="py-1">Alert Types</PageTitle>
+      <div v-for="(count, alerttype) in this.stats?.[this.detailedStatsSheetContent].stats.alerttypes">
+        {{ alerttype }} - {{ count }}
+      </div>
     </div>
     <div style="height: 380px" v-else></div>
   </vue-bottom-sheet>
