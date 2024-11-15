@@ -43,13 +43,14 @@
           <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
         </div>
 
-        <a class="material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.openDatetimePicker()">
+        <a class="cursor-pointer material-symbols-outlined text-base bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 px-2 py-1 rounded-lg inline-block align-middle mr-1" @click="this.openDatetimePicker()">
           <VueDatePicker @update:model-value="updateDatetimePicker" ref="datetimepicker" time-picker-inline teleport-center :teleport="true" hidden />
           calendar_clock
         </a>
-        <FavouriteButton
+        <!-- <FavouriteButton
           :favourited="false"
-        />
+        /> -->
+        <ShareButton />
         <RefreshLoadingButton 
           :loading="this.loadingDepartures"
           @click="this.refreshView()"
@@ -125,6 +126,7 @@ import Alert from '@/components/Alert.vue'
 import NavTabBar from "@/components/NavTabBar.vue"
 import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 import FavouriteButton from "@/components/FavouriteButton.vue"
+import ShareButton from "@/components/ShareButton.vue"
 import VueDatePicker from '@vuepic/vue-datepicker'
 import axios from 'axios'
 import API from '@/API'
@@ -186,7 +188,8 @@ export default {
     NavTabBar,
     VueDatePicker,
     RefreshLoadingButton,
-    FavouriteButton
+    FavouriteButton,
+    ShareButton
   },
   methods: {
     openDatetimePicker() {

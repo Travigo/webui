@@ -36,6 +36,7 @@
       <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
     </div>
 
+    <ShareButton />
     <RefreshLoadingButton 
       :loading="this.loadingRealtime"
       @click="this.getRealtimeJourney()"
@@ -326,6 +327,7 @@ import PageTitle from "@/components/PageTitle.vue"
 import Card from "@/components/Card.vue"
 import NavTabBar from "@/components/NavTabBar.vue"
 import ServiceIcon from '@/components/ServiceIcon.vue'
+import ShareButton from "@/components/ShareButton.vue"
 import Alert from "@/components/Alert.vue"
 import ServiceAlert from '@/components/ServiceAlert.vue'
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
@@ -391,7 +393,8 @@ export default {
     ServiceAlert,
     DetailedInformationRail,
     DepartureTypeIcon,
-    RefreshLoadingButton
+    RefreshLoadingButton,
+    ShareButton
   },
   methods: {
     mapLoaded(map) {
