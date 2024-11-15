@@ -18,6 +18,8 @@
     <OperatorServices :operator="this.operator" v-bind:class="{ hidden: this.currentTab != 'services' }" />
 
     <OperatorStats :operator="this.operator" v-bind:class="{ hidden: this.currentTab != 'stats' }" />
+
+    <DatasourceAttributes v-if="!this.loading" :datasources="utils.getDatasources(this.operator)" />
   </div>
 </template>
 
@@ -29,13 +31,16 @@ import NavTabBar from '@/components/NavTabBar.vue'
 import OperatorOverview from '@/components/Operators/Overview.vue'
 import OperatorServices from '@/components/Operators/Services.vue'
 import OperatorStats from '@/components/Operators/Stats.vue'
+import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import axios from 'axios'
 import API from '@/API'
+import Utils from '@/utils'
 
 export default {
   name: 'OperatorsView',
   data () {
     return {
+      utils: Utils,
       operator: null,
       loading: true,
       error: undefined,
@@ -65,7 +70,8 @@ export default {
     OperatorOverview,
     OperatorServices,
     OperatorStats,
-    Alert
+    Alert,
+    DatasourceAttributes
   },
   methods: {
     changeTab(newTab) {

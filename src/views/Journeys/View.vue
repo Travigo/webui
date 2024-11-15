@@ -319,6 +319,8 @@
         </div>
       </div>
     </div>
+
+    <DatasourceAttributes v-if="!this.loadingJourney" :datasources="utils.getDatasources(this.journey, journeyPoints)" />
   </div>
 </template>
 
@@ -333,13 +335,16 @@ import ServiceAlert from '@/components/ServiceAlert.vue'
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
 import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
+import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
+import Utils from '@/utils'
 
 export default {
   data() {
     return {
+      utils: Utils,
       journey: null,
       journeyPoints: null,
 
@@ -394,7 +399,8 @@ export default {
     DetailedInformationRail,
     DepartureTypeIcon,
     RefreshLoadingButton,
-    ShareButton
+    ShareButton,
+    DatasourceAttributes
   },
   methods: {
     mapLoaded(map) {
@@ -567,6 +573,7 @@ export default {
 
         journeyPoints.push({
           stop: element.OriginStop,
+          datasource: element.OriginStop.DataSource,
           location: element.OriginStop.Location.coordinates,
           arrivalTime: element.OriginArrivalTime,
           departureTime: element.OriginDepartureTime,
@@ -603,6 +610,7 @@ export default {
 
           journeyPoints.push({
             stop: element.DestinationStop,
+            datasource: element.DestinationStop.DataSource,
             arrivalTime: destinationArrivalTime,
             location: element.DestinationStop.Location.coordinates,
             departureTime: destinationArrivalTime,

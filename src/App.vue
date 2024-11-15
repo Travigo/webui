@@ -92,7 +92,7 @@ export default {
           </div>
           <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
             <router-link :to="{ path: '/' }">
-              <div class="flex-shrink-0 text-white text-2xl tracking-wider">
+              <div class="flex-shrink-0 text-white text-2xl md:text-3xl tracking-wider">
                 <span class="text-brand-travi">
                   <span>Travi</span>
                 </span>
@@ -107,7 +107,7 @@ export default {
                 </span>
               </div>
             </router-link>
-            <div class="hidden sm:block sm:ml-6">
+            <div class="hidden sm:block">
               <div class="flex">
                 <span
                   v-for="navItem in navItems"

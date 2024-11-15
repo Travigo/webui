@@ -101,6 +101,8 @@
         </div>
       </div>
 
+      <DatasourceAttributes v-if="!this.loadingStop" :datasources="utils.getDatasources(this.stop, this.stop.Services)" />
+
       <!-- <div class="sticky bottom-0 z-50">
         <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-600 p-4 bottom-nav-bar">
           test2
@@ -127,16 +129,19 @@ import NavTabBar from "@/components/NavTabBar.vue"
 import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 import FavouriteButton from "@/components/FavouriteButton.vue"
 import ShareButton from "@/components/ShareButton.vue"
+import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import VueDatePicker from '@vuepic/vue-datepicker'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
+import Utils from '@/utils'
 
 export default {
   name: 'StopsView',
   data () {
     return {
       pretty: Pretty,
+      utils: Utils,
       stop: null,
       loadingStop: true,
 
@@ -189,7 +194,8 @@ export default {
     VueDatePicker,
     RefreshLoadingButton,
     FavouriteButton,
-    ShareButton
+    ShareButton,
+    DatasourceAttributes
   },
   methods: {
     openDatetimePicker() {
