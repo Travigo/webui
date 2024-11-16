@@ -7,8 +7,8 @@
       class="py-2"
     >
       <span v-if="i !== 0">, </span>
-      <router-link :to="{'name': 'datasets/view', params: {'id': datasource.DatasetID}}" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
-        {{ datasource.Provider }}
+      <router-link :to="{'name': 'datasources/provider', params: {'id': datasource.ProviderID}}" class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+        {{ datasource.ProviderName }}
       </router-link>
     </span>
   </div>

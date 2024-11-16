@@ -143,12 +143,12 @@ export const routes = [
     component: () => import('./views/Assistant/Home.vue')
   },
   {
-    name: 'datasets/view',
-    path: '/datasets/:id',
+    name: 'datasources/provider',
+    path: '/datasources/provider/:id',
     meta: { 
-      title: 'Dataset'
+      title: 'Datasource'
     },
-    component: () => import('./views/Datasets/View.vue')
+    component: () => import('./views/Datasources/Provider.vue')
   },
   { path: '/:path(.*)', component: NotFound },
 ]

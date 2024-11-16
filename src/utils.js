@@ -21,9 +21,9 @@ export default {
     let uniqueDatasources = []
     let uniqueDatasourcesMap = {}
     datasources.forEach(element => {
-      if(uniqueDatasourcesMap[element.DatasetID] !== true) {
+      if(uniqueDatasourcesMap[element.ProviderID] !== true) {
         uniqueDatasources.push(element)
-        uniqueDatasourcesMap[element.DatasetID] = true
+        uniqueDatasourcesMap[element.ProviderID] = true
       }
     })
 
