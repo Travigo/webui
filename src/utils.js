@@ -7,6 +7,10 @@ export default {
     for (let argI = 0; argI < args.length; argI++) {
       const argE = args[argI]
 
+      if (argE === undefined || argE === null) {
+        continue
+      }
+
       if(Array.isArray(argE)) {
         for (let arrI = 0; arrI < argE.length; arrI++) {
           const arrE = argE[arrI];
