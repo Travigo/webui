@@ -101,7 +101,7 @@
         </div>
       </div>
 
-      <DatasourceAttributes v-if="!this.loadingStop" :datasources="utils.getDatasources(this.stop, this.stop.Services)" />
+      <DatasourceAttributes v-if="!this.loadingStop" :datasources="utils.getDatasources(this.stop, this.stop.Services, this.serviceAlerts)" />
 
       <!-- <div class="sticky bottom-0 z-50">
         <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-600 p-4 bottom-nav-bar">
