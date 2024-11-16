@@ -56,9 +56,14 @@
         {{ country }} - {{ count }}
       </div>
 
-      <PageTitle paddingStyle="py-1">Datasources</PageTitle>
-      <div v-for="(count, datasource) in this.stats?.[this.detailedStatsSheetContent].stats.datasources">
-        {{ datasource }} - {{ count }}
+      <PageTitle paddingStyle="py-1">Datasets</PageTitle>
+      <div v-for="(count, dataset) in this.stats?.[this.detailedStatsSheetContent].stats.datasets">
+        {{ dataset }} - {{ count }}
+      </div>
+
+      <PageTitle paddingStyle="py-1">Provider</PageTitle>
+      <div v-for="(count, provider) in this.stats?.[this.detailedStatsSheetContent].stats.providers">
+        {{ provider }} - {{ count }}
       </div>
 
       <PageTitle paddingStyle="py-1">Alert Types</PageTitle>
