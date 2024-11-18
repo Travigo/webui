@@ -54,8 +54,8 @@
           <a
             v-if="!this.expandInactiveStops && this.hasHiddenStops"
             @click="showAllStops()"
-            href="#"
             class="
+              cursor-pointer
               text-center
               block
               bg-gray-100
