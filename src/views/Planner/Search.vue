@@ -30,7 +30,7 @@
                     <div class="text-xl font-black">
                       {{ this.pretty.time(journeyPlan.StartTime) }}
                     </div>
-                    <div class="text-xs font-light">Scheduled</div>
+                    <div class="text-xs font-light">{{ journeyPlan.RouteItems[0].JourneyType }}</div>
                   </div>
 
                   <div class="inline-block text-center w-[9rem]">
@@ -41,7 +41,7 @@
                     <div class="text-xl font-black">
                       {{ this.pretty.time(journeyPlan.ArrivalTime) }}
                     </div>
-                    <div class="text-xs font-ligh">Scheduled</div>
+                    <div class="text-xs font-ligh">{{ journeyPlan.RouteItems[0].JourneyType }}</div>
                   </div>
                   
                   <div class="inline-block">
