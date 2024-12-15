@@ -10,6 +10,10 @@
 
       <form>
         <div class="mb-6">
+          <SearchBar 
+            placeholder="Origin"
+            searchClasses="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-sm p-2.5 text-gray-900"
+          />
           <input 
             type="text" id="origin" 
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -40,18 +44,20 @@
 import Card from '@/components/Card.vue'
 import PageTitle from '@/components/PageTitle.vue'
 import Alert from "@/components/Alert.vue"
+import SearchBar from '@/components/SearchBar.vue'
 
 export default {
   name: 'JourneyPlannerHome',
   components: {
     Card,
     PageTitle,
-    Alert
+    Alert,
+    SearchBar
   },
   data(){
     return {
-      originStop : "gb-atco-9100CAMBDGE",
-      destinationStop: "gb-atco-9100KNGX"
+      originStop : "tmr-stop-f2682658fb0233a2c24c460d6b97",
+      destinationStop: "tmr-stop-6d4a16c404d022a7e49dd47971e6"
     }
   },
   methods: {

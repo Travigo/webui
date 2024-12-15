@@ -2,8 +2,8 @@
   <div class="mt-4">
     <input
       type="text" id="searchTerm"
-      class="bg-white shadow-md p-4 border border-gray-200 dark:bg-gray-800 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-      placeholder="Search Stops by name or ID" required
+      :class="searchClasses + ' shadow-md border rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'"
+      :placeholder="placeholder" required
       autocomplete="off"
       v-model="searchTerm"
       v-on:input="searchStops"
@@ -42,6 +42,14 @@ import ServiceIcon from "@/components/ServiceIcon.vue";
 import StopIcon from "@/components/StopIcon.vue";
 
 export default {
+  props: {
+    placeholder: {
+      default: ''
+    },
+    searchClasses: {
+      default: ''
+    }
+  },
   components: {StopIcon, ServiceIcon},
   computed: {
     search() {

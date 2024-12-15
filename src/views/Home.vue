@@ -1,5 +1,8 @@
 <template>
-  <SearchBar />
+  <SearchBar 
+    placeholder="Search Stops by name or ID" 
+    searchClasses="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 p-4 "
+  />
   <Card class="m-4">
     <h1 class="text-3xl font-bold leading-tight text-gray-900 mb-4 dark:text-gray-200">
       Welcome
