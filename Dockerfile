@@ -20,7 +20,7 @@ RUN mkdir -p /var/www/html
 COPY nginx_config/nginx.conf /etc/nginx/nginx.conf
 COPY nginx_config/default.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=builder /tmp/nginx/vue-single-page-app/dist/* /var/www/html/
+COPY --from=builder /tmp/nginx/vue-single-page-app/dist/ /var/www/html/
 
 RUN chown nginx:nginx /var/www/html
 
