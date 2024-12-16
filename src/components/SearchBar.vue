@@ -48,6 +48,9 @@ export default {
     },
     searchClasses: {
       default: ''
+    },
+    mode: {
+      
     }
   },
   components: {StopIcon, ServiceIcon},

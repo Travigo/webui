@@ -1,4 +1,4 @@
-FROM alpine:3.21 AS builder
+FROM alpine:3.15 AS builder
 
 RUN apk add --update nodejs npm
 
@@ -10,7 +10,7 @@ RUN npm install
 RUN npm run build
 
 
-FROM alpine:3.21
+FROM alpine:3.15
 
 RUN apk add --update nginx
 
@@ -22,7 +22,7 @@ COPY nginx_config/default.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /tmp/nginx/vue-single-page-app/dist/ /var/www/html/
 
-RUN chown nginx:nginx /var/www/html
+RUN chown -R nginx:nginx /var/www/html
 
 EXPOSE 80
 
