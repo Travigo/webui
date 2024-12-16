@@ -1,18 +1,9 @@
+FROM alpine:3.15 AS builder
 
-# Create the container from the alpine linux image
-FROM alpine:3.15
+# Add nodejs
+RUN apk add --update nodejs npm
 
-# Add nginx and nodejs
-RUN apk add --update nginx nodejs npm
-
-# Create the directories we will need
 RUN mkdir -p /tmp/nginx/vue-single-page-app
-RUN mkdir -p /var/log/nginx
-RUN mkdir -p /var/www/html
-
-# Copy the respective nginx configuration files
-COPY nginx_config/nginx.conf /etc/nginx/nginx.conf
-COPY nginx_config/default.conf /etc/nginx/conf.d/default.conf
 
 # Set the directory we want to run the next commands for
 WORKDIR /tmp/nginx/vue-single-page-app
@@ -24,10 +15,20 @@ RUN npm install
 # run webpack and the vue-loader
 RUN npm run build
 
-# copy the built app to our served directory
-RUN cp -r dist/* /var/www/html
+FROM alpine:3.15
 
-RUN rm -rf /tmp/nginx/vue-single-page-app
+RUN apk add --update nginx
+
+# Create the directories we will need
+RUN mkdir -p /var/log/nginx
+RUN mkdir -p /var/www/html
+
+# Copy the respective nginx configuration files
+COPY nginx_config/nginx.conf /etc/nginx/nginx.conf
+COPY nginx_config/default.conf /etc/nginx/conf.d/default.conf
+
+# copy the built app to our served directory
+COPY --from=builder /tmp/nginx/vue-single-page-app/dist/* /var/www/html/
 
 # make all files belong to the nginx user
 RUN chown nginx:nginx /var/www/html
