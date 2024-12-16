@@ -8,6 +8,12 @@
        -> 
       <span class="font-black">{{ this.results.DestinationStop?.PrimaryName }}</span>
     </div>
+
+    <RefreshLoadingButton 
+      :loading="this.loadingResults"
+      @click="this.getJourneyPlan()"
+    ></RefreshLoadingButton>
+
     <Card>
       <span 
         v-if="this.loadingResults"
@@ -78,12 +84,14 @@ import PageTitle from '@/components/PageTitle.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
+import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 
 export default {
   name: 'JourneyPlannerSearch',
   components: {
     Card,
     PageTitle,
+    RefreshLoadingButton
   },
   data () {
     return {
