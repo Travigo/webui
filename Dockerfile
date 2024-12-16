@@ -1,4 +1,4 @@
-FROM alpine:3.18 AS builder
+FROM alpine:3.21 AS builder
 
 RUN apk add --update nodejs npm
 
@@ -10,7 +10,7 @@ RUN npm install
 RUN npm run build
 
 
-FROM alpine:3.18
+FROM alpine:3.21
 
 RUN apk add --update nginx
 
