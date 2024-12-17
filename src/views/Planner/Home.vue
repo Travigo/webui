@@ -5,28 +5,25 @@
     </PageTitle>
     <Card>
       <Alert type="warning">
-        <strong>Limited Functionality</strong> Currently must enter the Stop IDs and can only support direct journeys
+        <strong>Limited Functionality</strong> Currently only supports direct journeys
       </Alert>
 
       <form>
         <div class="mb-6">
-          <SearchBar 
+          <SearchBar
+            mode="store"
             placeholder="Origin"
             searchClasses="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-sm p-2.5 text-gray-900"
-          />
-          <input 
-            type="text" id="origin" 
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Origin" required
             v-model="originStop"
-          >
+          />
         </div>
         <div class="mb-6">
-          <input type="text" id="destination" 
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Destination" required
+          <SearchBar
+            mode="store"
+            placeholder="Destination"
+            searchClasses="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-sm p-2.5 text-gray-900"
             v-model="destinationStop"
-          >
+          />
         </div>
         <button 
           type="submit" 
