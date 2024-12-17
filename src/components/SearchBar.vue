@@ -2,6 +2,7 @@
   <div class="mt-4 relative">
     <input
       type="text" id="searchTerm"
+      ref="searchInput"
       :class="searchClasses + ' shadow-md border rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'"
       :placeholder="placeholder" required
       autocomplete="off"
@@ -12,7 +13,7 @@
     <div 
       :class="searchClasses + ' absolute top-0 left-0 cursor-pointer border rounded-lg block w-full  dark:text-white'"
       v-if="selectedResult !== undefined"
-      @click="this.selectedResult = undefined"
+      @click="clearSelectedResult()"
     >
       <div class="flex">
         <div class="mt-0.5">
@@ -23,6 +24,9 @@
           <div>
             {{ selectedResult.PrimaryName }}
           </div>
+          <div class="text-xs font-light">
+            {{ selectedResult.Descriptor }}
+          </div>
         </div>
       </div>
     </div>
@@ -31,7 +35,7 @@
     <li v-for="result in this.results.stops">
       <a
         class="cursor-pointer"
-        @click="handleClick(result)"
+        @click="handleResultClick(result)"
       >
         <div class="flex">
           <div class="mt-0.5">
@@ -42,9 +46,8 @@
             <div>
               {{ result.PrimaryName }}
             </div>
-            <div class="text-xs font-ligh">
-              <span v-if="'Crs' in result.OtherIdentifiers">{{ result.OtherIdentifiers['Crs'] }}</span>
-              <span v-else-if="'AtcoCode' in result.OtherIdentifiers">{{ result.OtherIdentifiers['AtcoCode'] }}</span>
+            <div class="text-xs font-light">
+              {{ result.Descriptor }}
             </div>
           </div>
         </div>
@@ -108,9 +111,11 @@ export default {
       // .finally(() => this.loading = false)
   },
   methods: {
-    handleClick(result) {
-      console.log(result)
-
+    clearSelectedResult() {
+      this.selectedResult = undefined
+      this.$refs.searchInput.focus()
+    },
+    handleResultClick(result) {
       if (this.mode == 'link') {
         this.$router.push({ name: 'stops/view', params: {'id': result.PrimaryIdentifier} })
       } else if(this.mode == 'store') {
