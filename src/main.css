@@ -15,3 +15,7 @@
 .dp--menu-wrapper {
   transform: translate(-50%, -50%);
 }
+
+.material-symbols-outlined {
+  font-size: unset;
+}
