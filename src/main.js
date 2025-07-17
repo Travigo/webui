@@ -63,7 +63,7 @@ app.use(
     clientId: 'Vh6gHFJv724xjISfxHJK3bp8XvLqkw4K',
     authorizationParams: {
       redirect_uri: window.location.origin,
-      audience: 'https://api.travigo.claydonlee.com'
+      audience: 'https://api-travigo.claydonlee.com'
     },
     cacheLocation: 'localstorage'
   })
