@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: production
-      url: https://travigo.app
+      url: https://travigo.claydonlee.com
 
     needs: build-docker
 
