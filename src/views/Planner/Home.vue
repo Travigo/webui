@@ -53,8 +53,8 @@ export default {
   },
   data(){
     return {
-      originStop : "tmr-stop-f2682658fb0233a2c24c460d6b97",
-      destinationStop: "tmr-stop-6d4a16c404d022a7e49dd47971e6"
+      originStop : "tmr-stop-7152d2ec230f33e6d4d092d6adee",
+      destinationStop: "tmr-stop-a499f2e2140c892d3bc61fce694f"
     }
   },
   methods: {
