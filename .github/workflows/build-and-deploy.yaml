@@ -43,16 +43,16 @@ jobs:
             type=sha,format=short
             type=sha,format=long
 
-      # - name: Build and push Docker image
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy-helm:
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
   
     name: Deploy to Kubernetes
     runs-on: arc
@@ -78,4 +78,4 @@ jobs:
 
     - name: Helm upgrade
       run: |-
-        helm upgrade -i travigo-web-ui ./charts/travigo-web-ui --set image.tag=sha-${{ github.sha }}
+        helm -n default upgrade -i travigo-web-ui ./charts/travigo-web-ui --set image.tag=sha-${{ github.sha }}
