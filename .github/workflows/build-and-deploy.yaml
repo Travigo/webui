@@ -3,7 +3,7 @@ name: Build & Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, ci-test ]
   pull_request:
     branches: [ main ]
 
@@ -55,7 +55,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
   
     name: Deploy to Kubernetes
-    runs-on: ubuntu-latest
+    runs-on: arc
     environment: 
       name: production
       url: https://travigo.claydonlee.com
@@ -76,19 +76,6 @@ jobs:
     - name: Kubectl tool installer
       uses: Azure/setup-kubectl@v3
 
-    - name: Azure CLI Login
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  
-    - uses: azure/aks-set-context@v4
-      with:
-        resource-group: 'travigo'
-        admin: true
-        cluster-name: 'travigo-aks'
-
     - name: Helm upgrade
       run: |-
-        helm upgrade -i travigo-web-ui ./charts/travigo-web-ui --set image.tag=sha-${{ github.sha }}
+        helm -n default upgrade -i travigo-web-ui ./charts/travigo-web-ui --set image.tag=sha-${{ github.sha }}
