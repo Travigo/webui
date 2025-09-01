@@ -15,6 +15,7 @@ env:
 
 jobs:
   build-docker:
+    if: github.ref == 'FAKE'
     name: Build Docker image
     runs-on: ubuntu-latest
     permissions:
@@ -52,7 +53,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy-helm:
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
   
     name: Deploy to Kubernetes
     runs-on: arc
