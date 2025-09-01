@@ -15,7 +15,6 @@ env:
 
 jobs:
   build-docker:
-    if: github.ref == 'FAKE'
     name: Build Docker image
     runs-on: ubuntu-latest
     permissions:
@@ -44,13 +43,13 @@ jobs:
             type=sha,format=short
             type=sha,format=long
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
 
   deploy-helm:
     # if: github.ref == 'refs/heads/main'
