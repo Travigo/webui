@@ -58,7 +58,7 @@ jobs:
     runs-on: arc
     environment: 
       name: production
-      url: https://travigo.claydonlee.com
+      url: https://travigo.app
 
     needs: build-docker
 
