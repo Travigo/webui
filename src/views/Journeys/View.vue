@@ -291,7 +291,7 @@
             @loaded="mapLoaded"
           >
             <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-              <mapbox-marker :lngLat="point.location">
+              <mapbox-marker :lngLat="point.location" v-if="point.location">
                 <template v-slot:icon>
                   <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
                 </template>
@@ -569,6 +569,31 @@ export default {
         if (realtimeStop?.Platform !== "" && realtimeStop?.Platform !== undefined) {
           platform = realtimeStop?.Platform
           platformType = 'ACTUAL'
+        }
+
+        console.log(element.OriginStopRef, element.OriginStop)
+
+        if (element.OriginStop == null) {
+          console.log("Origin stop is null for stop ref: " + element.OriginStopRef)
+
+          journeyPoints.push({
+            stop: {
+              "PrimaryIdentifier": element.OriginStopRef,
+              "PrimaryName": "UNKNOWN STOP",
+              "OtherIdentifiers": [],
+            },
+            datasource: null,
+            location: null,
+            arrivalTime: element.OriginArrivalTime,
+            departureTime: element.OriginDepartureTime,
+            activity: element.OriginActivity,
+            track: null,
+            realtime: null,
+            platform: "",
+            platformType: "",
+          })
+
+          continue
         }
 
         journeyPoints.push({
