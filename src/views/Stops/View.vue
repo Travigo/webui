@@ -190,12 +190,13 @@
   </div>
 
   <Teleport to="body">
-    <div
-      v-if="alertsModalOpen"
-      class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-      @click.self="closeAlertsModal"
-    >
-      <section class="max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-2xl">
+    <Transition name="modal-overlay">
+      <div
+        v-if="alertsModalOpen"
+        class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
+        @click.self="closeAlertsModal"
+      >
+      <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-2xl">
         <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
           <div>
             <h2 class="text-lg font-bold text-slate-950 sm:text-xl">Service updates</h2>
@@ -238,8 +239,9 @@
             </div>
           </article>
         </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </Transition>
   </Teleport>
 </template>
 

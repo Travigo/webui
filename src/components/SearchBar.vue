@@ -32,7 +32,7 @@
     </button>
 
     <div 
-      :class="searchClasses + ' absolute top-0 left-0 cursor-pointer border rounded-lg block w-full  dark:text-white'"
+      :class="searchClasses + ' absolute top-0 left-0 cursor-pointer border rounded-2xl block w-full  dark:text-white'"
       v-if="selectedResult !== undefined"
       @click="clearSelectedResult()"
     >
@@ -52,7 +52,7 @@
       </div>
     </div>
   </div>
-  <ul class="rounded-lg bg-white shadow-md p-3 border border-gray-200 dark:bg-gray-800 dark:border-gray-600" v-if="this.results?.stops?.length > 0">
+  <ul class="rounded-2xl bg-white shadow-md p-3 border border-gray-200 dark:bg-gray-800 dark:border-gray-600" v-if="this.results?.stops?.length > 0">
     <li v-for="result in this.results.stops">
       <a
         class="cursor-pointer"
@@ -77,12 +77,13 @@
   </ul>
 
   <Teleport to="body">
-    <div
-      v-if="filtersOpen"
-      class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-      @click.self="closeFilters"
-    >
-      <section class="max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-lg">
+    <Transition name="modal-overlay">
+      <div
+        v-if="filtersOpen"
+        class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
+        @click.self="closeFilters"
+      >
+      <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-lg">
         <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
           <div>
             <h2 class="text-lg font-bold text-slate-950 sm:text-xl">Search filters</h2>
@@ -165,8 +166,9 @@
             </button>
           </div>
         </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -196,7 +198,7 @@ export default {
   components: {StopIcon, ServiceIcon},
   computed: {
     inputClass() {
-      let classes = this.searchClasses + ' shadow-md border rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+      let classes = this.searchClasses + ' shadow-md border rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
 
       if (this.showIcons) {
         classes += ' pl-10 pr-10 sm:pl-20 sm:pr-20'

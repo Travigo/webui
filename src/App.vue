@@ -36,11 +36,6 @@ export default {
           route: { name: 'timetables/home' }
         },
         {
-          name: 'Assistant',
-          route: { name: 'assistant/home' },
-          requiresLogin: true
-        },
-        {
           name: 'Account',
           route: { name: 'account/home' },
           requiresLogin: true
