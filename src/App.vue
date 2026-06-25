@@ -20,14 +20,6 @@ export default {
       hamburgerMenuOpen: false,
       navItems: [
         {
-          name: 'Map',
-          route: { name: 'map' }
-        },
-        {
-          name: 'Journey Planner',
-          route: { name: 'journeyplanner/home' }
-        },
-        {
           name: 'Operators',
           route: { name: 'operators/home' }
         },
@@ -56,6 +48,11 @@ export default {
           name: 'Map',
           icon: 'map',
           route: { name: 'map' }
+        },
+        {
+          name: 'Planner',
+          icon: 'route',
+          route: { name: 'journeyplanner/home' }
         },
         // {
         //   name: 'Trips',

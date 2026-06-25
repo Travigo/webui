@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4 relative">
+  <div :class="wrapperClass">
     <span
       v-if="showIcons"
       class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xl text-slate-400 sm:left-5 sm:text-4xl"
@@ -10,7 +10,8 @@
       type="text" id="searchTerm"
       ref="searchInput"
       :class="inputClass"
-      :placeholder="placeholder" required
+      :placeholder="placeholder"
+      :required="mode !== 'store'"
       autocomplete="off"
       v-model="searchTerm"
       v-on:input="searchStops"
@@ -32,30 +33,31 @@
     </button>
 
     <div 
-      :class="searchClasses + ' absolute top-0 left-0 cursor-pointer border rounded-2xl block w-full  dark:text-white'"
+      :class="selectedResultClass"
       v-if="selectedResult !== undefined"
       @click="clearSelectedResult()"
     >
-      <div class="flex">
-        <div class="mt-0.5">
+      <div class="flex h-full items-center">
+        <div class="shrink-0">
           <StopIcon :stop="selectedResult" size="4" />
         </div>
 
-        <div class="flex-auto my-auto font-medium ml-2 dark:text-white">
-          <div>
-            {{ selectedResult.PrimaryName }}
+        <div class="ml-2 min-w-0 flex-auto font-medium text-slate-950">
+          <div class="truncate">
+            {{ stopName(selectedResult) || 'Selected stop' }}
           </div>
-          <div class="text-xs font-light">
-            {{ selectedResult.Descriptor }}
+          <div class="truncate text-xs font-light text-slate-500" v-if="stopDescription(selectedResult)">
+            {{ stopDescription(selectedResult) }}
           </div>
         </div>
       </div>
     </div>
   </div>
-  <ul class="rounded-2xl bg-white shadow-md p-3 border border-gray-200 dark:bg-gray-800 dark:border-gray-600" v-if="this.results?.stops?.length > 0">
-    <li v-for="result in this.results.stops">
-      <a
-        class="cursor-pointer"
+  <ul class="relative z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70" v-if="searchResults.length > 0">
+    <li v-for="(result, index) in searchResults" v-bind:key="stopIdentifier(result) || index">
+      <button
+        type="button"
+        class="block w-full cursor-pointer px-3 py-2 text-left transition hover:bg-slate-50"
         @click="handleResultClick(result)"
       >
         <div class="flex">
@@ -63,16 +65,16 @@
             <StopIcon :stop="result" size="10" />
           </div>
 
-          <div class="flex-auto my-auto text-xl font-medium ml-2 dark:text-white">
-            <div>
-              {{ result.PrimaryName }}
+          <div class="flex-auto my-auto ml-2 min-w-0 font-medium">
+            <div class="truncate text-sm font-bold text-slate-950">
+              {{ stopName(result) || 'Unnamed stop' }}
             </div>
-            <div class="text-xs font-light">
-              {{ result.Descriptor }}
+            <div class="truncate text-xs font-light text-slate-500" v-if="stopDescription(result)">
+              {{ stopDescription(result) }}
             </div>
           </div>
         </div>
-      </a>
+      </button>
     </li>
   </ul>
 
@@ -190,6 +192,9 @@ export default {
     showIcons: {
       default: false
     },
+    flush: {
+      default: false
+    },
     mode: {
       default: 'link'
     }
@@ -197,14 +202,46 @@ export default {
   emits: ['update:modelValue'],
   components: {StopIcon, ServiceIcon},
   computed: {
+    wrapperClass() {
+      return [
+        'relative',
+        this.flush ? '' : 'mt-4'
+      ].filter(Boolean).join(' ')
+    },
     inputClass() {
-      let classes = this.searchClasses + ' shadow-md border rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+      let classes = this.searchClasses + ' shadow-md border rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500'
 
       if (this.showIcons) {
         classes += ' pl-10 pr-10 sm:pl-20 sm:pr-20'
       }
 
       return classes
+    },
+    selectedResultClass() {
+      return `${this.searchClasses} absolute top-0 left-0 z-20 cursor-pointer border rounded-2xl block w-full bg-white text-slate-950`
+    },
+    searchResults() {
+      const resultSet = [
+        this.results?.stops,
+        this.results?.Stops,
+        this.results?.data?.stops,
+        this.results?.data?.Stops,
+        this.results?.Data?.stops,
+        this.results?.Data?.Stops,
+        this.results?.data?.results,
+        this.results?.data?.Results,
+        this.results?.Data?.results,
+        this.results?.Data?.Results,
+        this.results?.results,
+        this.results?.Results,
+        this.results?.data,
+        this.results?.Data,
+        this.results,
+      ].find(result => Array.isArray(result))
+
+      return (resultSet || [])
+        .map(result => this.unwrapStop(result))
+        .filter(Boolean)
     },
     selectedFilterCount() {
       return Object.values(this.selectedFilters).reduce((total, selectedOptions) => total + selectedOptions.length, 0)
@@ -238,26 +275,47 @@ export default {
       ],
     }
   },
-  mounted: function() {
-    if (this.modelValue == "" || this.modelValue === undefined) {
-      return
+  watch: {
+    modelValue(newValue) {
+      this.loadSelectedResult(newValue)
     }
-
-    this.searchTerm = this.modelValue + "...."
-
-    axios
-      .get(`${API.URL}/core/stops/${this.modelValue}`)
-      .then(response => {
-        this.searchTerm = ""
-        this.selectedResult = response.data
-      })
-      .catch(error => {
-        console.log(error)
-        // this.error = error
-      })
-      // .finally(() => this.loading = false)
+  },
+  mounted: function() {
+    this.loadSelectedResult(this.modelValue)
   },
   methods: {
+    loadSelectedResult(identifier) {
+      if (this.mode !== 'store') {
+        return
+      }
+
+      if (identifier == "" || identifier === undefined || identifier === null) {
+        this.selectedResult = undefined
+        this.searchTerm = ''
+        this.results = {}
+        return
+      }
+
+      if (this.stopIdentifier(this.selectedResult) === identifier) {
+        return
+      }
+
+      this.searchTerm = 'Loading stop...'
+
+      axios
+        .get(`${API.URL}/core/stops/${identifier}`)
+        .then(response => {
+          const stop = this.unwrapStop(response.data)
+
+          this.selectedResult = stop
+          this.searchTerm = this.stopName(stop)
+        })
+        .catch(error => {
+          console.log(error)
+          this.selectedResult = undefined
+          this.searchTerm = ''
+        })
+    },
     openFilters() {
       this.filtersOpen = true
     },
@@ -293,21 +351,39 @@ export default {
     },
     clearSelectedResult() {
       this.selectedResult = undefined
-      this.$refs.searchInput.focus()
+      this.searchTerm = ''
+      this.results = {}
+
+      if (this.mode == 'store') {
+        this.$emit('update:modelValue', '')
+      }
+
+      this.$nextTick(() => this.$refs.searchInput.focus())
     },
     handleResultClick(result) {
+      const stop = this.unwrapStop(result)
+      const identifier = this.stopIdentifier(stop)
+
       if (this.mode == 'link') {
-        this.$router.push({ name: 'stops/view', params: {'id': result.PrimaryIdentifier} })
+        this.$router.push({ name: 'stops/view', params: {'id': identifier} })
       } else if(this.mode == 'store') {
-        this.selectedResult = result
-        this.searchTerm = ""
+        this.selectedResult = stop
+        this.searchTerm = this.stopName(stop)
         this.results = {}
-        this.$emit('update:modelValue', result.PrimaryIdentifier)
+        this.$emit('update:modelValue', identifier)
       }
     },
     searchStops() {
+      if (this.selectedResult !== undefined && this.searchTerm !== this.stopName(this.selectedResult)) {
+        this.selectedResult = undefined
+
+        if (this.mode == 'store') {
+          this.$emit('update:modelValue', '')
+        }
+      }
+
       if (this.searchTerm === '') {
-        this.results = []
+        this.results = {}
         return
       }
       this.loadingResults = true
@@ -322,6 +398,77 @@ export default {
             // this.error = error
           })
           .finally(() => this.loadingResults = false)
+    },
+    unwrapStop(result) {
+      if (Array.isArray(result)) {
+        return undefined
+      }
+
+      return result?.Stop ||
+        result?.stop ||
+        result?.Station ||
+        result?.station ||
+        result?.Data?.Stop ||
+        result?.Data?.stop ||
+        result?.data?.Stop ||
+        result?.data?.stop ||
+        result?.Data ||
+        result?.data ||
+        result?.Result ||
+        result?.result ||
+        result
+    },
+    stopName(stop) {
+      const normalizedStop = this.unwrapStop(stop) || {}
+
+      return normalizedStop.PrimaryName ||
+        normalizedStop.primaryName ||
+        normalizedStop.Name ||
+        normalizedStop.name ||
+        normalizedStop.CommonName ||
+        normalizedStop.commonName ||
+        normalizedStop.StopName ||
+        normalizedStop.stopName ||
+        normalizedStop.DisplayName ||
+        normalizedStop.displayName ||
+        normalizedStop.Title ||
+        normalizedStop.title ||
+        normalizedStop.OtherNames?.PrimaryName ||
+        normalizedStop.OtherNames?.primaryName ||
+        normalizedStop.OtherNames?.Name ||
+        normalizedStop.OtherNames?.name ||
+        normalizedStop.OtherNames?.CommonName ||
+        normalizedStop.OtherNames?.commonName ||
+        ''
+    },
+    stopDescription(stop) {
+      const normalizedStop = this.unwrapStop(stop) || {}
+
+      return normalizedStop.Descriptor ||
+        normalizedStop.Description ||
+        normalizedStop.LocalityName ||
+        normalizedStop.Locality ||
+        normalizedStop.Indicator ||
+        normalizedStop.OtherNames?.Descriptor ||
+        normalizedStop.OtherNames?.Description ||
+        ''
+    },
+    stopIdentifier(stop) {
+      const normalizedStop = this.unwrapStop(stop) || {}
+
+      return normalizedStop.PrimaryIdentifier ||
+        normalizedStop.primaryIdentifier ||
+        normalizedStop.Identifier ||
+        normalizedStop.identifier ||
+        normalizedStop.ID ||
+        normalizedStop.Id ||
+        normalizedStop.id ||
+        normalizedStop.StopID ||
+        normalizedStop.StopId ||
+        normalizedStop.ATCOCode ||
+        normalizedStop.NaptanCode ||
+        normalizedStop.PrimaryCode ||
+        ''
     },
   },
 }
