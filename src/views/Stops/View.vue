@@ -128,20 +128,20 @@
       </article>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div class="grid grid-cols-3 divide-x divide-slate-100">
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="grid grid-cols-3 divide-x divide-slate-100 dark:divide-slate-800">
         <button
           type="button"
           v-for="tab in tabs"
           v-bind:key="tab.id"
-          class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm"
-          :class="{'text-blue-600': currentTab === tab.id}"
+          class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
+          :class="{'text-blue-600 dark:text-blue-300': currentTab === tab.id}"
           @click="changeTab(tab.id)"
         >
           <span class="material-symbols-outlined text-[20px]">{{ tabIcon(tab.id) }}</span>
           <span>{{ tab.name }}</span>
           <span
-            class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600"
+            class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600 dark:bg-blue-300"
             v-if="currentTab === tab.id"
           />
         </button>

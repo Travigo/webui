@@ -54,47 +54,51 @@
       </div>
     </section>
 
-    <section class="space-y-2.5" v-if="serviceAlerts?.length > 0">
+    <section class="space-y-2.5" v-if="alertCards.length > 0">
       <article
-        v-for="(serviceAlert, id) in serviceAlerts"
-        v-bind:key="id"
-        class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 shadow-sm"
+        v-for="card in alertCards"
+        v-bind:key="card.key"
+        class="rounded-2xl border px-4 py-4 shadow-sm"
+        :class="card.classes"
       >
         <div class="flex items-start gap-3">
-          <span class="material-symbols-outlined mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[21px] text-white">
-            warning
+          <span
+            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+            :class="card.iconClasses"
+          >
+            <span class="material-symbols-outlined text-[21px] leading-none">{{ card.icon }}</span>
           </span>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-3">
               <h2 class="min-w-0 flex-1 truncate text-sm font-extrabold text-slate-900 sm:text-base">
-                {{ serviceAlert.Title || serviceAlert.AlertType || 'Service update' }}
+                {{ card.title }}
               </h2>
-              <span class="shrink-0 text-xs font-medium text-slate-500 sm:text-sm" v-if="serviceAlert.CreationDateTime">
-                {{ pretty.date(serviceAlert.CreationDateTime) }}
+              <span class="shrink-0 text-xs font-medium text-slate-500 sm:text-sm">
+                {{ card.meta }}
               </span>
             </div>
             <p class="mt-2 text-sm leading-relaxed text-slate-700 sm:text-[15px]">
-              {{ cleanAlertText(serviceAlert.Text) || 'Check before you travel.' }}
+              {{ card.body }}
             </p>
           </div>
         </div>
       </article>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div class="grid grid-cols-3 divide-x divide-slate-100">
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="grid grid-cols-3 divide-x divide-slate-100 dark:divide-slate-800">
         <button
           type="button"
           v-for="tab in tabs"
           v-bind:key="tab.id"
-          class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm"
-          :class="{'text-blue-600': currentTab === tab.id}"
+          class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
+          :class="{'text-blue-600 dark:text-blue-300': currentTab === tab.id}"
           @click="changeTab(tab.id)"
         >
           <span class="material-symbols-outlined text-[20px]">{{ tabIcon(tab.id) }}</span>
           <span>{{ tab.name }}</span>
           <span
-            class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600"
+            class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600 dark:bg-blue-300"
             v-if="currentTab === tab.id"
           />
         </button>
@@ -312,6 +316,21 @@ import API from "@/API"
 import Pretty from "@/pretty"
 import Utils from '@/utils'
 
+const ALERT_FALLBACKS = {
+  Information: { title: 'Service update', tone: 'info' },
+  Warning: { title: 'Service warning', tone: 'warning' },
+  StopClosed: { title: 'Stop closed', tone: 'error' },
+  ServiceSuspended: { title: 'Service suspended', tone: 'error' },
+  ServicePartSuspended: { title: 'Service suspended', tone: 'error' },
+  SevereDelays: { title: 'Severe delays', tone: 'error' },
+  Delays: { title: 'Service delays', tone: 'warning' },
+  MinorDelays: { title: 'Minor delays', tone: 'warning' },
+  Planned: { title: 'Planned notice', tone: 'info' },
+  JourneyDelayed: { title: 'Journey delayed', tone: 'warning' },
+  JourneyPartiallyCancelled: { title: 'Journey partially cancelled', tone: 'error' },
+  JourneyCancelled: { title: 'Journey cancelled', tone: 'error' },
+}
+
 export default {
   data() {
     return {
@@ -368,6 +387,24 @@ export default {
     DatasourceAttributes
   },
   computed: {
+    sortedServiceAlerts() {
+      if (this.serviceAlerts === null || this.serviceAlerts.length === 0) {
+        return []
+      }
+
+      return [...this.serviceAlerts].sort((first, second) => {
+        const severityDiff = this.alertSeverity(second) - this.alertSeverity(first)
+
+        if (severityDiff !== 0) {
+          return severityDiff
+        }
+
+        return new Date(second.CreationDateTime || 0) - new Date(first.CreationDateTime || 0)
+      })
+    },
+    alertCards() {
+      return this.sortedServiceAlerts.map((alert, index) => this.alertToCard(alert, index))
+    },
     journeyTitle() {
       if (this.journey?.DestinationDisplay) {
         return this.journey.DestinationDisplay
@@ -423,6 +460,55 @@ export default {
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
+    },
+    alertToCard(alert, index) {
+      const fallback = ALERT_FALLBACKS[alert.AlertType] || ALERT_FALLBACKS.Information
+      const tone = fallback.tone
+
+      return {
+        key: alert.PrimaryIdentifier || alert.ID || `alert-${index}`,
+        title: alert.Title || fallback.title,
+        meta: alert.CreationDateTime ? `${this.pretty.date(alert.CreationDateTime)}` : 'Live',
+        body: this.cleanAlertText(alert.Text) || 'Check before you travel.',
+        icon: this.statusIcon(tone),
+        classes: this.statusClasses(tone),
+        iconClasses: this.statusIconClasses(tone),
+        severity: this.alertSeverity(alert)
+      }
+    },
+    alertSeverity(alert) {
+      const tone = (ALERT_FALLBACKS[alert.AlertType] || ALERT_FALLBACKS.Information).tone
+
+      return {
+        error: 3,
+        warning: 2,
+        info: 1,
+        success: 0
+      }[tone]
+    },
+    statusIcon(tone) {
+      return {
+        info: 'info',
+        warning: 'warning',
+        error: 'error',
+        success: 'verified_user'
+      }[tone]
+    },
+    statusClasses(tone) {
+      return {
+        info: 'border-blue-100 bg-blue-50',
+        warning: 'border-amber-100 bg-amber-50',
+        error: 'border-red-100 bg-red-50',
+        success: 'border-emerald-100 bg-emerald-50'
+      }[tone]
+    },
+    statusIconClasses(tone) {
+      return {
+        info: 'bg-blue-600 text-white',
+        warning: 'bg-orange-500 text-white',
+        error: 'bg-red-600 text-white',
+        success: 'bg-emerald-600 text-white'
+      }[tone]
     },
     pointCancelled(point) {
       return point.realtime && point.realtime.Cancelled

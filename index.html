@@ -11,6 +11,16 @@
     <link rel="mask-icon" href="/favicon.svg" color="#FFFFFF">
     <meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+    <script>
+      (() => {
+        const theme = localStorage.getItem('travigo_theme')
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const dark = theme === 'dark' || (theme !== 'light' && prefersDark)
+
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+      })()
+    </script>
     <link
       rel="preload"
       href="/font/Inter-roman.var.woff2"
