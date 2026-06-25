@@ -130,7 +130,7 @@ import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 import FavouriteButton from "@/components/FavouriteButton.vue"
 import ShareButton from "@/components/ShareButton.vue"
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
-import VueDatePicker from '@vuepic/vue-datepicker'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'

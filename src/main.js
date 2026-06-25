@@ -6,7 +6,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import App from './App.vue'
 import { routes } from './routes.js'
 import { createRouter, createWebHistory } from 'vue-router'
-import VueGtag from "vue-gtag"
+// import VueGtag from "vue-gtag"
 import { registerSW } from 'virtual:pwa-register'
 import VueMapboxTs from "vue-mapbox-ts"
 import { createAuth0 } from '@auth0/auth0-vue'
@@ -53,7 +53,7 @@ router.beforeEach((to, from, next) => {
 // })
 app.use(router)
 
-app.use(VueGtag, {config: { id: "G-X0ZSSZCPYX" }})
+// app.use(VueGtag, {config: { id: "G-X0ZSSZCPYX" }})
 
 app.use(VueMapboxTs)
 
