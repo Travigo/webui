@@ -6,9 +6,9 @@
   </div>
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="space-y-3">
+    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
       <div>
-        <h1 class="text-[1.7rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
+        <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
           {{ stop.PrimaryName }}
         </h1>
         <p class="mt-1 text-sm font-medium text-slate-500" v-if="stop.OtherNames?.Descriptor">
@@ -24,31 +24,22 @@
           class="shrink-0"
         >
           <ServiceIcon
-            class="h-8 rounded-md px-2 text-sm font-bold shadow-sm"
+            class="h-6 rounded-md px-2 text-[0.8rem] font-bold shadow-sm"
             style="line-height: 32px"
             :service="service"
           />
         </router-link>
-        <span
-          class="inline-flex h-8 shrink-0 items-center rounded-md bg-slate-100 px-2 text-xs font-bold text-slate-600"
-          v-if="hiddenServicesCount > 0"
-        >
-          +{{ hiddenServicesCount }} more
-        </span>
       </div>
 
       <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         <span
           v-for="chip in amenityChips"
           v-bind:key="chip.icon"
-          class="inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm"
+          class="inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm"
           :title="chip.label"
         >
           <span class="material-symbols-outlined text-[20px]">{{ chip.icon }}</span>
         </span>
-        <!-- <span class="inline-flex h-10 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-bold text-blue-600">
-          +2 more
-        </span> -->
       </div>
     </section>
 
@@ -342,22 +333,22 @@ export default {
   },
   computed: {
     visibleServices() {
-      return this.stop?.Services?.slice(0, 3) || []
-    },
-    hiddenServicesCount() {
-      return Math.max((this.stop?.Services?.length || 0) - this.visibleServices.length, 0)
+      return this.stop?.Services || []
     },
     amenityChips() {
       return [
-        // { icon: 'wifi', label: 'Realtime information' },
-        // { icon: 'stairs', label: 'Step access' },
-        // { icon: 'accessible', label: 'Accessible access' },
-        // { icon: 'local_parking', label: 'Parking' },
-        // { icon: 'directions_bike', label: 'Cycle parking' },
-        // { icon: 'local_cafe', label: 'Refreshments' },
+        { icon: 'wifi', label: 'Realtime information' },
+        { icon: 'stairs', label: 'Step access' },
+        { icon: 'accessible', label: 'Accessible access' },
+        { icon: 'local_parking', label: 'Parking' },
+        { icon: 'directions_bike', label: 'Cycle parking' },
+        { icon: 'local_cafe', label: 'Refreshments' },
       ]
     },
     sortedServiceAlerts() {
+      if (this.serviceAlerts === null || this.serviceAlerts.length === 0) {
+        return []
+      }
       return [...this.serviceAlerts].sort((first, second) => {
         const severityDiff = this.alertSeverity(second) - this.alertSeverity(first)
 

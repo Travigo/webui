@@ -55,7 +55,7 @@ export default {
   name: 'LocationPicker',
   props: {
     location: {
-      default: 'Cambridge, UK'
+      default: 'Global'
     }
   },
   data() {

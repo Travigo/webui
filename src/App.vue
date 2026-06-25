@@ -52,21 +52,21 @@ export default {
           icon: 'home',
           route: { name: 'home' }
         },
-        {
-          name: 'Explore',
-          icon: 'explore',
-          route: { name: 'operators/home' }
-        },
+        // {
+        //   name: 'Explore',
+        //   icon: 'explore',
+        //   route: { name: 'operators/home' }
+        // },
         {
           name: 'Map',
           icon: 'map',
           route: { name: 'map' }
         },
-        {
-          name: 'Trips',
-          icon: 'directions_bus',
-          route: { name: 'timetables/home' }
-        },
+        // {
+        //   name: 'Trips',
+        //   icon: 'directions_bus',
+        //   route: { name: 'timetables/home' }
+        // },
         {
           name: 'Saved',
           icon: 'bookmark',
@@ -112,7 +112,7 @@ export default {
       <div class="flex items-start justify-between gap-3 sm:gap-4">
         <div>
           <router-link :to="{ path: '/' }" class="inline-flex items-center gap-2 sm:gap-3">
-            <span class="bg-gradient-to-r from-pink-500 via-fuchsia-400 to-indigo-600 bg-clip-text text-4xl font-semibold tracking-normal text-transparent sm:text-5xl">
+            <span class="bg-gradient-to-r from-pink-500 via-fuchsia-400 to-indigo-600 bg-clip-text text-2xl font-semibold tracking-normal text-transparent sm:text-5xl">
               Travigo
             </span>
             <span
@@ -133,7 +133,7 @@ export default {
 
         <button
           @click="hamburgerMenuToggle"
-          class="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 sm:hidden"
+          class="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 sm:hidden"
           aria-label="Open navigation"
         >
           <span class="material-symbols-outlined text-2xl">person</span>
@@ -190,13 +190,13 @@ export default {
         class="mb-2 border-b border-slate-100 pb-2 empty:mb-0 empty:hidden empty:border-0 empty:pb-0"
       ></div>
 
-      <div class="grid grid-cols-5 gap-1">
+      <div class="flex justify-center gap-1">
         <router-link
           v-for="item in bottomNavItems"
           v-bind:key="item.name"
           v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
           :to="item.route"
-          class="group flex min-w-0 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-[11px] font-medium text-slate-600 transition hover:text-blue-600 sm:gap-1 sm:rounded-2xl sm:text-xs"
+          class="group flex min-w-0 max-w-20 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-[11px] font-medium text-slate-600 transition hover:text-blue-600 sm:gap-1 sm:rounded-2xl sm:text-xs"
           active-class="bottom-nav-active"
         >
           <span class="flex h-8 w-8 items-center justify-center rounded-full transition group-hover:bg-blue-50 sm:h-10 sm:w-10">

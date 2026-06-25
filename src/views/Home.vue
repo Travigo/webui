@@ -8,7 +8,7 @@
       :showIcons="true"
     />
 
-    <section class="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-slate-50 p-4 shadow-sm shadow-slate-200/70 sm:rounded-3xl sm:p-6">
+    <!-- <section class="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-slate-50 p-4 shadow-sm shadow-slate-200/70 sm:rounded-3xl sm:p-6">
       <div class="relative z-10 max-w-[62%] sm:max-w-md">
         <div class="mb-3 inline-flex items-center gap-2 text-sm font-medium text-blue-600 sm:mb-4 sm:text-lg">
           <span class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 sm:h-7 sm:w-7">
@@ -50,7 +50,7 @@
         <span class="material-symbols-outlined text-lg sm:text-2xl">rss_feed</span>
         Live
       </div>
-    </section>
+    </section> -->
 
     <!-- <section class="rounded-2xl border border-slate-200 bg-white px-3 py-4 shadow-md shadow-slate-200/70 sm:rounded-3xl sm:px-4 sm:py-5 sm:shadow-lg">
       <div class="grid grid-cols-6 gap-1 sm:gap-2">
@@ -69,15 +69,11 @@
     </section> -->
 
     <section>
-      <div class="mb-3 flex items-center justify-between sm:mb-4">
-        <h2 class="text-2xl font-bold tracking-normal text-slate-950 sm:text-3xl">Nearby stops</h2>
-        <router-link :to="{ name: 'map' }" class="inline-flex items-center gap-1 text-base font-medium text-blue-600 sm:text-lg">
-          View map
-          <span class="material-symbols-outlined text-xl sm:text-2xl">chevron_right</span>
-        </router-link>
-      </div>
-
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 sm:rounded-3xl">
+        <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
+          <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Nearby Stops</h2>
+          <p class="text-sm text-slate-500 sm:text-base rounded-2xl bg-amber-50 px-1 py-1 text-amber-800">Currently does not function</p>
+        </div>
         <div
           v-for="stop in nearbyStops"
           v-bind:key="stop.name"
