@@ -12,7 +12,6 @@
     "@tailwindcss/postcss": "^4.3.1",
     "@twilio/conversations": "^3.0.0",
     "@vuepic/vue-datepicker": "^14.0.0",
-    "@webzlodimir/vue-bottom-sheet": "^3.0.5",
     "axios": "^1.18.1",
     "firebase": "^12.15.0",
     "leaflet.markercluster": "^1.5.3",

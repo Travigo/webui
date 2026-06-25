@@ -93,7 +93,7 @@
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
                   <h3 class="truncate text-base font-bold leading-tight text-slate-950 sm:text-xl">{{ stop.name }}</h3>
-                  <span class="material-symbols-outlined text-base text-blue-600 sm:text-xl">verified</span>
+                  <!-- <span class="material-symbols-outlined text-base text-blue-600 sm:text-xl">verified</span> -->
                 </div>
                 <span :class="stop.badgeClass" class="mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-semibold text-white sm:rounded-md sm:px-2 sm:text-sm">
                   {{ stop.badge }}

@@ -21,7 +21,7 @@
       <mapbox-navigation-control position="bottom-left" />
       <mapbox-geolocate-control position="bottom-left" />
 
-      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier" @click="openStopSheet(stop)">
+      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier" @click="openStopModal(stop)">
         <template v-slot:icon>
           <StopIcon :stop="stop"/>
         </template>
@@ -61,26 +61,66 @@
     </div>
   </div>
 
-  <vue-bottom-sheet ref="stopInfoSheet" maxHeight="380" class="relative">
-    <div v-if="currentViewedStop !== undefined" class="px-4" style="min-height: 200px">
-      <StopStatus :currentViewedStop="currentViewedStop" />
-      <PageTitle paddingStyle="pb-2">Departures</PageTitle>
-      <span v-if="this.loadingDepartures" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
-        Loading...
-      </span>
-      <DeparturesList v-else :stop="currentViewedStop" :departures="currentViewedStopDepartures"/>
-      <div class="absolute bottom-5 right-3">
-        <router-link
-          @click="this.$refs.stopInfoSheet.close()"
-          :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        >
-          View More
-        </router-link>
-      </div>
+  <Teleport to="body">
+    <div
+      v-if="stopModalOpen"
+      class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
+      @click.self="closeStopModal"
+    >
+      <section class="max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-2xl">
+        <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
+          <div class="min-w-0">
+            <h2 class="truncate text-lg font-bold text-slate-950 sm:text-xl">
+              {{ currentViewedStop?.PrimaryName || 'Stop details' }}
+            </h2>
+            <p class="mt-1 truncate text-sm text-slate-500">
+              {{ currentViewedStop?.Descriptor || currentViewedStop?.OtherNames?.Descriptor || 'Departures and stop information' }}
+            </p>
+          </div>
+          <button
+            @click="closeStopModal"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
+            aria-label="Close stop departures"
+          >
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        <div class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5">
+          <div v-if="currentViewedStop !== undefined" class="space-y-4">
+            <div class="rounded-2xl bg-blue-50 p-4">
+              <StopStatus :currentViewedStop="currentViewedStop" />
+            </div>
+
+            <div>
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <h3 class="text-base font-bold text-slate-950 sm:text-lg">Departures</h3>
+                <router-link
+                  @click="closeStopModal"
+                  :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
+                  class="inline-flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700"
+                >
+                  View more
+                  <span class="material-symbols-outlined text-base">chevron_right</span>
+                </router-link>
+              </div>
+
+              <div v-if="this.loadingDepartures" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+                Loading departures...
+              </div>
+              <div v-else class="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+                <DeparturesList :stop="currentViewedStop" :departures="currentViewedStopDepartures"/>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+            Select a stop on the map to view departures.
+          </div>
+        </div>
+      </section>
     </div>
-    <div style="height: 380px" v-else></div>
-  </vue-bottom-sheet>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -106,22 +146,13 @@
 
 
 <script>
-import PageTitle from '@/components/PageTitle.vue'
-import ServiceIcon from '@/components/ServiceIcon.vue'
 import StopStatus from '@/components/StopStatus.vue'
 import DeparturesList from '@/components/DeparturesList.vue'
 import StopIcon from '@/components/StopIcon.vue'
-import Modal from '@/components/Modal.vue'
-import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
 
 import { MapboxMap } from "vue-mapbox-ts";
-
-
-import VueBottomSheet from "@webzlodimir/vue-bottom-sheet";
-import  "@webzlodimir/vue-bottom-sheet/dist/style.css";
-
 
 export default {
   name: 'StopsView',
@@ -149,23 +180,18 @@ export default {
       mapboxObject: undefined,
 
       currentViewedStop: undefined,
+      stopModalOpen: false,
 
       loadingDepartures: true,
       currentViewedStopDepartures: []
     }
   },
   components: {
-    PageTitle,
-    Card,
-    Modal,
-    ServiceIcon,
     StopStatus,
     DeparturesList,
     StopIcon,
 
-    MapboxMap,
-
-    VueBottomSheet
+    MapboxMap
   },
   methods: {
     mapLoaded(map) {
@@ -231,14 +257,16 @@ export default {
           .finally(() => this.loading = false)
       }
     },
-    openStopSheet(stop) {
+    openStopModal(stop) {
       this.currentViewedStop = stop
       this.currentViewedStopDepartures = []
       this.loadingDepartures = true
+      this.stopModalOpen = true
 
       this.getDepartures()
-
-      this.$refs.stopInfoSheet.open()
+    },
+    closeStopModal() {
+      this.stopModalOpen = false
     },
     getDepartures() {
       axios
