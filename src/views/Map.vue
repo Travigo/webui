@@ -94,8 +94,13 @@
 
 .map-control-buttons {
   position: absolute;
-  bottom: 24px;
+  bottom: 92px;
   right: 6px;
+  z-index: 40;
+}
+
+:deep(.mapboxgl-ctrl-bottom-left) {
+  bottom: 84px;
 }
 </style>
 

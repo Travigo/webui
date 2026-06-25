@@ -1,14 +1,26 @@
 <template>
   <div class="mt-4 relative">
+    <span
+      v-if="showIcons"
+      class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xl text-slate-400 sm:left-5 sm:text-4xl"
+    >
+      search
+    </span>
     <input
       type="text" id="searchTerm"
       ref="searchInput"
-      :class="searchClasses + ' shadow-md border rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'"
+      :class="inputClass"
       :placeholder="placeholder" required
       autocomplete="off"
       v-model="searchTerm"
       v-on:input="searchStops"
     >
+    <span
+      v-if="showIcons"
+      class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-xl text-slate-500 sm:right-5 sm:text-4xl"
+    >
+      tune
+    </span>
 
     <div 
       :class="searchClasses + ' absolute top-0 left-0 cursor-pointer border rounded-lg block w-full  dark:text-white'"
@@ -72,6 +84,9 @@ export default {
     searchClasses: {
       default: ''
     },
+    showIcons: {
+      default: false
+    },
     mode: {
       default: 'link'
     }
@@ -81,6 +96,15 @@ export default {
   computed: {
     search() {
       return search
+    },
+    inputClass() {
+      let classes = this.searchClasses + ' shadow-md border rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+
+      if (this.showIcons) {
+        classes += ' pl-10 pr-10 sm:pl-20 sm:pr-20'
+      }
+
+      return classes
     }
   },
   data () {

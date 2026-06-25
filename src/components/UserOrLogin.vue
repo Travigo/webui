@@ -1,22 +1,22 @@
 <template>
-  <div>
-    <div v-if="isAuthenticated">
-      <button 
-        @click="logout"
-        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-      >
-        Log out
-      </button>
-    </div>
-    <div v-else>
-      <button 
-        @click="login"
-        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-      >
-        Log in
-      </button>
-    </div>
-  </div>
+  <button
+    v-if="isAuthenticated"
+    @click="logout"
+    class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-slate-950 transition hover:bg-indigo-200 sm:h-12 sm:w-12"
+    title="Log out"
+    aria-label="Log out"
+  >
+    <span class="material-symbols-outlined text-2xl sm:text-3xl">person</span>
+  </button>
+  <button
+    v-else
+    @click="login"
+    class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-slate-950 transition hover:bg-indigo-200 sm:h-12 sm:w-12"
+    title="Log in"
+    aria-label="Log in"
+  >
+    <span class="material-symbols-outlined text-2xl sm:text-3xl">person</span>
+  </button>
 </template>
 
 <script>
