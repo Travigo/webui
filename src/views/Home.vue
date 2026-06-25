@@ -22,7 +22,7 @@
         <p class="mt-3 text-sm leading-relaxed text-slate-600 sm:mt-4 sm:text-lg">
           Lookup scheduled and real-time information for public transport in the UK, Europe, and beyond, including trains, buses, trams and ferries.
         </p>
-        <router-link :to="{ name: 'map' }" class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-blue-600 sm:mt-7 sm:gap-2 sm:text-lg">
+        <router-link :to="{ name: 'datasources/home' }" class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-blue-600 sm:mt-7 sm:gap-2 sm:text-lg">
           See supported locations
           <span class="material-symbols-outlined text-lg sm:text-2xl">chevron_right</span>
         </router-link>

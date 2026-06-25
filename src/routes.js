@@ -38,6 +38,14 @@ export const routes = [
     component: Contact,
   },
   {
+    name: 'datasources/home',
+    path: '/datasources',
+    meta: { 
+      title: 'Datasources'
+    },
+    component: () => import('./views/Datasources/Home.vue')
+  },
+  {
     name: 'map',
     path: '/map',
     meta: { 
