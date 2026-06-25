@@ -185,6 +185,11 @@ export default {
       class="fixed inset-x-0 bottom-3 z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-xl shadow-slate-300/60 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:rounded-3xl sm:px-4 sm:py-3 sm:shadow-2xl"
       aria-label="Primary"
     >
+      <div
+        id="bottom-nav-extra"
+        class="mb-2 border-b border-slate-100 pb-2 empty:mb-0 empty:hidden empty:border-0 empty:pb-0"
+      ></div>
+
       <div class="grid grid-cols-5 gap-1">
         <router-link
           v-for="item in bottomNavItems"
