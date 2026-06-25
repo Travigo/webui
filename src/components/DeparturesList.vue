@@ -13,6 +13,7 @@
 
       <router-link
         class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_1fr_auto]"
+        :class="{'opacity-70': isCancelled(departure)}"
         :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}"
         v-if="departure.Journey.PrimaryIdentifier !=''"
       >
@@ -50,10 +51,13 @@
 
         <div class="flex items-center gap-2 text-right">
           <div>
-            <div class="text-[15px] font-bold leading-tight text-slate-950">
+            <div class="text-[15px] font-bold leading-tight text-slate-950" :class="{'line-through decoration-red-500 decoration-2': isCancelled(departure)}">
               {{ this.pretty.time(departure.Time, stop.Timezone) }}
             </div>
-            <div class="mt-1 text-xs text-slate-500" v-if="departure.Platform">
+            <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
+              Cancelled
+            </div>
+            <div class="mt-1 text-xs text-slate-500" v-else-if="departure.Platform">
               Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
             </div>
           </div>
@@ -63,6 +67,7 @@
 
       <div
         class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 sm:grid-cols-[3.25rem_1fr_auto]"
+        :class="{'opacity-70': isCancelled(departure)}"
         v-else
       >
         <ServiceIcon
@@ -96,10 +101,13 @@
         </div>
 
         <div class="text-right">
-          <div class="text-[15px] font-bold leading-tight text-slate-950">
+          <div class="text-[15px] font-bold leading-tight text-slate-950" :class="{'line-through decoration-red-500 decoration-2': isCancelled(departure)}">
             {{ this.pretty.time(departure.Time, stop.Timezone) }}
           </div>
-          <div class="mt-1 text-xs text-slate-500" v-if="departure.Platform">
+          <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
+            Cancelled
+          </div>
+          <div class="mt-1 text-xs text-slate-500" v-else-if="departure.Platform">
             Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
           </div>
         </div>
@@ -172,6 +180,9 @@ export default {
     }
   },
   methods: {
+    isCancelled(departure) {
+      return departure.Type == 'Cancelled'
+    },
     departureDayChange(index) {
       let comparisonDateTime;
       // If we're at the start then comparison datetime is current date else its the last items
