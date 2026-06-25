@@ -1,340 +1,311 @@
 <template>
   <Alert type="error" class="mt-4" v-if="errorJourney !== undefined">{{ errorJourney }}</Alert>
-  <div v-if="loadingJourney">Loading...</div>
-  <div v-else class="h-full">
-    <h1 class="py-2 text-xl font-medium leading-tight text-gray-900 dark:text-gray-200">
-      <DepartureTypeIcon :journey="journey"/> 
-      <span v-if="journey.DestinationDisplay != ''" class="pl-1">
-        {{ journey.DestinationDisplay }}
-      </span>
-      <span v-else class="pl-1">
-        {{ this.journeyPoints[this.journeyPoints.length-1].stop.PrimaryName }}
-      </span>
-    </h1>
+  <div v-if="loadingJourney" class="px-1 py-6 text-sm font-semibold text-slate-500">
+    Loading journey...
+  </div>
 
-    <div>
-      <ServiceIcon
-        v-if="journey.Service!==undefined"
-        :service="journey.Service" 
-      /> 
-    </div>
-
-    <p
-      class="text-sm font-medium text-gray-500"
-      v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked"
-    >
-      <span v-if="journey.RealtimeJourney.VehicleLocationDescription">
-        {{ journey.RealtimeJourney.VehicleLocationDescription }}
-      </span>
-    </p>
-
-    <div v-if="!journey?.RealtimeJourney?.Cancelled">
-      <DetailedInformationRail :journey="journey"/>
-    </div>
-
-    <div class="service-alerts">
-      <ServiceAlert :alert="serviceAlert" v-for="(serviceAlert, id) in this.serviceAlerts" v-bind:key="id" />
-    </div>
-
-    <ShareButton />
-    <RefreshLoadingButton 
-      :loading="this.loadingRealtime"
-      @click="this.getRealtimeJourney()"
-    ></RefreshLoadingButton>
-
-    <div class="md:hidden inline-block">
-      <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
-    </div>
-    <div class="flex flex-col-reverse mt-2 md:flex-row h-full">
-      <div
-        class="basis-full md:basis-1/2 md:mr-2 md:mt-0 md:block"
-        v-bind:class="{ hidden: this.currentTab !== 'timeline' }"
-      >
-        <Card>
-          <a
-            v-if="!this.expandInactiveStops && this.hasHiddenStops"
-            @click="showAllStops()"
-            class="
-              cursor-pointer
-              text-center
-              block
-              bg-gray-100
-              text-gray-600 text-sm
-              p-1
-              rounded-lg
-              dark:bg-gray-700 dark:border-gray-400 dark:text-gray-300
-            "
-          >
-            Show previous stops
-          </a>
-          <ol class="relative border-l border-gray-300">
-            <li
-              class="mb-5 ml-4 last:mb-0 relative"
-              v-for="(point, index) in this.journeyPoints"
-              v-bind:key="index"
+  <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
+    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="mb-2 flex flex-wrap items-center gap-2">
+            <ServiceIcon
+              v-if="journey.Service!==undefined"
+              class="h-7 rounded-md px-2 text-sm font-bold shadow-sm"
+              style="line-height: 28px"
+              :service="journey.Service"
+            />
+            <span
+              class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
+              :class="journeyStatus.classes"
             >
-              <span v-if="this.showStop(index)">
-                <div
-                  class="
-                    absolute
-                    w-3
-                    h-3
-                    bg-gray-300
-                    rounded-full
-                    -left-[1.4rem]
-                    top-1.5
-                    border border-white
-                  "
-                  v-bind:class="{ 'bg-gray-600': point.active }"
-                ></div>
-
-                <div
-                  class="flex text-gray-600"
-                  v-bind:class="{ 'text-gray-900 dark:text-gray-100': point.active }"
-                >
-                  <div class="flex-auto my-auto min-h-[40px]">
-                    <div class="mb-1 font-normal">
-                      <router-link
-                          :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
-                      >
-                        {{ point.stop.PrimaryName }}
-                      </router-link>
-                    </div>
-                    <div
-                      class="
-                        mb-1
-                        text-sm
-                        font-normal
-                        leading-none
-                        text-gray-400
-                      "
-                    >
-                      <div class="text-xs text-gray-500">
-                        <span 
-                          v-if="this.stopServiceAlerts[point.stop.PrimaryIdentifier]?.closed" 
-                          class="text-xs px-2 rounded text-red-200 bg-red-600 w-fit"
-                        >
-                          Stop Closed
-                        </span>
-
-                        <span v-if="point.platform">
-                          Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Estimated)</span>
-                        </span>
-                        <span v-if="point.activity?.length == 1 && point.platform"> &#8226; </span>
-                        <span>
-                          <span v-if="point.activity?.length == 1">
-                            {{ point.activity[0] }} only
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-base font-normal text-right">
-                    <p
-                      v-if="
-                        point.realtime &&
-                        point.realtime.Cancelled
-                      "
-                    >
-                      <div class="text-xs px-2 rounded text-red-200 bg-red-600">
-                        CANCELLED
-                      </div>
-                    </p>
-                    <p v-else-if="
-                      point.activity?.length == 1 &&
-                      point.activity[0] == 'Setdown' &&
-                      !point?.lastOne
-                    ">
-                      --:--
-                    </p>
-                    <p
-                      v-else-if="
-                        point.realtime &&
-                        this.pretty.time(point.departureTime, journey.DepartureTimezone) !== this.pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone) &&
-                        point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
-                      "
-                    >
-                      <span class="text-xs line-through">
-                        {{ this.pretty.time(point.departureTime, journey.DepartureTimezone) }}
-                      </span>
-                      <span class="text-red-500">
-                        {{ this.pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone) }}
-                      </span>
-                    </p>
-                    <p
-                      v-else-if="
-                        point.realtime &&
-                        this.pretty.time(point.departureTime, journey.DepartureTimezone) === this.pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone)
-                      "
-                    >
-                      <span class="text-green-700">
-                        {{ this.pretty.time(point.departureTime, journey.DepartureTimezone) }}
-                      </span>
-                    </p>
-                    <p v-else>
-                      {{ this.pretty.time(point.departureTime, journey.DepartureTimezone) }}
-                    </p>
-                    <!-- SWAPPY SWAPPY -->
-                    <p
-                      class="text-xs"
-                      v-if="
-                        this.pretty.time(point.arrivalTime, journey.DepartureTimezone) !== this.pretty.time(point.departureTime, journey.DepartureTimezone) &&
-                        point.arrivalTime != null && !(point.realtime && point.realtime?.Cancelled)
-                      "
-                    >
-                      <span
-                        v-if="
-                          point.realtime &&
-                          this.pretty.time(point.arrivalTime, journey.DepartureTimezone) !== this.pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone) &&
-                          point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
-                        "
-                      >
-                        Arrives
-                        <span class="text-xs line-through">
-                          {{ this.pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
-                        </span>
-                        <span class="text-red-500">
-                          {{ this.pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone) }}
-                        </span>
-                      </span>
-                      <span
-                        v-else-if="
-                          point.realtime &&
-                          this.pretty.time(point.arrivalTime, journey.DepartureTimezone) === this.pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone)
-                        "
-                      >
-                        <span class="text-green-700">
-                          Arrives {{ this.pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
-                        </span>
-                      </span>
-                      <span v-else>
-                        Arrives {{ this.pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </span>
-            </li>
-          </ol>
-        </Card>
-      </div>
-      <div
-        class="basis-full md:basis-1/2 md:ml-2 h-[450px] md:h-[400px] md:block"
-      >
-        <div class="md:block" v-bind:class="{ hidden: this.currentTab !== 'details' }">
-          <div v-if="journey?.RealtimeJourney?.Occupancy.OccupancyAvailable">
-            <Card class="mb-4">
-              <div><strong>Occupancy: </strong> {{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</div>
-              <div v-if="journey?.RealtimeJourney?.Occupancy.ActualValues">
-                <div v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
-                  <strong>Seats: </strong>
-                  {{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}
-                </div>
-                <div v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
-                  <strong>Wheelchair Spaces: </strong>
-                  {{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}
-                </div>
-              </div>
-            </Card>
+              <DepartureTypeIcon :journey="journey"/>
+              {{ journeyStatus.label }}
+            </span>
           </div>
-
-          <div v-if="journey?.DetailedRailInformation">
-            <Card class="mb-4">
-              <div v-if="journey.DetailedRailInformation.VehicleTypeName !== ''">
-                <strong>Vehicle: </strong> {{ journey.DetailedRailInformation.VehicleTypeName }}
-              </div>
-              <div v-else>
-                <strong>Vehicle ID: </strong> {{ journey.DetailedRailInformation.VehicleType }}
-              </div>
-              <div>
-                <strong>Speed: </strong> {{ journey.DetailedRailInformation.SpeedKMH }} km/h
-              </div>
-              <div>
-                <strong>Fuel: </strong> {{ journey.DetailedRailInformation.PowerType }}
-              </div>
-
-              <div>
-                <strong>Seating: </strong> {{ journey.DetailedRailInformation.Seating }}
-              </div>
-
-              <div>
-                <strong>Sleepers: </strong> {{ journey.DetailedRailInformation.SleeperAvailable }}
-              </div>
-              <div v-if="journey.DetailedRailInformation.SleeperAvailable">
-                <strong>Sleeper for: </strong> {{ journey.DetailedRailInformation.Sleepers }}
-              </div>
-
-              <div v-if="journey.DetailedRailInformation.CateringAvailable">
-                <strong>Catering Description: </strong> {{ journey.DetailedRailInformation.CateringDescription }}
-              </div>
-
-              <div>
-                <strong>Reservation Required: </strong> {{ journey.DetailedRailInformation.ReservationRequired }}
-              </div>
-              <div>
-                <strong>Reservation Required for bike: </strong> {{ journey.DetailedRailInformation.ReservationBikeRequired }}
-              </div>
-              <div>
-                <strong>Reservation Recommended: </strong> {{ journey.DetailedRailInformation.ReservationRecommended }}
-              </div>
-            </Card>
-          </div>
+          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
+            {{ journeyTitle }}
+          </h1>
+          <p class="mt-1 text-sm font-medium text-slate-500">
+            {{ journeySubtitle }}
+          </p>
         </div>
 
-        <div class="md:block h-[400px]" v-bind:class="{ hidden: this.currentTab !== 'map' }">
-          <mapbox-map
-            accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-            mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
-            style="height: 100%"
-            :zoom="zoom"
-            :center="center"
-            @loaded="mapLoaded"
-          >
-            <div v-for="(point, index) in this.journeyPoints" v-bind:key="index">
-              <mapbox-marker :lngLat="point.location" v-if="point.location">
-                <template v-slot:icon>
-                  <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
-                </template>
-              </mapbox-marker>
+        <button
+          type="button"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-50 disabled:opacity-70"
+          :disabled="loadingRealtime"
+          @click="getRealtimeJourney()"
+          aria-label="Refresh realtime journey"
+        >
+          <span class="material-symbols-outlined text-[23px]" :class="{'animate-spin': loadingRealtime}">refresh</span>
+        </button>
+      </div>
 
-              <mapbox-geogeometry-raw :source="point.track" v-if="point.track">
-                <mapbox-geogeometry-line :width="5" :color="point.active ? 'green' : 'gray'" />
-              </mapbox-geogeometry-raw>
+      <p
+        class="rounded-2xl bg-white/80 px-3 py-2 text-sm font-medium text-slate-600"
+        v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked && journey.RealtimeJourney.VehicleLocationDescription"
+      >
+        {{ journey.RealtimeJourney.VehicleLocationDescription }}
+      </p>
+
+      <div v-if="!journey?.RealtimeJourney?.Cancelled" class="rounded-2xl bg-white/75 p-3">
+        <DetailedInformationRail :journey="journey"/>
+      </div>
+    </section>
+
+    <section class="space-y-2.5" v-if="serviceAlerts?.length > 0">
+      <article
+        v-for="(serviceAlert, id) in serviceAlerts"
+        v-bind:key="id"
+        class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 shadow-sm"
+      >
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[21px] text-white">
+            warning
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-3">
+              <h2 class="min-w-0 flex-1 truncate text-sm font-extrabold text-slate-900 sm:text-base">
+                {{ serviceAlert.Title || serviceAlert.AlertType || 'Service update' }}
+              </h2>
+              <span class="shrink-0 text-xs font-medium text-slate-500 sm:text-sm" v-if="serviceAlert.CreationDateTime">
+                {{ pretty.date(serviceAlert.CreationDateTime) }}
+              </span>
             </div>
+            <p class="mt-2 text-sm leading-relaxed text-slate-700 sm:text-[15px]">
+              {{ cleanAlertText(serviceAlert.Text) || 'Check before you travel.' }}
+            </p>
+          </div>
+        </div>
+      </article>
+    </section>
 
-            <mapbox-geogeometry-raw :source="this.convertTrackToFeatureCollection(this.journey.Track)">
-              <mapbox-geogeometry-line :width="5" color="green" />
-            </mapbox-geogeometry-raw>
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="grid grid-cols-3 divide-x divide-slate-100">
+        <button
+          type="button"
+          v-for="tab in tabs"
+          v-bind:key="tab.id"
+          class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm"
+          :class="{'text-blue-600': currentTab === tab.id}"
+          @click="changeTab(tab.id)"
+        >
+          <span class="material-symbols-outlined text-[20px]">{{ tabIcon(tab.id) }}</span>
+          <span>{{ tab.name }}</span>
+          <span
+            class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600"
+            v-if="currentTab === tab.id"
+          />
+        </button>
+      </div>
 
-            <mapbox-marker 
-              :lngLat="this.journey.RealtimeJourney.VehicleLocation.coordinates"
-              :rotation="this.journey.RealtimeJourney.VehicleBearing-90" 
-              v-if="this.journey.RealtimeJourney && this.journey.RealtimeJourney.VehicleLocation.coordinates.length === 2"
+      <div v-if="currentTab === 'timeline'" class="p-4 sm:p-5">
+        <button
+          v-if="!expandInactiveStops && hasHiddenStops"
+          @click="showAllStops()"
+          type="button"
+          class="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+        >
+          <span class="material-symbols-outlined text-[19px]">history</span>
+          Show previous stops
+        </button>
+
+        <ol class="relative space-y-0">
+          <li
+            v-for="(point, index) in journeyPoints"
+            v-bind:key="index"
+          >
+            <div
+              v-if="showStop(index)"
+              class="relative grid grid-cols-[1.5rem_1fr_auto] gap-3 py-3"
+              :class="{'opacity-65': !point.active}"
             >
+              <div class="relative flex justify-center">
+                <span
+                  class="absolute top-7 h-full w-px bg-slate-200"
+                  v-if="index < journeyPoints.length - 1"
+                ></span>
+                <span
+                  class="relative z-10 mt-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white shadow-sm"
+                  :class="point.active ? 'bg-blue-600' : 'bg-slate-300'"
+                ></span>
+              </div>
+
+              <div class="min-w-0">
+                <router-link
+                  :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
+                  class="block truncate text-[15px] font-extrabold leading-tight text-slate-950 sm:text-base"
+                  :class="{'text-slate-600': !point.active}"
+                >
+                  {{ point.stop.PrimaryName }}
+                </router-link>
+                <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-slate-500">
+                  <span
+                    v-if="stopServiceAlerts[point.stop.PrimaryIdentifier]?.closed"
+                    class="rounded-md bg-red-600 px-1.5 py-0.5 text-white"
+                  >
+                    Stop closed
+                  </span>
+                  <span v-if="point.platform">
+                    Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Est.)</span>
+                  </span>
+                  <span v-if="point.activity?.length == 1">
+                    {{ point.activity[0] }} only
+                  </span>
+                </div>
+              </div>
+
+              <div class="min-w-[4.75rem] text-right">
+                <div
+                  v-if="pointCancelled(point)"
+                  class="inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white"
+                >
+                  Cancelled
+                </div>
+                <div v-else>
+                  <div
+                    v-if="pointSetdownOnly(point)"
+                    class="text-[15px] font-bold leading-tight text-slate-400"
+                  >
+                    --:--
+                  </div>
+                  <div
+                    v-else-if="pointRealtimeDepartureChanged(point)"
+                    class="text-[15px] font-bold leading-tight"
+                  >
+                    <span class="mr-1 text-xs text-slate-400 line-through">
+                      {{ pretty.time(point.departureTime, journey.DepartureTimezone) }}
+                    </span>
+                    <span class="text-red-500">
+                      {{ pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone) }}
+                    </span>
+                  </div>
+                  <div
+                    v-else
+                    class="text-[15px] font-bold leading-tight"
+                    :class="pointRealtimeDepartureSame(point) ? 'text-green-700' : 'text-slate-950'"
+                  >
+                    {{ pretty.time(point.departureTime, journey.DepartureTimezone) }}
+                  </div>
+                </div>
+
+                <div class="mt-1 text-xs text-slate-500" v-if="pointArrivalSummary(point)">
+                  {{ pointArrivalSummary(point) }}
+                </div>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div v-else-if="currentTab === 'details'" class="space-y-4 p-4 sm:p-5">
+        <section
+          v-if="journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable"
+          class="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+        >
+          <h2 class="text-sm font-extrabold text-slate-950">Occupancy</h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-2xl bg-white p-3">
+              <p class="text-xs font-semibold text-slate-500">Overall</p>
+              <p class="mt-1 text-lg font-extrabold text-slate-950">{{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</p>
+            </div>
+            <div class="rounded-2xl bg-white p-3" v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
+              <p class="text-xs font-semibold text-slate-500">Seats</p>
+              <p class="mt-1 text-lg font-extrabold text-slate-950">{{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}</p>
+            </div>
+            <div class="rounded-2xl bg-white p-3" v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
+              <p class="text-xs font-semibold text-slate-500">Wheelchair</p>
+              <p class="mt-1 text-lg font-extrabold text-slate-950">{{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          v-if="journey?.DetailedRailInformation"
+          class="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+        >
+          <h2 class="text-sm font-extrabold text-slate-950">Vehicle details</h2>
+          <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            <div class="rounded-xl bg-white p-3">
+              <dt class="font-semibold text-slate-500">Vehicle</dt>
+              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.VehicleTypeName || journey.DetailedRailInformation.VehicleType }}</dd>
+            </div>
+            <div class="rounded-xl bg-white p-3">
+              <dt class="font-semibold text-slate-500">Speed</dt>
+              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.SpeedKMH }} km/h</dd>
+            </div>
+            <div class="rounded-xl bg-white p-3">
+              <dt class="font-semibold text-slate-500">Fuel</dt>
+              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.PowerType }}</dd>
+            </div>
+            <div class="rounded-xl bg-white p-3">
+              <dt class="font-semibold text-slate-500">Seating</dt>
+              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.Seating }}</dd>
+            </div>
+            <div class="rounded-xl bg-white p-3" v-if="journey.DetailedRailInformation.CateringAvailable">
+              <dt class="font-semibold text-slate-500">Catering</dt>
+              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.CateringDescription }}</dd>
+            </div>
+            <div class="rounded-xl bg-white p-3">
+              <dt class="font-semibold text-slate-500">Bike reservation</dt>
+              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.ReservationBikeRequired ? 'Required' : 'Not required' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !journey?.DetailedRailInformation" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+          No extra journey details are available.
+        </section>
+      </div>
+
+      <div v-else class="h-[420px] overflow-hidden sm:h-[520px]">
+        <mapbox-map
+          accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+          mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
+          style="height: 100%"
+          :zoom="zoom"
+          :center="center"
+          @loaded="mapLoaded"
+        >
+          <div v-for="(point, index) in journeyPoints" v-bind:key="index">
+            <mapbox-marker :lngLat="point.location" v-if="point.location">
               <template v-slot:icon>
-                <img src="/icons/bus-svgrepo-com-32x32.png">
+                <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
               </template>
             </mapbox-marker>
-          </mapbox-map>
-        </div>
-      </div>
-    </div>
 
-    <DatasourceAttributes v-if="!this.loadingJourney" :datasources="utils.getDatasources(this.journey, journeyPoints)" />
+            <mapbox-geogeometry-raw :source="point.track" v-if="point.track">
+              <mapbox-geogeometry-line :width="5" :color="point.active ? '#2563eb' : '#94a3b8'" />
+            </mapbox-geogeometry-raw>
+          </div>
+
+          <mapbox-geogeometry-raw :source="convertTrackToFeatureCollection(journey.Track)">
+            <mapbox-geogeometry-line :width="5" color="#2563eb" />
+          </mapbox-geogeometry-raw>
+
+          <mapbox-marker 
+            :lngLat="journey.RealtimeJourney.VehicleLocation.coordinates"
+            :rotation="journey.RealtimeJourney.VehicleBearing-90" 
+            v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2"
+          >
+            <template v-slot:icon>
+              <img src="/icons/bus-svgrepo-com-32x32.png">
+            </template>
+          </mapbox-marker>
+        </mapbox-map>
+      </div>
+    </section>
+
+    <DatasourceAttributes v-if="!loadingJourney" :datasources="utils.getDatasources(journey, journeyPoints)" />
   </div>
 </template>
 
 <script>
-import PageTitle from "@/components/PageTitle.vue"
-import Card from "@/components/Card.vue"
-import NavTabBar from "@/components/NavTabBar.vue"
 import ServiceIcon from '@/components/ServiceIcon.vue'
-import ShareButton from "@/components/ShareButton.vue"
 import Alert from "@/components/Alert.vue"
-import ServiceAlert from '@/components/ServiceAlert.vue'
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
-import RefreshLoadingButton from "@/components/RefreshLoadingButton.vue"
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import axios from "axios"
 import API from "@/API"
@@ -390,19 +361,103 @@ export default {
     };
   },
   components: {
-    PageTitle,
-    Card,
-    NavTabBar,
     Alert,
     ServiceIcon,
-    ServiceAlert,
     DetailedInformationRail,
     DepartureTypeIcon,
-    RefreshLoadingButton,
-    ShareButton,
     DatasourceAttributes
   },
+  computed: {
+    journeyTitle() {
+      if (this.journey?.DestinationDisplay) {
+        return this.journey.DestinationDisplay
+      }
+
+      return this.journeyPoints?.[this.journeyPoints.length - 1]?.stop?.PrimaryName || 'Journey'
+    },
+    journeySubtitle() {
+      const origin = this.journeyPoints?.[0]?.stop?.PrimaryName
+      const destination = this.journeyPoints?.[this.journeyPoints.length - 1]?.stop?.PrimaryName
+
+      if (origin && destination) {
+        return `${origin} to ${destination}`
+      }
+
+      return 'Live journey information'
+    },
+    journeyStatus() {
+      if (this.journey?.RealtimeJourney?.Cancelled) {
+        return {
+          label: 'Cancelled',
+          classes: 'bg-red-50 text-red-700'
+        }
+      }
+
+      if (this.journey?.RealtimeJourney?.ActivelyTracked) {
+        return {
+          label: 'Live',
+          classes: 'bg-green-50 text-green-700'
+        }
+      }
+
+      return {
+        label: 'Scheduled',
+        classes: 'bg-slate-100 text-slate-600'
+      }
+    }
+  },
   methods: {
+    tabIcon(tab) {
+      return {
+        timeline: 'timeline',
+        details: 'info',
+        map: 'map'
+      }[tab]
+    },
+    cleanAlertText(text) {
+      if (!text) {
+        return ''
+      }
+
+      return text
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    },
+    pointCancelled(point) {
+      return point.realtime && point.realtime.Cancelled
+    },
+    pointSetdownOnly(point) {
+      return point.activity?.length == 1 && point.activity[0] == 'Setdown' && !point?.lastOne
+    },
+    pointRealtimeDepartureChanged(point) {
+      return point.realtime &&
+        this.pretty.time(point.departureTime, this.journey.DepartureTimezone) !== this.pretty.time(point.realtime.DepartureTime, this.journey.DepartureTimezone) &&
+        point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
+    },
+    pointRealtimeDepartureSame(point) {
+      return point.realtime &&
+        this.pretty.time(point.departureTime, this.journey.DepartureTimezone) === this.pretty.time(point.realtime.DepartureTime, this.journey.DepartureTimezone)
+    },
+    pointArrivalSummary(point) {
+      if (
+        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) === this.pretty.time(point.departureTime, this.journey.DepartureTimezone) ||
+        point.arrivalTime == null ||
+        this.pointCancelled(point)
+      ) {
+        return ''
+      }
+
+      if (
+        point.realtime &&
+        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) !== this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone) &&
+        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
+      ) {
+        return `Arrives ${this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone)}`
+      }
+
+      return `Arrives ${this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone)}`
+    },
     mapLoaded(map) {
       this.mapboxObject = map
 
@@ -571,11 +626,7 @@ export default {
           platformType = 'ACTUAL'
         }
 
-        console.log(element.OriginStopRef, element.OriginStop)
-
         if (element.OriginStop == null) {
-          console.log("Origin stop is null for stop ref: " + element.OriginStopRef)
-
           journeyPoints.push({
             stop: {
               "PrimaryIdentifier": element.OriginStopRef,
