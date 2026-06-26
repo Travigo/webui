@@ -49,50 +49,45 @@
       collapsible
     />
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
+    <StopDeparturesTable
+      :stop="stop"
+      :departures="departures"
+      :loading-departures="loadingDepartures && departures === null"
+      v-model="currentTab"
+      @tab-change="refreshView"
+    >
+      <template #details>
+        <div class="space-y-4 px-4 py-4">
+          <div>
+            <h2 class="text-sm font-extrabold text-slate-950">Stop details</h2>
+            <p class="mt-1 text-sm text-slate-600">
+              {{ stop.OtherNames?.Descriptor || 'Live stop information and mapped location.' }}
+            </p>
+          </div>
 
-      <div v-if="currentTab === 'departures'">
-        <div v-if="loadingDepartures && departures === null" class="px-4 py-6 text-sm font-semibold text-amber-700">
-          Loading departures...
+          <div class="h-56 overflow-hidden rounded-2xl border border-slate-200">
+            <mapbox-map
+              accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
+              mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
+              style="height: 100%"
+              :zoom="zoom"
+              :center="center"
+            >
+              <mapbox-marker :lngLat="center">
+                <mapbox-popup>
+                  <div>
+                    <p><strong>{{ stop.PrimaryName }}</strong></p>
+                    {{ stop.OtherNames?.Descriptor }}
+                  </div>
+                </mapbox-popup>
+              </mapbox-marker>
+            </mapbox-map>
+          </div>
+
+          <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts)" />
         </div>
-        <DeparturesList v-else :stop="stop" :departures="departures" variant="compact"/>
-      </div>
-
-      <div v-else-if="currentTab === 'arrivals'" class="px-4 py-6 text-sm leading-relaxed text-slate-600">
-        Arrivals are not available yet.
-      </div>
-
-      <div v-else class="space-y-4 px-4 py-4">
-        <div>
-          <h2 class="text-sm font-extrabold text-slate-950">Stop details</h2>
-          <p class="mt-1 text-sm text-slate-600">
-            {{ stop.OtherNames?.Descriptor || 'Live stop information and mapped location.' }}
-          </p>
-        </div>
-
-        <div class="h-56 overflow-hidden rounded-2xl border border-slate-200">
-          <mapbox-map
-            accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-            mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
-            style="height: 100%"
-            :zoom="zoom"
-            :center="center"
-          >
-            <mapbox-marker :lngLat="center">
-              <mapbox-popup>
-                <div>
-                  <p><strong>{{ stop.PrimaryName }}</strong></p>
-                  {{ stop.OtherNames?.Descriptor }}
-                </div>
-              </mapbox-popup>
-            </mapbox-marker>
-          </mapbox-map>
-        </div>
-
-        <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts)" />
-      </div>
-    </section>
+      </template>
+    </StopDeparturesTable>
 
     <Teleport to="#bottom-nav-extra" defer>
       <div class="grid grid-cols-2 gap-2">
@@ -247,12 +242,11 @@
 
 <script>
 import ServiceIcon from '@/components/ServiceIcon.vue'
-import DeparturesList from '@/components/DeparturesList.vue'
 import Alert from '@/components/Alert.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
-import TabBar from '@/components/TabBar.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
+import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -311,33 +305,15 @@ export default {
       selectedAmenityKey: null,
 
       currentTab: "departures",
-      tabs: [
-        {
-          id: "departures",
-          name: "Departures",
-          icon: 'directions_bus'
-        },
-        {
-          id: "arrivals",
-          name: "Arrivals",
-          icon: 'download'
-        },
-        {
-          id: "details",
-          name: "Details",
-          icon: 'info'
-        }
-      ],
     }
   },
   components: {
     ServiceIcon,
     Alert,
-    DeparturesList,
     DatasourceAttributes,
-    TabBar,
     IconPillRow,
-    ServiceAlertList
+    ServiceAlertList,
+    StopDeparturesTable
   },
   computed: {
     visibleServices() {
@@ -451,11 +427,6 @@ export default {
       }
 
       return details.Details || details.StopDetails || details
-    },
-    changeTab(newTab) {
-      this.currentTab = newTab
-
-      this.refreshView()
     },
     refreshView() {
       if (this.currentTab == "departures") {

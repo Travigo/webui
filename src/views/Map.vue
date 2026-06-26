@@ -106,12 +106,13 @@
                 </router-link>
               </div>
 
-              <div v-if="this.loadingDepartures" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
-                Loading departures...
-              </div>
-              <div v-else class="overflow-hidden rounded-2xl border border-slate-100 bg-white">
-                <DeparturesList :stop="currentViewedStop" :departures="currentViewedStopDepartures"/>
-              </div>
+              <StopDeparturesTable
+                :stop="currentViewedStop"
+                :departures="currentViewedStopDepartures"
+                :loading-departures="loadingDepartures"
+                :show-tabs="false"
+                :show-details="false"
+              />
             </div>
           </div>
 
@@ -149,8 +150,8 @@
 
 <script>
 import StopStatus from '@/components/StopStatus.vue'
-import DeparturesList from '@/components/DeparturesList.vue'
 import StopIcon from '@/components/StopIcon.vue'
+import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
 import axios from 'axios'
 import API from '@/API'
 
@@ -190,8 +191,8 @@ export default {
   },
   components: {
     StopStatus,
-    DeparturesList,
     StopIcon,
+    StopDeparturesTable,
 
     MapboxMap
   },
