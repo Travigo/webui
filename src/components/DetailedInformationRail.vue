@@ -6,19 +6,11 @@
       </div>
     </div>
 
-    <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" v-if="facilityChips.length > 0">
-      <button
-        v-for="chip in facilityChips"
-        v-bind:key="chip.key"
-        type="button"
-        class="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-slate-700 shadow-sm transition hover:border-blue-100 hover:bg-blue-50 hover:text-blue-700"
-        :title="chip.label"
-        @click="openFacilityModal(chip.key)"
-      >
-        <span class="material-symbols-outlined text-[20px]">{{ chip.icon }}</span>
-        <span class="text-xs font-bold" v-if="chip.badge">{{ chip.badge }}</span>
-      </button>
-    </div>
+    <IconPillRow
+      v-if="facilityChips.length > 0"
+      :chips="facilityChips"
+      @select="openFacilityModal"
+    />
   </div>
 
   <div v-if="this.carriages.length > 0" class="mt-3 flex gap-2 overflow-x-auto pb-1">
@@ -106,9 +98,13 @@
 
 <script>
 import Pretty from "@/pretty"
+import IconPillRow from '@/components/IconPillRow.vue'
 
 export default {
   name: 'DetailedInformationRail',
+  components: {
+    IconPillRow
+  },
   props: {
     journey: {},
   },
@@ -247,8 +243,6 @@ export default {
 
       return []
     }
-  },
-  components: {
   },
   data() {
     return {

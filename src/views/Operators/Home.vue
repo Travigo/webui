@@ -3,7 +3,9 @@
     <PageTitle>
       Operators
     </PageTitle>
-    <NavTabBar :tabs="tabs" :currentTab="currentTab" :changeTab="changeTab" />
+    <section class="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
+    </section>
     <Card>
       <div v-for="(region, id) in this.operatorRegions" v-bind:key="id" class="mt-4 first:mt-0">
         <h3 class="text-xl font-bold">{{ region.Name }}</h3>
@@ -22,7 +24,7 @@
 
 <script>
 import PageTitle from '@/components/PageTitle.vue'
-import NavTabBar from "@/components/NavTabBar.vue"
+import TabBar from "@/components/TabBar.vue"
 import Card from '@/components/Card.vue'
 import axios from 'axios'
 import API from '@/API'
@@ -40,10 +42,12 @@ export default {
         {
           id: "bus",
           name: "Bus",
+          icon: 'directions_bus'
         },
         {
           id: "rail",
           name: "Rail",
+          icon: 'train'
         },
       ]
     }
@@ -51,7 +55,7 @@ export default {
   components: {
     PageTitle,
     Card,
-    NavTabBar
+    TabBar
   },
   methods: {
     changeTab(newTab) {

@@ -26,24 +26,8 @@
       </div>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div class="grid grid-cols-3 divide-x divide-slate-100">
-        <button
-          type="button"
-          v-for="tab in tabs"
-          v-bind:key="tab.id"
-          class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm"
-          :class="{'text-blue-600': currentTab === tab.id}"
-          @click="changeTab(tab.id)"
-        >
-          <span class="material-symbols-outlined text-[20px]">{{ tabIcon(tab.id) }}</span>
-          <span>{{ tab.name }}</span>
-          <span
-            class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600"
-            v-if="currentTab === tab.id"
-          />
-        </button>
-      </div>
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
 
       <OperatorOverview :operator="operator" v-if="currentTab == 'overview'" />
 
@@ -62,6 +46,7 @@ import OperatorOverview from '@/components/Operators/Overview.vue'
 import OperatorServices from '@/components/Operators/Services.vue'
 import OperatorStats from '@/components/Operators/Stats.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
+import TabBar from '@/components/TabBar.vue'
 import axios from 'axios'
 import API from '@/API'
 import Utils from '@/utils'
@@ -80,15 +65,18 @@ export default {
       tabs: [
         {
           id: "overview",
-          name: "Overview"
+          name: "Overview",
+          icon: 'info'
         },
         {
           id: "services",
-          name: "Services"
+          name: "Services",
+          icon: 'route'
         },
         {
           id: "stats",
-          name: "Statistics"
+          name: "Statistics",
+          icon: 'monitoring'
         }
       ]
     }
@@ -98,7 +86,8 @@ export default {
     OperatorServices,
     OperatorStats,
     Alert,
-    DatasourceAttributes
+    DatasourceAttributes,
+    TabBar
   },
   computed: {
     operatorSubtitle() {
@@ -114,13 +103,6 @@ export default {
     }
   },
   methods: {
-    tabIcon(tab) {
-      return {
-        overview: 'info',
-        services: 'route',
-        stats: 'monitoring'
-      }[tab]
-    },
     changeTab(newTab) {
       this.$router.push({ name: this.$route.name, params: {id:this.$route.params.id}, query: {tab: newTab} })
     },
