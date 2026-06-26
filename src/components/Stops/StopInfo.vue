@@ -13,9 +13,26 @@
           <div class="flex items-center gap-2">
             <h3 class="truncate text-base font-bold leading-tight text-slate-950 sm:text-xl">{{ stop.PrimaryName }}</h3>
           </div>
-          <span class="mt-1 inline-flex rounded bg-blue-600 px-1.5 py-0.5 text-xs font-semibold text-white sm:rounded-md sm:px-2 sm:text-sm">
-            {{ serviceLabel }}
-          </span>
+          <div class="mt-1 flex max-w-full flex-wrap gap-1">
+            <ServiceIcon
+              v-for="service in displayedServices"
+              v-bind:key="service.PrimaryIdentifier || service.ServiceName || service.BrandIcon"
+              :service="service"
+              class="h-5 rounded-md px-1.5 text-[0.72rem] font-bold leading-5 shadow-sm sm:h-6 sm:px-2 sm:text-sm"
+            />
+            <span
+              v-if="extraServiceCount > 0"
+              class="inline-flex h-5 items-center rounded-md bg-slate-100 px-1.5 text-[0.72rem] font-bold text-slate-600 sm:h-6 sm:px-2 sm:text-sm"
+            >
+              +{{ extraServiceCount }}
+            </span>
+            <span
+              v-if="displayedServices.length === 0"
+              class="inline-flex h-5 items-center rounded-md bg-blue-600 px-1.5 text-[0.72rem] font-semibold text-white sm:h-6 sm:px-2 sm:text-sm"
+            >
+              Stop
+            </span>
+          </div>
           <p class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-base">
             <span class="material-symbols-outlined text-base sm:text-lg">directions_walk</span>
             {{ distanceLabel }}
@@ -43,11 +60,13 @@
 </template>
 
 <script>
+import ServiceIcon from '@/components/ServiceIcon.vue'
 import StopIcon from '@/components/StopIcon.vue'
 
 export default {
   name: 'StopInfo',
   components: {
+    ServiceIcon,
     StopIcon
   },
   props: {
@@ -77,18 +96,14 @@ export default {
         }
       }
     },
-    serviceLabel() {
-      const service = this.stop.Services?.[0]
-
-      if (service?.ServiceName) {
-        return service.ServiceName
-      }
-
-      if (service?.TransportType) {
-        return service.TransportType
-      }
-
-      return 'Stop'
+    services() {
+      return (this.stop.Services || []).filter(service => service?.ServiceName || service?.BrandIcon)
+    },
+    displayedServices() {
+      return this.services.slice(0, 2)
+    },
+    extraServiceCount() {
+      return Math.max(this.services.length - this.displayedServices.length, 0)
     },
     descriptor() {
       return this.stop.Descriptor || this.stop.OtherNames?.Descriptor || this.stop.LocalityName || 'Departures'
