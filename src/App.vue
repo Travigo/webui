@@ -19,24 +19,8 @@ export default {
     return {
       auth0: useAuth0(),
       notify: notify,
-      hamburgerMenuOpen: false,
       darkMode: false,
       systemThemeQuery: undefined,
-      navItems: [
-        {
-          name: 'Operators',
-          route: { name: 'operators/home' }
-        },
-        {
-          name: 'Timetables',
-          route: { name: 'timetables/home' }
-        },
-        {
-          name: 'Account',
-          route: { name: 'account/home' },
-          requiresLogin: true
-        }
-      ],
       bottomNavItems: [
         {
           name: 'Home',
@@ -72,9 +56,6 @@ export default {
     }
   },
   methods: {
-    hamburgerMenuToggle() {
-      this.hamburgerMenuOpen = !this.hamburgerMenuOpen
-    },
     initTheme() {
       this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
       const savedTheme = localStorage.getItem('travigo_theme')
@@ -106,7 +87,6 @@ export default {
     $route: {
       immediate: true,
       handler(to, from) {
-        this.hamburgerMenuOpen = false
         if (to.meta.title === undefined) {
           document.title = 'Travigo'
         } else {
@@ -167,13 +147,7 @@ export default {
             <span class="material-symbols-outlined text-xl">{{ themeIcon }}</span>
           </button>
 
-          <button
-            @click="hamburgerMenuToggle"
-            class="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 dark:bg-indigo-400/20 dark:text-indigo-100 dark:hover:bg-indigo-400/30"
-            aria-label="Open navigation"
-          >
-            <span class="material-symbols-outlined text-2xl">person</span>
-          </button>
+          <UserOrLogin />
         </div>
 
         <div class="hidden sm:flex sm:items-center sm:gap-2">
@@ -184,33 +158,6 @@ export default {
           >
             <span class="material-symbols-outlined text-[22px]">{{ themeIcon }}</span>
           </button>
-
-          <router-link
-            v-for="navItem in navItems"
-            v-bind:key="navItem.name"
-            v-show="!navItem.requiresLogin || (navItem.requiresLogin && this.auth0.isAuthenticated)"
-            :to="navItem.route"
-            active-class="active-nav-tab"
-            class="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-blue-600 hover:shadow-sm dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-300"
-          >
-            {{ navItem.name }}
-          </router-link>
-          <UserOrLogin />
-        </div>
-      </div>
-    
-      <div class="sm:hidden" v-bind:class="{ hidden: !hamburgerMenuOpen }">
-        <div class="mt-3 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30">
-          <router-link
-            v-for="navItem in navItems"
-            v-bind:key="navItem.name"
-            v-show="!navItem.requiresLogin || (navItem.requiresLogin && this.auth0.isAuthenticated)"
-            :to="navItem.route" 
-            active-class="active-nav-tab"
-            class="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-300"
-          >
-            {{ navItem.name }}
-          </router-link>
 
           <UserOrLogin />
         </div>

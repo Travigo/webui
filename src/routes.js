@@ -135,6 +135,14 @@ export const routes = [
     component: () => import('./views/Account/Home.vue')
   },
   {
+    name: 'account/settings',
+    path: '/account/settings',
+    meta: {
+      title: 'Settings'
+    },
+    component: () => import('./views/Account/Settings.vue')
+  },
+  {
     name: 'services/view',
     path: '/services/:id',
     meta: {
