@@ -19,7 +19,7 @@
           <div class="mb-4 flex items-start justify-between gap-4">
             <div>
               <h2 class="text-lg font-bold text-slate-950 sm:text-xl">Choose location</h2>
-              <p class="mt-1 text-sm text-slate-500">Location search does not work at the moment.</p>
+              <p class="mt-1 text-sm text-slate-500">Limit responses to only the one region to reduce clutter</p>
             </div>
             <button
               @click="close"

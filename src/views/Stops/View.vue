@@ -130,7 +130,7 @@
               </span>
               <div class="min-w-0">
                 <h2 class="truncate text-lg font-bold text-slate-950 sm:text-xl">{{ selectedAmenity?.label }}</h2>
-                <p class="mt-1 text-sm text-slate-500">{{ selectedAmenity?.count }} item{{ selectedAmenity?.count === 1 ? '' : 's' }} at this stop.</p>
+                <p class="mt-1 text-sm text-slate-500">{{ selectedAmenity?.count }} item{{ selectedAmenity?.count === 1 ? '' : 's' }} at or near this stop.</p>
               </div>
             </div>
             <button
@@ -164,6 +164,13 @@
                       <h3 class="truncate text-sm font-extrabold text-slate-950 sm:text-base">{{ item.PrimaryName }}</h3>
                       <p class="mt-0.5 text-xs font-semibold text-slate-500">{{ formatAmenityType(item.Type) }}</p>
                     </div>
+                    <span
+                      v-if="item.Association"
+                      class="shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
+                      :class="associationClass(item.Association)"
+                    >
+                      {{ formatAssociation(item.Association) }}
+                    </span>
                     <a
                       v-if="item.Website"
                       :href="item.Website"
@@ -178,6 +185,66 @@
                   <p class="mt-2 text-sm text-slate-600" v-if="item.LocationDescription">
                     {{ item.LocationDescription }}
                   </p>
+                  
+                </div>
+              </article>
+            </div>
+
+            <div v-else-if="selectedAmenity?.type === 'parking-list'" class="space-y-2">
+              <article
+                v-for="(item, index) in selectedAmenity.items"
+                v-bind:key="amenityItemKey(item, index)"
+                class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+              >
+                <div class="flex items-start gap-3">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                    <span class="material-symbols-outlined text-[22px]">{{ selectedAmenity.icon }}</span>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="min-w-0">
+                        <h3 class="text-sm font-extrabold text-slate-950 sm:text-base">
+                          {{ item.PrimaryName || `${selectedAmenity.itemLabel} ${index + 1}` }}
+                        </h3>
+                        <p class="mt-0.5 text-xs font-semibold text-slate-500">{{ formatAmenityType(item.Type) }}</p>
+                      </div>
+                      <span
+                        v-if="item.Association"
+                        class="shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
+                        :class="associationClass(item.Association)"
+                      >
+                        {{ formatAssociation(item.Association) }}
+                      </span>
+                    </div>
+
+                    <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
+                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Capacity</p>
+                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ formatCapacity(item.Capacity) }}</p>
+                      </div>
+                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
+                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Distance</p>
+                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ formatAmenityDistance(item.DistanceMetres) || 'At stop' }}</p>
+                      </div>
+                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
+                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Cost</p>
+                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ item.Cost ? 'Paid' : 'Free' }}</p>
+                      </div>
+                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
+                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Cover</p>
+                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ item.Covered ? 'Covered' : 'Uncovered' }}</p>
+                      </div>
+                    </div>
+
+                    <div class="mt-3 flex flex-wrap gap-2">
+                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="item.Accessible ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
+                        {{ item.Accessible ? 'Accessible' : 'Not marked accessible' }}
+                      </span>
+                      <span v-if="item.OperatorName" class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+                        {{ item.OperatorName }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </article>
             </div>
@@ -195,6 +262,18 @@
                   <div class="min-w-0 flex-1">
                     <h3 class="text-sm font-extrabold text-slate-950 sm:text-base">Toilet {{ index + 1 }}</h3>
                     <p class="mt-1 text-sm text-slate-600" v-if="toilet.LocationDescription">{{ toilet.LocationDescription }}</p>
+                    <div class="mt-3 flex flex-wrap gap-2" v-if="toilet.Association || formatAmenityDistance(toilet.DistanceMetres)">
+                      <span
+                        v-if="toilet.Association"
+                        class="rounded-full px-2.5 py-1 text-xs font-bold"
+                        :class="associationClass(toilet.Association)"
+                      >
+                        {{ formatAssociation(toilet.Association) }}
+                      </span>
+                      <span v-if="formatAmenityDistance(toilet.DistanceMetres)" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                        {{ formatAmenityDistance(toilet.DistanceMetres) }}
+                      </span>
+                    </div>
                     <div class="mt-3 flex flex-wrap gap-2">
                       <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Accessible ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
                         {{ toilet.Accessible ? 'Accessible' : 'Not marked accessible' }}
@@ -262,6 +341,18 @@ const AMENITY_SECTIONS = {
     label: 'Shops',
     icon: 'storefront',
     type: 'place-list'
+  },
+  BicyclePark: {
+    label: 'Cycle parking',
+    icon: 'pedal_bike',
+    type: 'parking-list',
+    itemLabel: 'Cycle parking'
+  },
+  CarPark: {
+    label: 'Car parking',
+    icon: 'local_parking',
+    type: 'parking-list',
+    itemLabel: 'Car park'
   },
   Toilets: {
     label: 'Toilets',
@@ -371,16 +462,44 @@ export default {
   },
   methods: {
     amenitySectionFromDetails(key, config) {
-      const items = this.stopDetails?.[key] || []
+      const items = this.sortAmenityItems(this.stopDetails?.[key] || [])
 
       return {
         key,
         label: config.label,
         icon: config.icon,
         type: config.type,
+        itemLabel: config.itemLabel,
         items,
         count: items.length
       }
+    },
+    sortAmenityItems(items) {
+      return [...items].sort((a, b) => {
+        const associationDifference = this.associationSortValue(a.Association) - this.associationSortValue(b.Association)
+
+        if (associationDifference !== 0) {
+          return associationDifference
+        }
+
+        return this.distanceSortValue(a.DistanceMetres) - this.distanceSortValue(b.DistanceMetres)
+      })
+    },
+    associationSortValue(association) {
+      const normalisedAssociation = String(association || '').toLowerCase()
+
+      if (normalisedAssociation === 'inside') {
+        return 0
+      }
+
+      if (normalisedAssociation === 'nearby') {
+        return 1
+      }
+
+      return 2
+    },
+    distanceSortValue(distance) {
+      return typeof distance === 'number' ? distance : Number.POSITIVE_INFINITY
     },
     formatAmenitySectionLabel(key) {
       return key
@@ -395,6 +514,43 @@ export default {
       return type
         .replace(/_/g, ' ')
         .replace(/\b\w/g, character => character.toUpperCase())
+    },
+    formatAssociation(association) {
+      if (!association) {
+        return ''
+      }
+
+      return String(association)
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, character => character.toUpperCase())
+    },
+    associationClass(association) {
+      return String(association || '').toLowerCase() === 'inside'
+        ? 'bg-green-50 text-green-700'
+        : 'bg-blue-50 text-blue-700'
+    },
+    formatAmenityDistance(distance) {
+      if (typeof distance !== 'number') {
+        return ''
+      }
+
+      if (distance < 1) {
+        return 'At stop'
+      }
+
+      return ''
+      // if (distance < 1000) {
+      //   return `${Math.max(Math.round(distance), 1)} m away`
+      // }
+
+      // return `${(distance / 1000).toFixed(1)} km away`
+    },
+    formatCapacity(capacity) {
+      if (typeof capacity !== 'number' || capacity <= 0) {
+        return 'Unknown'
+      }
+
+      return capacity.toLocaleString()
     },
     amenityLogo(item) {
       return item.Logo || item.LogoURL || item.ImageURL || ''
