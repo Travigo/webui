@@ -192,7 +192,12 @@ export default {
           active-class="bottom-nav-active"
         >
           <span class="flex h-8 w-8 items-center justify-center rounded-full transition group-hover:bg-blue-50 sm:h-10 sm:w-10 dark:group-hover:bg-blue-500/10">
-            <span class="material-symbols-outlined text-[22px] sm:text-[28px]">{{ item.icon }}</span>
+            <span
+              class="material-symbols-outlined [--bottom-nav-icon-size:24px] sm:[--bottom-nav-icon-size:26px]"
+              style="font-size: var(--bottom-nav-icon-size); line-height: 1"
+            >
+              {{ item.icon }}
+            </span>
           </span>
           <span class="truncate">{{ item.name }}</span>
         </router-link>
