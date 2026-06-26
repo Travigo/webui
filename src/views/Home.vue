@@ -71,52 +71,35 @@
     <section>
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 sm:rounded-3xl">
         <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
-          <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Nearby Stops</h2>
-          <p class="text-sm text-slate-500 sm:text-base rounded-2xl bg-amber-50 px-1 py-1 text-amber-800">Currently does not function</p>
-        </div>
-        <div
-          v-for="stop in nearbyStops"
-          v-bind:key="stop.name"
-          class="grid grid-cols-[3.25rem_1fr] items-center gap-3 border-b border-slate-200 px-4 py-3 last:border-b-0 sm:grid-cols-[5rem_1fr_auto] sm:gap-4 sm:px-5 sm:py-4"
-        >
-          <div :class="stop.iconBg" class="flex h-13 w-13 items-center justify-center rounded-xl sm:h-16 sm:w-16 sm:rounded-2xl">
-            <img v-if="stop.iconType === 'rail'" src="/icons/national-rail.svg" alt="" class="h-8 w-8 sm:h-10 sm:w-10">
-            <span v-else class="material-symbols-outlined text-3xl text-white sm:text-5xl">directions_bus</span>
-          </div>
-
-          <div class="min-w-0">
-            <div class="flex items-start justify-between gap-2 sm:gap-3">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="truncate text-base font-bold leading-tight text-slate-950 sm:text-xl">{{ stop.name }}</h3>
-                  <!-- <span class="material-symbols-outlined text-base text-blue-600 sm:text-xl">verified</span> -->
-                </div>
-                <span :class="stop.badgeClass" class="mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-semibold text-white sm:rounded-md sm:px-2 sm:text-sm">
-                  {{ stop.badge }}
-                </span>
-                <p class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-base">
-                  <span class="material-symbols-outlined text-base sm:text-lg">directions_walk</span>
-                  {{ stop.distance }}
-                </p>
-              </div>
-
-              <div class="flex shrink-0 items-center justify-end gap-1 text-right">
-                <div>
-                  <div class="flex items-center justify-end gap-1 text-base font-semibold text-slate-950 sm:text-xl">
-                    <span v-if="stop.kind === 'rail'" class="material-symbols-outlined text-base text-slate-700 sm:text-xl">schedule</span>
-                    {{ stop.time }}
-                  </div>
-                  <p class="mt-0.5 text-xs leading-snug text-slate-500 sm:mt-1 sm:text-base">{{ stop.detail }}</p>
-                </div>
-                <span class="material-symbols-outlined text-2xl text-slate-400 sm:text-3xl">chevron_right</span>
-              </div>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Nearby Stops</h2>
+              <p class="text-sm text-slate-500 sm:text-base">{{ nearbyStopsStatus }}</p>
             </div>
+            <button
+              type="button"
+              class="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-70 sm:rounded-2xl"
+              :disabled="loadingNearbyStops"
+              @click="requestNearbyStops"
+            >
+              <span class="material-symbols-outlined text-[19px]" :class="{'animate-spin': loadingNearbyStops}">{{ loadingNearbyStops ? 'progress_activity' : 'near_me' }}</span>
+              <span>{{ nearbyStopsButtonLabel }}</span>
+            </button>
           </div>
+        </div>
+        <StopInfo
+          v-for="stop in nearbyStops"
+          v-bind:key="stopKey(stop)"
+          :stop="stop"
+          :current-position="nearbyPosition"
+        />
 
-          <div class="hidden rounded-2xl bg-green-50 px-3 py-1 text-base font-medium text-green-700 sm:inline-flex">
-            <span class="mr-2 mt-2 h-2 w-2 rounded-full bg-green-600"></span>
-            Live
-          </div>
+        <div v-if="nearbyStopsError" class="mx-4 mb-4 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 sm:mx-5">
+          {{ nearbyStopsError }}
+        </div>
+
+        <div v-else-if="nearbyStops.length === 0" class="px-4 pb-4 text-sm text-slate-500 sm:px-5">
+          Enable location to find the closest stops to you.
         </div>
 
         <router-link :to="{ name: 'map' }" class="flex items-center justify-center gap-1 px-4 py-3 text-base font-medium text-blue-600 sm:gap-2 sm:px-5 sm:py-4 sm:text-lg">
@@ -219,6 +202,7 @@
 <script>
 import SearchBar from '@/components/SearchBar.vue'
 import LocationPicker from '@/components/LocationPicker.vue'
+import StopInfo from '@/components/Stops/StopInfo.vue'
 
 import axios from 'axios'
 import API from '@/API'
@@ -227,7 +211,8 @@ export default {
   name: 'Home',
   components: {
     SearchBar,
-    LocationPicker
+    LocationPicker,
+    StopInfo
   },
   data () {
     return {
@@ -235,6 +220,13 @@ export default {
       selectedStatsView: undefined,
       statsModalOpen: false,
       refreshTimer: undefined,
+      nearbyLocationRefreshTimer: undefined,
+      nearbyLocationPollIntervalMs: 60000,
+      nearbyRefreshDistanceMetres: 100,
+      loadingNearbyStops: false,
+      nearbyStopsError: '',
+      nearbyPosition: undefined,
+      nearbyStopsPosition: undefined,
       quickActions: [
         { label: 'Nearby', icon: 'near_me', route: { name: 'map' }, bg: 'border-blue-100 bg-blue-50', color: 'text-blue-600' },
         { label: 'Departures', icon: 'train', route: { name: 'timetables/home' }, bg: 'border-purple-100 bg-purple-50', color: 'text-purple-600' },
@@ -243,44 +235,28 @@ export default {
         { label: 'Saved', icon: 'bookmark', route: { name: 'account/home' }, bg: 'border-pink-100 bg-pink-50', color: 'text-pink-500' },
         { label: 'More', icon: 'more_horiz', route: { name: 'about' }, bg: 'border-slate-100 bg-slate-50', color: 'text-slate-700' },
       ],
-      nearbyStops: [
-        {
-          name: 'Cambridge',
-          badge: 'Great Northern',
-          badgeClass: 'bg-purple-800',
-          distance: '2 min walk • 0.2 mi',
-          time: '00:53',
-          detail: 'Platform 2 (Est.)',
-          kind: 'rail',
-          iconType: 'rail',
-          iconBg: 'bg-purple-950'
-        },
-        {
-          name: 'Cambridge North',
-          badge: 'Great Northern',
-          badgeClass: 'bg-purple-800',
-          distance: '8 min walk • 0.6 mi',
-          time: '01:07',
-          detail: 'Platform 1 (Est.)',
-          kind: 'rail',
-          iconType: 'rail',
-          iconBg: 'bg-purple-950'
-        },
-        {
-          name: 'Drummer Street (Stop D)',
-          badge: 'Bus Stop',
-          badgeClass: 'bg-blue-600',
-          distance: '3 min walk • 0.3 mi',
-          time: '1, 2, 19',
-          detail: 'Next in 2 min',
-          kind: 'bus',
-          iconType: 'bus',
-          iconBg: 'bg-blue-600'
-        },
-      ]
+      nearbyStops: []
     }
   },
   computed: {
+    nearbyStopsStatus() {
+      if (this.loadingNearbyStops) {
+        return 'Finding stops near your current location...'
+      }
+
+      if (this.nearbyStops.length > 0) {
+        return 'Closest stops to your current location'
+      }
+
+      return 'Use your location to find nearby stops'
+    },
+    nearbyStopsButtonLabel() {
+      if (this.loadingNearbyStops) {
+        return 'Finding'
+      }
+
+      return this.nearbyStops.length > 0 ? 'Refresh' : 'Use location'
+    },
     networkSummary() {
       return [
         {
@@ -383,6 +359,177 @@ export default {
     closeStatsModal() {
       this.statsModalOpen = false
     },
+    requestNearbyStops() {
+      this.pollNearbyLocation({ force: true, userInitiated: true })
+      this.startNearbyLocationPolling()
+    },
+    enableNearbyLocationRefresh() {
+      localStorage.setItem('travigo_nearby_location_enabled', 'true')
+      this.startNearbyLocationPolling()
+    },
+    disableNearbyLocationRefresh() {
+      localStorage.removeItem('travigo_nearby_location_enabled')
+      this.stopNearbyLocationPolling()
+    },
+    startNearbyLocationPolling() {
+      if (this.nearbyLocationRefreshTimer !== undefined) {
+        return
+      }
+
+      this.nearbyLocationRefreshTimer = setInterval(() => {
+        this.pollNearbyLocation()
+      }, this.nearbyLocationPollIntervalMs)
+    },
+    stopNearbyLocationPolling() {
+      clearInterval(this.nearbyLocationRefreshTimer)
+      this.nearbyLocationRefreshTimer = undefined
+    },
+    startNearbyLocationPollingIfAllowed() {
+      if (localStorage.getItem('travigo_nearby_location_enabled') === 'true') {
+        this.pollNearbyLocation({ force: true })
+        this.startNearbyLocationPolling()
+        return
+      }
+
+      if (!navigator.permissions?.query) {
+        return
+      }
+
+      navigator.permissions
+        .query({ name: 'geolocation' })
+        .then(permissionStatus => {
+          const handlePermissionChange = () => {
+            if (permissionStatus.state === 'granted') {
+              this.enableNearbyLocationRefresh()
+              this.pollNearbyLocation({ force: true })
+            } else {
+              this.disableNearbyLocationRefresh()
+            }
+          }
+
+          if (permissionStatus.state === 'granted') {
+            this.enableNearbyLocationRefresh()
+            this.pollNearbyLocation({ force: true })
+          }
+
+          if (permissionStatus.addEventListener) {
+            permissionStatus.addEventListener('change', handlePermissionChange)
+          } else {
+            permissionStatus.onchange = handlePermissionChange
+          }
+        })
+        .catch(error => console.log(error))
+    },
+    pollNearbyLocation({ force = false, userInitiated = false } = {}) {
+      this.nearbyStopsError = ''
+
+      if (!navigator.geolocation) {
+        this.nearbyStopsError = 'Location is not available in this browser.'
+        return
+      }
+
+      if (userInitiated || force && this.nearbyStops.length === 0) {
+        this.loadingNearbyStops = true
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          if (userInitiated) {
+            this.enableNearbyLocationRefresh()
+          }
+
+          this.handleNearbyPosition({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          }, force)
+        },
+        error => {
+          this.loadingNearbyStops = false
+
+          if (error.code === error.PERMISSION_DENIED) {
+            this.disableNearbyLocationRefresh()
+          }
+
+          if (userInitiated || this.nearbyStops.length === 0) {
+            this.nearbyStopsError = error.code === error.PERMISSION_DENIED
+              ? 'Location permission was denied. Enable location access to show nearby stops.'
+              : 'Could not get your location. Try again in a moment.'
+          }
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      )
+    },
+    handleNearbyPosition(position, force = false) {
+      this.nearbyPosition = position
+
+      const movedSignificantly = this.nearbyStopsPosition === undefined ||
+        this.distanceBetween(
+          this.nearbyStopsPosition.latitude,
+          this.nearbyStopsPosition.longitude,
+          position.latitude,
+          position.longitude
+        ) >= this.nearbyRefreshDistanceMetres
+
+      if (force || movedSignificantly) {
+        this.getNearbyStops(position)
+        return
+      }
+
+      this.loadingNearbyStops = false
+    },
+    getNearbyStops(position = this.nearbyPosition) {
+      const point = `${position.longitude},${position.latitude}`
+
+      axios
+        .get(`${API.URL}/core/stops/`, {
+          params: {
+            point
+          }
+        })
+        .then(response => {
+          this.nearbyStops = this.normaliseNearbyStops(response.data).slice(0, 5)
+          this.nearbyStopsPosition = position
+        })
+        .catch(error => {
+          console.log(error)
+          this.nearbyStopsError = 'Nearby stops could not be loaded.'
+        })
+        .finally(() => this.loadingNearbyStops = false)
+    },
+    normaliseNearbyStops(responseData) {
+      const resultSet = [
+        responseData,
+        responseData?.stops,
+        responseData?.Stops,
+        responseData?.data,
+        responseData?.Data,
+        responseData?.data?.stops,
+        responseData?.data?.Stops,
+        responseData?.Data?.stops,
+        responseData?.Data?.Stops,
+      ].find(result => Array.isArray(result))
+
+      return resultSet || []
+    },
+    stopKey(stop) {
+      return stop.PrimaryIdentifier || stop.id || stop.PrimaryName
+    },
+    distanceBetween(latitudeA, longitudeA, latitudeB, longitudeB) {
+      const earthRadiusMetres = 6371000
+      const toRadians = degrees => degrees * Math.PI / 180
+      const latitudeDelta = toRadians(latitudeB - latitudeA)
+      const longitudeDelta = toRadians(longitudeB - longitudeA)
+      const a = Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+        Math.cos(toRadians(latitudeA)) * Math.cos(toRadians(latitudeB)) *
+        Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+      return earthRadiusMetres * c
+    },
     getStats() {
       axios
         .get(`${API.URL}/stats/calculated`)
@@ -397,10 +544,16 @@ export default {
   },
   mounted () {
     this.getStats()
+    this.startNearbyLocationPollingIfAllowed()
     this.refreshTimer = setInterval(this.getStats, 250000)
   },
   beforeRouteLeave() {
     clearInterval(this.refreshTimer)
+    this.stopNearbyLocationPolling()
+  },
+  beforeUnmount() {
+    clearInterval(this.refreshTimer)
+    this.stopNearbyLocationPolling()
   },
 }
 </script>
