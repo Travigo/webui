@@ -10,6 +10,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { registerSW } from 'virtual:pwa-register'
 import VueMapboxTs from "vue-mapbox-ts"
 import { createAuth0 } from '@auth0/auth0-vue'
+import { AUTH0_AUDIENCE } from './auth'
 
 const app = createApp(App)
 
@@ -63,7 +64,7 @@ app.use(
     clientId: 'Vh6gHFJv724xjISfxHJK3bp8XvLqkw4K',
     authorizationParams: {
       redirect_uri: window.location.origin,
-      audience: 'https://api.travigo.app'
+      audience: AUTH0_AUDIENCE
     },
     cacheLocation: 'localstorage'
   })

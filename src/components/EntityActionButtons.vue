@@ -27,16 +27,23 @@
 
           <button
             type="button"
-            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent dark:disabled:text-slate-600"
+            :class="saveDisabled
+              ? 'text-slate-400 dark:text-slate-600'
+              : 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200'"
+            :disabled="saveDisabled"
+            :title="saveTitle"
             @click="save"
           >
-            <span class="material-symbols-outlined" style="font-size: 20px; line-height: 1">bookmark</span>
-            Save
+            <span class="material-symbols-outlined" style="font-size: 20px; line-height: 1">{{ saved ? 'bookmark_added' : 'bookmark' }}</span>
+            {{ saveLabel }}
           </button>
 
           <button
             type="button"
-            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-400 transition disabled:cursor-not-allowed disabled:hover:bg-transparent dark:text-slate-600"
+            disabled
+            title="Notifications are not connected yet"
             @click="registerNotifications"
           >
             <span class="material-symbols-outlined" style="font-size: 20px; line-height: 1">notifications_active</span>
@@ -60,6 +67,9 @@
 
 <script>
 import { useAuth0 } from '@auth0/auth0-vue'
+import axios from 'axios'
+import API from '@/API'
+import { getApiAccessToken } from '@/auth'
 import notify from '@/notify'
 
 export default {
@@ -72,6 +82,10 @@ export default {
     entityName: {
       type: String,
       required: true
+    },
+    entityIdentifier: {
+      type: String,
+      default: ''
     }
   },
   setup() {
@@ -88,12 +102,42 @@ export default {
       menuOpen: false,
       message: '',
       messageType: 'info',
+      saving: false,
+      saved: false,
       notify
     }
   },
   computed: {
     readableEntityType() {
       return this.entityType.toLowerCase()
+    },
+    supportsSave() {
+      return this.readableEntityType === 'stop'
+    },
+    saveDisabled() {
+      return !this.supportsSave || this.saving || this.saved
+    },
+    saveLabel() {
+      if (this.saved) {
+        return 'Saved'
+      }
+
+      if (this.saving) {
+        return 'Saving...'
+      }
+
+      return 'Save'
+    },
+    saveTitle() {
+      if (!this.supportsSave) {
+        return 'Only stops can be saved right now'
+      }
+
+      if (this.saved) {
+        return 'Saved'
+      }
+
+      return 'Save stop'
     }
   },
   methods: {
@@ -107,6 +151,14 @@ export default {
       this.menuOpen = true
       this.message = message
       this.messageType = type
+    },
+    showToast(message, type = 'info') {
+      window.dispatchEvent(new CustomEvent('travigo-toast', {
+        detail: {
+          message,
+          type
+        }
+      }))
     },
     async share() {
       const url = window.location.href
@@ -131,8 +183,51 @@ export default {
         }
       }
     },
-    save() {
-      this.setMessage(`Saving ${this.readableEntityType}s is not connected yet. This button is a placeholder.`, 'warning')
+    async save() {
+      if (this.saveDisabled) {
+        return
+      }
+
+      if (!this.isAuthenticated) {
+        this.showToast('Sign in to save stops.', 'warning')
+        return
+      }
+
+      if (!this.entityIdentifier) {
+        this.showToast('This stop could not be saved.', 'error')
+        return
+      }
+
+      this.saving = true
+
+      try {
+        const auth0token = await getApiAccessToken(this.auth0)
+        await axios.post(`${API.URL}/core/saved`, {
+          Type: 'Stop',
+          ObjectIdentifier: this.entityIdentifier
+        }, {
+          headers: {
+            Authorization: `Bearer ${auth0token}`
+          }
+        })
+
+        this.saved = true
+        this.closeMenu()
+        this.showToast(`${this.entityName} saved.`, 'success')
+      } catch (error) {
+        console.log(error)
+
+        if (error.response?.status === 409) {
+          this.saved = true
+          this.closeMenu()
+          this.showToast(`${this.entityName} is already saved.`, 'success')
+          return
+        }
+
+        this.showToast('Saved stop could not be updated.', 'error')
+      } finally {
+        this.saving = false
+      }
     },
     registerNotifications() {
       if (!this.isAuthenticated) {

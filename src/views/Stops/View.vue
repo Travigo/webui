@@ -22,6 +22,7 @@
         <EntityActionButtons
           entity-type="Stop"
           :entity-name="stop.PrimaryName"
+          :entity-identifier="stop.PrimaryIdentifier"
         />
       </div>
 

@@ -21,6 +21,8 @@ export default {
       notify: notify,
       darkMode: false,
       systemThemeQuery: undefined,
+      toastId: 0,
+      toasts: [],
       bottomNavItems: [
         {
           name: 'Home',
@@ -81,6 +83,53 @@ export default {
       }
 
       this.applyTheme(event.matches)
+    },
+    showToast(event) {
+      const toast = {
+        id: ++this.toastId,
+        message: event.detail?.message || '',
+        type: event.detail?.type || 'info'
+      }
+
+      if (!toast.message) {
+        return
+      }
+
+      this.toasts.push(toast)
+      window.setTimeout(() => this.dismissToast(toast.id), 3600)
+    },
+    dismissToast(id) {
+      this.toasts = this.toasts.filter(toast => toast.id !== id)
+    },
+    toastClasses(type) {
+      if (type === 'success') {
+        return 'border-green-100 bg-green-50 text-green-800 shadow-green-900/10 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-100'
+      }
+
+      if (type === 'error') {
+        return 'border-red-100 bg-red-50 text-red-800 shadow-red-900/10 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100'
+      }
+
+      if (type === 'warning') {
+        return 'border-amber-100 bg-amber-50 text-amber-800 shadow-amber-900/10 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100'
+      }
+
+      return 'border-blue-100 bg-blue-50 text-blue-800 shadow-blue-900/10 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100'
+    },
+    toastIcon(type) {
+      if (type === 'success') {
+        return 'check_circle'
+      }
+
+      if (type === 'error') {
+        return 'error'
+      }
+
+      if (type === 'warning') {
+        return 'warning'
+      }
+
+      return 'info'
     }
   },
   watch: {
@@ -97,6 +146,7 @@ export default {
   },
   mounted() {
     this.initTheme()
+    window.addEventListener('travigo-toast', this.showToast)
 
     this.$nextTick(function () {
       if (this.auth0.isAuthenticated) {
@@ -106,6 +156,7 @@ export default {
   },
   beforeUnmount() {
     this.systemThemeQuery?.removeEventListener('change', this.handleSystemThemeChange)
+    window.removeEventListener('travigo-toast', this.showToast)
   }
 }
 </script>
@@ -203,6 +254,28 @@ export default {
         </router-link>
       </div>
     </nav>
+
+    <div class="pointer-events-none fixed inset-x-0 top-4 z-[1100] mx-auto flex w-full max-w-sm flex-col gap-2 px-4 sm:left-auto sm:right-4 sm:mx-0 sm:w-96 sm:max-w-none sm:px-0">
+      <TransitionGroup name="toast">
+        <div
+          v-for="toast in toasts"
+          v-bind:key="toast.id"
+          class="pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-bold shadow-xl backdrop-blur"
+          :class="toastClasses(toast.type)"
+        >
+          <span class="material-symbols-outlined mt-0.5 text-[21px]">{{ toastIcon(toast.type) }}</span>
+          <p class="min-w-0 flex-1 leading-snug">{{ toast.message }}</p>
+          <button
+            type="button"
+            class="-mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full opacity-70 transition hover:opacity-100"
+            @click="dismissToast(toast.id)"
+            aria-label="Dismiss notification"
+          >
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+      </TransitionGroup>
+    </div>
   </div>
 </template>
 
@@ -235,5 +308,16 @@ export default {
 :global(.dark) .bottom-nav-active > span:first-child {
   background: rgba(37, 99, 235, 0.18);
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(-0.5rem) scale(0.98);
 }
 </style>
