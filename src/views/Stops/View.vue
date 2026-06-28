@@ -7,13 +7,20 @@
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
     <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div>
-        <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-          {{ stop.PrimaryName }}
-        </h1>
-        <p class="mt-1 text-sm font-medium text-slate-500" v-if="stop.OtherNames?.Descriptor">
-          {{ stop.OtherNames.Descriptor }}
-        </p>
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
+            {{ stop.PrimaryName }}
+          </h1>
+          <p class="mt-1 text-sm font-medium text-slate-500" v-if="stop.OtherNames?.Descriptor">
+            {{ stop.OtherNames.Descriptor }}
+          </p>
+        </div>
+
+        <EntityActionButtons
+          entity-type="Stop"
+          :entity-name="stop.PrimaryName"
+        />
       </div>
 
       <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" v-if="visibleServices.length > 0">
@@ -323,6 +330,7 @@
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import Alert from '@/components/Alert.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
+import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
@@ -402,6 +410,7 @@ export default {
     ServiceIcon,
     Alert,
     DatasourceAttributes,
+    EntityActionButtons,
     IconPillRow,
     ServiceAlertList,
     StopDeparturesTable

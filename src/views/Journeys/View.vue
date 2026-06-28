@@ -31,15 +31,22 @@
           </p>
         </div>
 
-        <button
-          type="button"
-          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-50 disabled:opacity-70"
-          :disabled="loadingRealtime"
-          @click="getRealtimeJourney()"
-          aria-label="Refresh realtime journey"
-        >
-          <span class="material-symbols-outlined text-[23px]" :class="{'animate-spin': loadingRealtime}">refresh</span>
-        </button>
+        <div class="flex shrink-0 items-center gap-2">
+          <EntityActionButtons
+            entity-type="Journey"
+            :entity-name="journeyTitle"
+          />
+
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-50 disabled:opacity-70"
+            :disabled="loadingRealtime"
+            @click="getRealtimeJourney()"
+            aria-label="Refresh realtime journey"
+          >
+            <span class="material-symbols-outlined text-[23px]" :class="{'animate-spin': loadingRealtime}">refresh</span>
+          </button>
+        </div>
       </div>
 
       <p
@@ -266,6 +273,7 @@ import Alert from "@/components/Alert.vue"
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
+import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import TabBar from '@/components/TabBar.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import axios from "axios"
@@ -330,6 +338,7 @@ export default {
     DetailedInformationRail,
     DepartureTypeIcon,
     DatasourceAttributes,
+    EntityActionButtons,
     TabBar,
     ServiceAlertList
   },
