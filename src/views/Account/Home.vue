@@ -1,42 +1,19 @@
 <template>
-  <div>
-    <PageTitle>
-      Account
-    </PageTitle>
-    <Card>
-      <div v-if="auth0.isAuthenticated">
-        <button 
-          type="submit" 
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          @click.stop.prevent="notify.setupNotifications(this.auth0, this.$messaging)"
-        >
-          Setup Notifications
-        </button>
-      </div>
-      <div v-else>
-        Please login to access this page
-      </div>
-    </Card>
+  <div class="space-y-4 pt-3 sm:pt-4">
+    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">Account</p>
+      <h1 class="mt-1 text-2xl font-extrabold leading-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
+        Account
+      </h1>
+      <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+        Account features will appear here as they are connected.
+      </p>
+    </section>
   </div>
 </template>
 
 <script>
-import Card from '@/components/Card.vue'
-import PageTitle from '@/components/PageTitle.vue'
-import { useAuth0 } from '@auth0/auth0-vue'
-import notify from "@/notify"
-
 export default {
-  name: 'AccountHome',
-  components: {
-    Card,
-    PageTitle,
-  },
-  data() {
-    return {
-      auth0: useAuth0(),
-      notify: notify,
-    }
-  }
+  name: 'AccountHome'
 }
 </script>

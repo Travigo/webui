@@ -143,6 +143,14 @@ export const routes = [
     component: () => import('./views/Account/Settings.vue')
   },
   {
+    name: 'saved/stops',
+    path: '/saved/stops',
+    meta: {
+      title: 'Saved Stops'
+    },
+    component: () => import('./views/Saved/Stops.vue')
+  },
+  {
     name: 'services/view',
     path: '/services/:id',
     meta: {

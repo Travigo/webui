@@ -1,9 +1,9 @@
 <template>
-  <div class="relative" @click.stop>
+  <div class="relative flex h-8 w-8 items-center justify-center sm:h-10 sm:w-10" @click.stop>
     <button
       type="button"
       @click="toggleMenu"
-      class="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 sm:h-10 sm:w-10 dark:bg-indigo-400/20 dark:text-indigo-100 dark:hover:bg-indigo-400/30"
+      class="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 dark:bg-indigo-400/20 dark:text-indigo-100 dark:hover:bg-indigo-400/30"
       :title="isAuthenticated ? 'Account controls' : 'Log in or register'"
       :aria-label="isAuthenticated ? 'Account controls' : 'Log in or register'"
       :aria-expanded="menuOpen"
@@ -12,7 +12,7 @@
         v-if="isAuthenticated && user?.picture"
         :src="user.picture"
         :alt="displayName"
-        class="h-full w-full object-cover"
+        class="block h-full w-full object-cover"
       >
       <span v-else class="material-symbols-outlined text-[22px] sm:text-[24px]">person</span>
     </button>

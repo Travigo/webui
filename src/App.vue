@@ -50,7 +50,7 @@ export default {
         {
           name: 'Saved',
           icon: 'bookmark',
-          route: { name: 'account/home' }
+          route: { name: 'saved/stops' }
         }
       ]
     }
