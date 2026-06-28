@@ -1,9 +1,11 @@
 <template>
   <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
 
-  <div v-if="loadingStop" class="px-1 py-6 text-sm font-semibold text-slate-500">
-    Loading stop...
-  </div>
+  <LoadingState
+    v-if="loadingStop"
+    title="Loading stop"
+    subtitle="Fetching stop details, services, amenities, and departures."
+  />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
     <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
@@ -332,6 +334,7 @@ import Alert from '@/components/Alert.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
 import axios from 'axios'
@@ -412,6 +415,7 @@ export default {
     DatasourceAttributes,
     EntityActionButtons,
     IconPillRow,
+    LoadingState,
     ServiceAlertList,
     StopDeparturesTable
   },

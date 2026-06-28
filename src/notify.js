@@ -1,6 +1,6 @@
 import axios from "axios"
 import API from "@/API"
-import { getToken } from "firebase/messaging"
+import { getToken, getMessaging, onRegistered, register } from "firebase/messaging"
 
 export default {
   setupNotifications(auth0, messagingObj) {

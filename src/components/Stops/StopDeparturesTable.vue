@@ -10,9 +10,15 @@
     />
 
     <div v-if="activeTab === 'departures'">
-      <div v-if="loadingDepartures" class="px-4 py-6 text-sm font-semibold text-amber-700">
-        Loading departures...
-      </div>
+      <LoadingState
+        v-if="loadingDepartures"
+        title="Loading departures"
+        subtitle="Fetching the latest departure board."
+        compact
+        bare
+        :rows="4"
+        :show-tabs="false"
+      />
       <DeparturesList v-else :stop="stop" :departures="departures || []" variant="compact"/>
     </div>
 
@@ -28,12 +34,14 @@
 
 <script>
 import DeparturesList from '@/components/DeparturesList.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import TabBar from '@/components/TabBar.vue'
 
 export default {
   name: 'StopDeparturesTable',
   components: {
     DeparturesList,
+    LoadingState,
     TabBar
   },
   props: {

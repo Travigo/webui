@@ -1,8 +1,10 @@
 <template>
   <Alert type="error" class="mt-4" v-if="errorJourney !== undefined">{{ errorJourney }}</Alert>
-  <div v-if="loadingJourney" class="px-1 py-6 text-sm font-semibold text-slate-500">
-    Loading journey...
-  </div>
+  <LoadingState
+    v-if="loadingJourney"
+    title="Loading journey"
+    subtitle="Fetching live journey status, stops, alerts, and train details."
+  />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
     <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
@@ -274,6 +276,7 @@ import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import TabBar from '@/components/TabBar.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import axios from "axios"
@@ -339,6 +342,7 @@ export default {
     DepartureTypeIcon,
     DatasourceAttributes,
     EntityActionButtons,
+    LoadingState,
     TabBar,
     ServiceAlertList
   },

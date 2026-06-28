@@ -48,9 +48,14 @@
         </router-link>
       </div>
 
-      <div v-if="loadingResults" class="px-4 py-6 text-sm font-semibold text-amber-700">
-        Loading results...
-      </div>
+      <LoadingState
+        v-if="loadingResults"
+        title="Loading journeys"
+        subtitle="Finding available direct journeys."
+        compact
+        :rows="3"
+        :show-tabs="false"
+      />
 
       <div v-else-if="journeyPlans.length === 0" class="px-4 py-6">
         <div class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
@@ -131,6 +136,7 @@
 
 <script>
 import Alert from '@/components/Alert.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -138,7 +144,8 @@ import Pretty from '@/pretty'
 export default {
   name: 'JourneyPlannerSearch',
   components: {
-    Alert
+    Alert,
+    LoadingState
   },
   data () {
     return {
