@@ -1,7 +1,8 @@
 <template>
   <router-link
     :to="stopRoute"
-    class="grid grid-cols-[3.25rem_1fr] items-center gap-3 border-b border-slate-200 px-4 py-3 last:border-b-0 sm:grid-cols-[5rem_1fr_auto] sm:gap-4 sm:px-5 sm:py-4"
+    class="grid grid-cols-[3.25rem_1fr] items-center gap-3 px-4 py-3 sm:grid-cols-[5rem_1fr_auto] sm:gap-4 sm:px-5 sm:py-4"
+    :class="bordered ? 'border-b border-slate-200 last:border-b-0 dark:border-slate-800' : ''"
   >
     <div class="flex h-13 w-13 items-center justify-center rounded-xl bg-blue-50 sm:h-16 sm:w-16 sm:rounded-2xl">
       <StopIcon :stop="stop" size="10" />
@@ -34,7 +35,7 @@
             </span>
           </div>
           <p class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-base">
-            <span class="material-symbols-outlined text-base sm:text-lg">directions_walk</span>
+            <span class="material-symbols-outlined text-base sm:text-lg">{{ metaIcon }}</span>
             {{ distanceLabel }}
           </p>
         </div>
@@ -47,14 +48,6 @@
           <span class="material-symbols-outlined text-2xl text-slate-400 sm:text-3xl">chevron_right</span>
         </div>
       </div>
-    </div>
-
-    <div
-      v-if="statusLabel"
-      class="hidden rounded-2xl bg-green-50 px-3 py-1 text-base font-medium text-green-700 sm:inline-flex"
-    >
-      <span class="mr-2 mt-2 h-2 w-2 rounded-full bg-green-600"></span>
-      {{ statusLabel }}
     </div>
   </router-link>
 </template>
@@ -82,9 +75,17 @@ export default {
       type: String,
       default: 'View'
     },
-    statusLabel: {
+    metaIcon: {
+      type: String,
+      default: 'directions_walk'
+    },
+    distanceLabelFallback: {
       type: String,
       default: 'Nearby'
+    },
+    bordered: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -124,7 +125,7 @@ export default {
         ))
       }
 
-      return 'Nearby'
+      return this.distanceLabelFallback
     }
   },
   methods: {

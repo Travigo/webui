@@ -20,6 +20,13 @@
           <span class="material-symbols-outlined text-[22px]">add</span>
         </button>
       </div>
+
+      <div class="mt-4 flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+        <span class="material-symbols-outlined mt-0.5 text-[22px]">warning</span>
+        <p class="text-sm font-medium">
+          Saved stops are placeholder data at the moment. Adding, removing, and syncing saved stops does not function yet.
+        </p>
+      </div>
     </section>
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl">
@@ -38,51 +45,27 @@
       <article
         v-for="stop in savedStops"
         v-bind:key="stop.PrimaryIdentifier"
-        class="border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800 sm:px-5 sm:py-4"
+        class="relative border-b border-slate-100 last:border-b-0 dark:border-slate-800"
       >
-        <div class="grid grid-cols-[3.25rem_1fr] gap-3 sm:grid-cols-[4rem_1fr_auto] sm:items-center sm:gap-4">
-          <router-link
-            :to="{ name: 'stops/view', params: { id: stop.PrimaryIdentifier } }"
-            class="flex h-13 w-13 items-center justify-center rounded-xl bg-blue-50 transition hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 sm:h-16 sm:w-16 sm:rounded-2xl"
-            :aria-label="`View ${stop.PrimaryName}`"
-          >
-            <StopIcon :stop="stop" size="10" />
-          </router-link>
-
-          <div class="min-w-0">
-            <router-link
-              :to="{ name: 'stops/view', params: { id: stop.PrimaryIdentifier } }"
-              class="block truncate text-base font-extrabold leading-tight text-slate-950 transition hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-300 sm:text-xl"
-            >
-              {{ stop.PrimaryName }}
-            </router-link>
-            <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:text-sm">
-              {{ stop.OtherNames?.Descriptor || stop.LocalityName }}
-            </p>
-            <div class="mt-2 flex flex-wrap gap-1">
-              <ServiceIcon
-                v-for="service in stop.Services"
-                v-bind:key="service.PrimaryIdentifier"
-                :service="service"
-                class="h-5 rounded-md px-1.5 text-[0.72rem] font-bold leading-5 shadow-sm sm:h-6 sm:px-2 sm:text-sm"
-              />
-            </div>
-          </div>
-
-          <div
-            v-if="editing"
-            class="col-span-2 mt-3 flex gap-2 sm:col-span-1 sm:mt-0 sm:justify-end"
-          >
-            <button
-              type="button"
-              class="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-50 px-3 text-sm font-bold text-red-600 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20 sm:flex-none"
-              @click="removeSavedStop(stop)"
-            >
-              <span class="material-symbols-outlined text-[18px]">delete</span>
-              Remove
-            </button>
-          </div>
+        <div :class="editing ? 'pr-14 sm:pr-16' : ''">
+          <StopInfo
+            :stop="stop"
+            :bordered="false"
+            status-label=""
+            meta-icon="bookmark"
+            distance-label-fallback="Saved stop"
+          />
         </div>
+
+        <button
+          v-if="editing"
+          type="button"
+          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
+          @click="removeSavedStop(stop)"
+          :aria-label="`Remove ${stop.PrimaryName}`"
+        >
+          <span class="material-symbols-outlined text-[21px]">delete</span>
+        </button>
       </article>
     </section>
 
@@ -121,14 +104,12 @@
 </template>
 
 <script>
-import ServiceIcon from '@/components/ServiceIcon.vue'
-import StopIcon from '@/components/StopIcon.vue'
+import StopInfo from '@/components/Stops/StopInfo.vue'
 
 export default {
   name: 'SavedStops',
   components: {
-    ServiceIcon,
-    StopIcon
+    StopInfo
   },
   data() {
     return {
