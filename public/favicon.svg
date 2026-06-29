@@ -1,54 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Travigo">
-  <defs>
-    <linearGradient id="brand" x1="26" y1="58" x2="226" y2="188" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ec4899"/>
-      <stop offset="0.54" stop-color="#6366f1"/>
-      <stop offset="1" stop-color="#2563eb"/>
-    </linearGradient>
-    <linearGradient id="pin" x1="180" y1="48" x2="220" y2="114" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#60a5fa"/>
-      <stop offset="1" stop-color="#2563eb"/>
-    </linearGradient>
-    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.16"/>
-    </filter>
-  </defs>
-
-  <rect width="256" height="256" rx="58" fill="#f8fafc"/>
-  <rect x="14" y="14" width="228" height="228" rx="52" fill="#ffffff" filter="url(#shadow)"/>
-  <rect x="14" y="14" width="228" height="228" rx="52" fill="#eff6ff" opacity="0.72"/>
-
-  <path
-    d="M42 176c34-34 68-36 101-5 19 18 41 23 69 12"
-    fill="none"
-    stroke="#bfdbfe"
-    stroke-width="14"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-
-  <text
-    x="28"
-    y="125"
-    fill="url(#brand)"
-    font-family="Inter, Arial, Helvetica, sans-serif"
-    font-size="48"
-    font-weight="850"
-    letter-spacing="-2"
-  >Travigo</text>
-
-  <g filter="url(#shadow)">
-    <path
-      d="M199 43c-18 0-31 13.5-31 30 0 22 31 54 31 54s31-32 31-54c0-16.5-13-30-31-30Z"
-      fill="url(#pin)"
-    />
-    <circle cx="199" cy="73" r="12" fill="#ffffff"/>
-  </g>
-
-  <g filter="url(#shadow)">
-    <rect x="51" y="143" width="46" height="38" rx="13" fill="#f59e0b"/>
-    <rect x="59" y="153" width="30" height="10" rx="5" fill="#ffffff" opacity="0.9"/>
-    <circle cx="63" cy="181" r="5" fill="#ffffff"/>
-    <circle cx="85" cy="181" r="5" fill="#ffffff"/>
-  </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Created with Linearity Curve (http://linearity.io/curve) -->
+<svg height="256.0pt" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 256 256" width="256.0pt" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<filter color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" height="278" id="Filter" width="278" x="-11" y="-3">
+<feDropShadow dx="4.89859e-16" dy="8" flood-color="#0f172a" flood-opacity="0.16" in="SourceGraphic" result="Shadow" stdDeviation="10"/>
+</filter>
+<linearGradient gradientTransform="matrix(200 130 -130 200 -2 -23.5469)" gradientUnits="userSpaceOnUse" id="LinearGradient" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0" stop-color="#ec4899"/>
+<stop offset="0.54" stop-color="#6366f1"/>
+<stop offset="1" stop-color="#2563eb"/>
+</linearGradient>
+<filter color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" height="100.892" id="Filter_2" width="87.2761" x="169.07" y="125.795">
+<feDropShadow dx="4.89859e-16" dy="8" flood-color="#0f172a" flood-opacity="0.16" in="SourceGraphic" result="Shadow" stdDeviation="10"/>
+</filter>
+<linearGradient gradientTransform="matrix(24.0491 39.9866 -39.681 24.2343 201.285 145.825)" gradientUnits="userSpaceOnUse" id="LinearGradient_2" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0" stop-color="#60a5fa"/>
+<stop offset="1" stop-color="#2563eb"/>
+</linearGradient>
+<filter color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" height="107.385" id="Filter_3" width="109.437" x="-8.63143" y="110.616">
+<feDropShadow dx="4.89859e-16" dy="8" flood-color="#0f172a" flood-opacity="0.16" in="SourceGraphic" result="Shadow" stdDeviation="10"/>
+</filter>
+</defs>
+<clipPath id="ArtboardFrame">
+<rect height="256" width="256" x="0" y="0"/>
+</clipPath>
+<g clip-path="url(#ArtboardFrame)" id="Layer-1">
+<path d="M0 58C0 25.9675 25.9675 0 58 0L198 0C230.033 0 256 25.9675 256 58L256 198C256 230.033 230.033 256 198 256L58 256C25.9675 256 0 230.033 0 198L0 58Z" fill="#f8fafc" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M14 66C14 37.2812 37.2812 14 66 14L190 14C218.719 14 242 37.2812 242 66L242 190C242 218.719 218.719 242 190 242L66 242C37.2812 242 14 218.719 14 190L14 66Z" fill="#ffffff" fill-rule="nonzero" filter="url(#Filter)" stroke="none"/>
+<path d="M14 66C14 37.2812 37.2812 14 66 14L190 14C218.719 14 242 37.2812 242 66L242 190C242 218.719 218.719 242 190 242L66 242C37.2812 242 14 218.719 14 190L14 66Z" fill="#eff6ff" fill-rule="nonzero" opacity="0.72" stroke="none"/>
+<path d="M42 184C76 150 110 148 143 179C162 197 184 202 212 191" fill="none" opacity="1" stroke="#bfdbfe" stroke-linecap="round" stroke-linejoin="round" stroke-width="14"/>
+<text fill="url(#LinearGradient)" font-family="Arial-BoldMT" font-size="48" opacity="1" stroke="none" text-anchor="start" transform="matrix(1 0 0 1 38.0031 84.2063)" x="0" y="0">
+<tspan textLength="182.719" x="0" y="43.4531"><![CDATA[Travigo]]></tspan>
+</text>
+<g filter="url(#Filter_2)">
+<path d="M212.708 142.795C201.886 142.795 194.07 150.974 194.07 160.971C194.07 174.3 212.708 193.687 212.708 193.687C212.708 193.687 231.346 174.3 231.346 160.971C231.346 150.974 223.53 142.795 212.708 142.795Z" fill="url(#LinearGradient_2)" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M205.493 160.971C205.493 156.956 208.724 153.701 212.708 153.701C216.693 153.701 219.923 156.956 219.923 160.971C219.923 164.986 216.693 168.241 212.708 168.241C208.724 168.241 205.493 164.986 205.493 160.971Z" fill="#ffffff" fill-rule="nonzero" opacity="1" stroke="none"/>
+</g>
+<g filter="url(#Filter_3)">
+<path d="M23.7404 164.409C19.6691 158.496 21.1626 150.401 27.0763 146.33L43.5497 134.988C49.4634 130.917 57.558 132.41 61.6293 138.324L68.4341 148.208C72.5055 154.122 71.012 162.216 65.0983 166.288L48.6249 177.629C42.7112 181.7 34.6166 180.207 30.5453 174.293L23.7404 164.409Z" fill="#f59e0b" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M31.464 161.52C29.898 159.246 30.4725 156.132 32.747 154.566L49.2204 143.225C51.4949 141.659 54.6082 142.233 56.1741 144.508L56.1741 144.508C57.74 146.782 57.1656 149.896 54.8911 151.462L38.4176 162.803C36.1431 164.369 33.0299 163.795 31.464 161.52L31.464 161.52Z" fill="#ffffff" fill-rule="nonzero" opacity="0.9" stroke="none"/>
+<path d="M43.6828 181.032C42.1169 178.757 42.6914 175.644 44.9659 174.078C47.2404 172.512 50.3536 173.086 51.9196 175.361C53.4855 177.635 52.911 180.749 50.6365 182.315C48.362 183.88 45.2488 183.306 43.6828 181.032Z" fill="#ffffff" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M61.8036 168.556C60.2377 166.282 60.8121 163.168 63.0866 161.602C65.3611 160.036 68.4744 160.611 70.0403 162.885C71.6062 165.16 71.0318 168.273 68.7573 169.839C66.4828 171.405 63.3695 170.831 61.8036 168.556Z" fill="#ffffff" fill-rule="nonzero" opacity="1" stroke="none"/>
+</g>
+</g>
 </svg>
