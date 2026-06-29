@@ -59,6 +59,7 @@ export default {
   },
   methods: {
     initTheme() {
+      this.systemThemeQuery?.removeEventListener('change', this.handleSystemThemeChange)
       this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
       const savedTheme = localStorage.getItem('travigo_theme')
       const shouldUseDark = savedTheme === 'dark' || (savedTheme !== 'light' && this.systemThemeQuery.matches)
@@ -144,8 +145,10 @@ export default {
       }
     },
   },
-  mounted() {
+  beforeMount() {
     this.initTheme()
+  },
+  mounted() {
     window.addEventListener('travigo-toast', this.showToast)
 
     this.$nextTick(function () {
