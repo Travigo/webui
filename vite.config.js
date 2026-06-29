@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Travigo',
         short_name: 'Travigo',
         description: 'Provides realtime and scheduled information on public transport',
-        theme_color: '#f3f4f6',
+        theme_color: '#f8fafc',
         icons: [
           {
             src: 'pwa-192x192.png',
