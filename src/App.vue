@@ -150,7 +150,7 @@ export default {
 
     this.$nextTick(function () {
       if (this.auth0.isAuthenticated) {
-        notify.setupNotifications(this.auth0, this.$messaging)
+        notify.setupNotifications(this.auth0, this.$messaging).catch(error => console.log(error))
       }
     })
   },
