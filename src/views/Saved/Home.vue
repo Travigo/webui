@@ -5,10 +5,10 @@
         <div>
 
           <h1 class="mt-1 text-2xl font-extrabold leading-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
-            Saved stops
+            Saved items
           </h1>
           <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            Manage stops you want quick access to.
+            Manage stops &amp; services you want quick access to.
           </p>
         </div>
       </div>
@@ -66,8 +66,8 @@
             :stop="stop"
             :bordered="false"
             status-label=""
-            meta-icon="bookmark"
-            distance-label-fallback="Saved stop"
+            meta-icon=""
+            distance-label-fallback=""
           />
         </div>
 

@@ -74,7 +74,7 @@
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Nearby Stops</h2>
-              <p class="text-sm text-slate-500 sm:text-base">{{ nearbyStopsStatus }}</p>
+              <p class="text-xs text-slate-500 sm:text-base">{{ nearbyStopsStatus }}</p>
             </div>
             <button
               type="button"
@@ -112,7 +112,7 @@
     <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 sm:rounded-3xl sm:p-5">
       <div class="mb-3 sm:mb-4">
         <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Network summary</h2>
-        <p class="text-sm text-slate-500 sm:text-base">Real-time overview</p>
+        <p class="text-sm text-slate-500 sm:text-base">Data currently ingested in Travigo</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">

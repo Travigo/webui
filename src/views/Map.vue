@@ -32,9 +32,9 @@
 
       <mapbox-marker
         :lngLat="vehicle.VehicleLocation.coordinates"
-        :rotation="vehicle.VehicleBearing-90"
-        v-for="(vehicle, i) in this.vehicles"
-        v-bind:key="i"
+        :rotation="(vehicle.VehicleBearing || 0) - 90"
+        v-for="(vehicle, i) in visibleVehicles"
+        v-bind:key="vehicle.Journey?.PrimaryIdentifier || i"
       >
         <template v-slot:icon>
           <img src="/icons/bus-svgrepo-com-24x24.png">
@@ -42,12 +42,12 @@
 
         <mapbox-popup>
           <div>
-            <strong>{{ vehicle.Journey.DestinationDisplay }}</strong>
+            <strong>{{ vehicle.Journey?.DestinationDisplay || 'Live vehicle' }}</strong>
             <div>
-              {{ vehicle.Journey.Service.ServiceName }} / {{ vehicle.Journey.Operator.PrimaryName }}
+              {{ vehicle.Journey?.Service?.ServiceName || 'Service unknown' }} / {{ vehicle.Journey?.Operator?.PrimaryName || 'Operator unknown' }}
             </div>
 
-            <p>
+            <p v-if="vehicle.Journey?.PrimaryIdentifier">
               <router-link :to="{'name': 'journeys/view', params: {'id': vehicle.Journey.PrimaryIdentifier}}">View</router-link>
             </p>
           </div>
@@ -67,7 +67,7 @@
         </span>
         <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
           <span class="material-symbols-outlined text-[15px]">directions_bus</span>
-          {{ vehicles.length }}
+          {{ visibleVehicles.length }}
         </span>
       </div>
     </div>
@@ -463,6 +463,16 @@ export default {
     },
     activeMapLayerCount() {
       return [this.showStops, this.showVehicles].filter(Boolean).length
+    },
+    visibleVehicles() {
+      return this.vehicles.filter(vehicle => {
+        const coordinates = vehicle?.VehicleLocation?.coordinates
+
+        return Array.isArray(coordinates) &&
+          coordinates.length === 2 &&
+          typeof coordinates[0] === 'number' &&
+          typeof coordinates[1] === 'number'
+      })
     }
   },
   data () {
@@ -572,7 +582,7 @@ export default {
         axios
           .get(`${API.URL}/core/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
-            let newVehicles = response.data
+            let newVehicles = Array.isArray(response.data) ? response.data : []
 
             this.vehicles = newVehicles
           })

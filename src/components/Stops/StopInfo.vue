@@ -14,6 +14,9 @@
           <div class="flex items-center gap-2">
             <h3 class="truncate text-base font-bold leading-tight text-slate-950 sm:text-xl">{{ stop.PrimaryName }}</h3>
           </div>
+          <div>
+            <p class="mt-0.5 text-[0.7rem] leading-snug text-slate-500 sm:mt-1 sm:text-base">{{ descriptor }}</p>
+          </div>
           <div class="mt-1 flex max-w-full flex-wrap gap-1">
             <ServiceIcon
               v-for="service in displayedServices"
@@ -34,17 +37,13 @@
               Stop
             </span>
           </div>
-          <p class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-base">
-            <span class="material-symbols-outlined text-base sm:text-lg">{{ metaIcon }}</span>
+          <p class="mt-1 flex items-center gap-1 text-[0.7rem] text-slate-500 sm:text-base">
+            <span class="material-symbols-outlined text-base text-[0.7rem]">{{ metaIcon }}</span>
             {{ distanceLabel }}
           </p>
         </div>
 
-        <div class="flex shrink-0 items-center justify-end gap-1 text-right">
-          <div>
-            <div class="text-sm font-semibold text-blue-600 sm:text-base">{{ actionLabel }}</div>
-            <p class="mt-0.5 text-xs leading-snug text-slate-500 sm:mt-1 sm:text-base">{{ descriptor }}</p>
-          </div>
+        <div class="flex shrink-0 self-center items-center justify-end gap-1 text-right">
           <span class="material-symbols-outlined text-2xl text-slate-400 sm:text-3xl">chevron_right</span>
         </div>
       </div>
@@ -70,10 +69,6 @@ export default {
     currentPosition: {
       type: Object,
       default: undefined
-    },
-    actionLabel: {
-      type: String,
-      default: 'View'
     },
     metaIcon: {
       type: String,
@@ -107,7 +102,7 @@ export default {
       return Math.max(this.services.length - this.displayedServices.length, 0)
     },
     descriptor() {
-      return this.stop.Descriptor || this.stop.OtherNames?.Descriptor || this.stop.LocalityName || 'Departures'
+      return this.stop.Descriptor || this.stop.OtherNames?.Descriptor || this.stop.LocalityName || ''
     },
     distanceLabel() {
       const metres = this.stop.DistanceMeters ?? this.stop.Distance ?? this.stop.distanceMeters ?? this.stop.distance

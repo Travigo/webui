@@ -23,6 +23,7 @@
           entity-type="Stop"
           :entity-name="stop.PrimaryName"
           :entity-identifier="stop.PrimaryIdentifier"
+          shape="square"
         />
       </div>
 
@@ -34,7 +35,7 @@
           class="shrink-0"
         >
           <ServiceIcon
-            class="h-6 rounded-md px-2 text-[0.8rem] font-bold shadow-sm"
+            class="h-6 rounded-md px-2 text-[0.72rem] font-bold shadow-sm"
             style="line-height: 32px"
             :service="service"
           />

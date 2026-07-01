@@ -1,14 +1,14 @@
 <template>
   <div class="relative" @click.stop>
-    <button
-      type="button"
-      class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+    <IconButton
+      icon="more_horiz"
       :aria-label="`${entityType} actions`"
       :aria-expanded="menuOpen"
+      :label="`${entityType} actions`"
+      :shape="shape"
+      :icon-size="24"
       @click="toggleMenu"
-    >
-      <span class="material-symbols-outlined" style="font-size: 24px; line-height: 1">more_horiz</span>
-    </button>
+    />
 
     <Transition name="entity-action-menu">
       <div
@@ -70,10 +70,14 @@ import { useAuth0 } from '@auth0/auth0-vue'
 import axios from 'axios'
 import API from '@/API'
 import { getApiAccessToken } from '@/auth'
+import IconButton from '@/components/IconButton.vue'
 import notify from '@/notify'
 
 export default {
   name: 'EntityActionButtons',
+  components: {
+    IconButton
+  },
   props: {
     entityType: {
       type: String,
@@ -86,6 +90,11 @@ export default {
     entityIdentifier: {
       type: String,
       default: ''
+    },
+    shape: {
+      type: String,
+      default: 'circle',
+      validator: value => ['circle', 'square'].includes(value)
     }
   },
   setup() {
@@ -163,6 +172,7 @@ export default {
     async share() {
       const url = window.location.href
       const title = `${this.entityName} on Travigo`
+      this.closeMenu()
 
       try {
         if (navigator.share) {
@@ -171,15 +181,14 @@ export default {
             text: title,
             url
           })
-          this.closeMenu()
           return
         }
 
         await navigator.clipboard.writeText(url)
-        this.setMessage('Link copied to clipboard.')
+        this.showToast('Link copied to clipboard.', 'success')
       } catch (error) {
         if (error?.name !== 'AbortError') {
-          this.setMessage('Could not share this link.', 'warning')
+          this.showToast('Could not share this link.', 'warning')
         }
       }
     },
@@ -189,11 +198,13 @@ export default {
       }
 
       if (!this.isAuthenticated) {
+        this.closeMenu()
         this.showToast('Sign in to save stops.', 'warning')
         return
       }
 
       if (!this.entityIdentifier) {
+        this.closeMenu()
         this.showToast('This stop could not be saved.', 'error')
         return
       }

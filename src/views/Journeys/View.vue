@@ -34,20 +34,19 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
+          <IconButton
+            icon="refresh"
+            label="Refresh realtime journey"
+            :disabled="loadingRealtime"
+            :spinning="loadingRealtime"
+            @click="getRealtimeJourney()"
+          />
+          
           <EntityActionButtons
             entity-type="Journey"
             :entity-name="journeyTitle"
+            shape="square"
           />
-
-          <button
-            type="button"
-            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-50 disabled:opacity-70"
-            :disabled="loadingRealtime"
-            @click="getRealtimeJourney()"
-            aria-label="Refresh realtime journey"
-          >
-            <span class="material-symbols-outlined text-[23px]" :class="{'animate-spin': loadingRealtime}">refresh</span>
-          </button>
         </div>
       </div>
 
@@ -276,6 +275,7 @@ import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
+import IconButton from '@/components/IconButton.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import TabBar from '@/components/TabBar.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
@@ -342,6 +342,7 @@ export default {
     DepartureTypeIcon,
     DatasourceAttributes,
     EntityActionButtons,
+    IconButton,
     LoadingState,
     TabBar,
     ServiceAlertList

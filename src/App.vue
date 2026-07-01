@@ -52,7 +52,7 @@ export default {
         {
           name: 'Saved',
           icon: 'bookmark',
-          route: { name: 'saved/stops' }
+          route: { name: 'saved/home' }
         }
       ]
     }
