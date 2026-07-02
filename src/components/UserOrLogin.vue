@@ -63,6 +63,14 @@
               <span class="material-symbols-outlined text-[20px]">settings</span>
               Settings
             </router-link>
+            <router-link
+              :to="{ name: 'account/notifications' }"
+              @click="closeMenu"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+            >
+              <span class="material-symbols-outlined text-[20px]">notifications_active</span>
+              Notifications
+            </router-link>
             <button
               type="button"
               @click="logout"

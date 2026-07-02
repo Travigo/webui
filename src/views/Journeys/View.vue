@@ -45,6 +45,8 @@
           <EntityActionButtons
             entity-type="Journey"
             :entity-name="journeyTitle"
+            :entity-identifier="$route.params.id"
+            :notification-types="journeyNotificationTypes"
             shape="square"
           />
         </div>
@@ -57,7 +59,7 @@
         {{ journey.RealtimeJourney.VehicleLocationDescription }}
       </p>
 
-      <div v-if="!journey?.RealtimeJourney?.Cancelled" class="rounded-2xl bg-white/75 p-3">
+      <div v-if="showDetailedInformationRail" class="rounded-2xl bg-white/75 p-3">
         <DetailedInformationRail :journey="journey"/>
       </div>
     </section>
@@ -384,6 +386,121 @@ export default {
         label: 'Scheduled',
         classes: 'bg-slate-100 text-slate-600'
       }
+    },
+    detailedRailInfo() {
+      return this.journey?.DetailedRailInformation || {}
+    },
+    detailedRailCarriages() {
+      if (this.journey?.RealtimeJourney?.DetailedRailInformation?.Carriages?.length > 0) {
+        return this.journey.RealtimeJourney.DetailedRailInformation.Carriages
+      }
+
+      if (this.journey?.DetailedRailInformation?.Carriages?.length > 0) {
+        return this.journey.DetailedRailInformation.Carriages
+      }
+
+      return []
+    },
+    hasDetailedRailFacilityPills() {
+      return [
+        this.detailedRailInfo.AirConditioning,
+        this.detailedRailInfo.WiFi,
+        this.detailedRailInfo.PowerPlugs,
+        this.detailedRailInfo.USBPlugs,
+        this.detailedRailInfo.BicycleSpaces,
+        this.detailedRailInfo.DisabledAccess,
+        this.detailedRailInfo.Toilets,
+        this.detailedRailInfo.CateringAvailable
+      ].some(Boolean)
+    },
+    showDetailedInformationRail() {
+      if (this.journey?.RealtimeJourney?.Cancelled) {
+        return false
+      }
+
+      return Boolean(
+        this.detailedRailInfo.ReplacementBus ||
+        this.hasDetailedRailFacilityPills ||
+        this.detailedRailCarriages.length > 0
+      )
+    },
+    journeyStopOptions() {
+      const seenStops = new Set()
+
+      return (this.journeyPoints || [])
+        .filter(point => point.stop?.PrimaryIdentifier)
+        .filter(point => {
+          if (seenStops.has(point.stop.PrimaryIdentifier)) {
+            return false
+          }
+
+          seenStops.add(point.stop.PrimaryIdentifier)
+          return true
+        })
+        .map(point => ({
+          value: point.stop.PrimaryIdentifier,
+          label: point.stop.PrimaryName || point.stop.PrimaryIdentifier
+        }))
+    },
+    journeyNotificationTypes() {
+      return [
+        {
+          id: 'journey',
+          label: 'Journey',
+          icon: 'route',
+          fields: [
+            {
+              id: 'journeyEvents',
+              label: 'Journey changes',
+              type: 'multi-select',
+              placeholder: 'Select journey changes',
+              allSelectedLabel: 'All journey changes',
+              description: 'Choose which scheduled journey changes should trigger this notification.',
+              options: [
+                { value: 'JourneyRemoved', label: 'Removed' },
+                { value: 'JourneyEdited', label: 'Edited' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'realtime-journey',
+          label: 'Realtime journey',
+          icon: 'directions',
+          fields: [
+            {
+              id: 'realtimeJourneyEvents',
+              label: 'Realtime journey changes',
+              type: 'multi-select',
+              placeholder: 'Select realtime changes',
+              selectAll: false,
+              description: 'Choose which live journey changes should trigger this notification.',
+              options: [
+                { value: 'RealtimeJourneyCreated', label: 'Created', exclusiveGroup: 'general' },
+                { value: 'RealtimeJourneyActivelyTracked', label: 'Actively tracked', exclusiveGroup: 'general' },
+                { value: 'RealtimeJourneyPlatformSet', label: 'Platform set', exclusiveGroup: 'platform' },
+                { value: 'RealtimeJourneyPlatformChanged', label: 'Platform changed', exclusiveGroup: 'platform' },
+                { value: 'RealtimeJourneyCancelled', label: 'Cancelled', exclusiveGroup: 'general' },
+                { value: 'RealtimeJourneyLocationTextChanged', label: 'Location text changed', exclusiveGroup: 'general' },
+                { value: 'RealtimeJourneyNextStopChanged', label: 'Next stop changed', exclusiveGroup: 'general' }
+              ]
+            },
+            {
+              id: 'platformStopRefs',
+              label: 'Stops for platform alerts',
+              type: 'multi-select',
+              placeholder: 'Select stops',
+              allSelectedLabel: 'All stops',
+              description: 'Required when platform set or platform changed is selected.',
+              visibleWhen: {
+                fieldId: 'realtimeJourneyEvents',
+                includesAny: ['RealtimeJourneyPlatformSet', 'RealtimeJourneyPlatformChanged']
+              },
+              options: this.journeyStopOptions
+            }
+          ]
+        }
+      ]
     }
   },
   methods: {

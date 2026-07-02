@@ -41,9 +41,12 @@
 
           <button
             type="button"
-            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-400 transition disabled:cursor-not-allowed disabled:hover:bg-transparent dark:text-slate-600"
-            disabled
-            title="Notifications are not connected yet"
+            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent dark:disabled:text-slate-600"
+            :class="supportsNotifications
+              ? 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200'
+              : 'text-slate-400 dark:text-slate-600'"
+            :disabled="!supportsNotifications"
+            :title="supportsNotifications ? 'Create notification' : 'Notifications are not connected for this yet'"
             @click="registerNotifications"
           >
             <span class="material-symbols-outlined" style="font-size: 20px; line-height: 1">notifications_active</span>
@@ -62,6 +65,15 @@
         </p>
       </div>
     </Transition>
+
+    <NotificationRuleModal
+      v-model:open="notificationModalOpen"
+      :entity-type="entityType"
+      :entity-name="entityName"
+      :entity-identifier="entityIdentifier"
+      :notification-types="availableNotificationTypes"
+      @save="saveNotificationRule"
+    />
   </div>
 </template>
 
@@ -71,12 +83,13 @@ import axios from 'axios'
 import API from '@/API'
 import { getApiAccessToken } from '@/auth'
 import IconButton from '@/components/IconButton.vue'
-import notify from '@/notify'
+import NotificationRuleModal from '@/components/NotificationRuleModal.vue'
 
 export default {
   name: 'EntityActionButtons',
   components: {
-    IconButton
+    IconButton,
+    NotificationRuleModal
   },
   props: {
     entityType: {
@@ -95,6 +108,10 @@ export default {
       type: String,
       default: 'circle',
       validator: value => ['circle', 'square'].includes(value)
+    },
+    notificationTypes: {
+      type: Array,
+      default: () => []
     }
   },
   setup() {
@@ -113,7 +130,7 @@ export default {
       messageType: 'info',
       saving: false,
       saved: false,
-      notify
+      notificationModalOpen: false
     }
   },
   computed: {
@@ -122,6 +139,55 @@ export default {
     },
     supportsSave() {
       return this.readableEntityType === 'stop'
+    },
+    supportsNotifications() {
+      return this.availableNotificationTypes.length > 0
+    },
+    serviceAlertTypeOptions() {
+      return [
+        { value: 'Information', label: 'Service update' },
+        { value: 'Warning', label: 'Service warning' },
+        { value: 'StopClosed', label: 'Stop closed' },
+        { value: 'ServiceSuspended', label: 'Service suspended' },
+        { value: 'ServicePartSuspended', label: 'Service part suspended' },
+        { value: 'SevereDelays', label: 'Severe delays' },
+        { value: 'Delays', label: 'Delays' },
+        { value: 'MinorDelays', label: 'Minor delays' },
+        { value: 'Planned', label: 'Planned notice' },
+        { value: 'JourneyDelayed', label: 'Journey delayed' },
+        { value: 'JourneyPartiallyCancelled', label: 'Journey partially cancelled' },
+        { value: 'JourneyCancelled', label: 'Journey cancelled' }
+      ]
+    },
+    availableNotificationTypes() {
+      const defaultTypes = []
+
+      if (['stop', 'journey'].includes(this.readableEntityType)) {
+        defaultTypes.push(this.serviceAlertNotificationType)
+      }
+
+      return [
+        ...defaultTypes,
+        ...this.notificationTypes.filter(type => !defaultTypes.some(defaultType => defaultType.id === type.id))
+      ]
+    },
+    serviceAlertNotificationType() {
+      return {
+        id: 'service-alert',
+        label: 'Service Alert',
+        icon: 'campaign',
+        fields: [
+          {
+            id: 'serviceAlertTypes',
+            label: 'Type of service alert',
+            type: 'multi-select',
+            placeholder: 'Select alert types',
+            allSelectedLabel: 'All alert types',
+            description: 'Choose which alert types should trigger this notification.',
+            options: this.serviceAlertTypeOptions
+          }
+        ]
+      }
     },
     saveDisabled() {
       return !this.supportsSave || this.saving || this.saved
@@ -241,8 +307,16 @@ export default {
       }
     },
     registerNotifications() {
+      if (!this.supportsNotifications) {
+        return
+      }
+
+      this.closeMenu()
+      this.notificationModalOpen = true
+    },
+    saveNotificationRule() {
       if (!this.isAuthenticated) {
-        this.setMessage('Sign in to register notifications.', 'warning')
+        this.showToast('Sign in to save notification rules.', 'warning')
         this.loginWithRedirect({
           appState: {
             targetUrl: this.$route.fullPath
@@ -251,13 +325,7 @@ export default {
         return
       }
 
-      if (!('Notification' in window)) {
-        this.setMessage('Notifications are not available in this browser.', 'warning')
-        return
-      }
-
-      this.notify.setupNotifications(this.auth0, this.$messaging)
-      this.setMessage(`${this.entityType} notifications requested. Specific ${this.readableEntityType} alert rules are not connected yet.`, 'warning')
+      this.showToast('Notification rule saved. Syncing rules to the API is not connected yet.', 'warning')
     },
     handleDocumentClick() {
       this.closeMenu()

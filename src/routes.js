@@ -143,6 +143,14 @@ export const routes = [
     component: () => import('./views/Account/Settings.vue')
   },
   {
+    name: 'account/notifications',
+    path: '/account/notifications',
+    meta: {
+      title: 'Notifications'
+    },
+    component: () => import('./views/Account/Notifications.vue')
+  },
+  {
     name: 'saved/home',
     path: '/saved/',
     meta: {
