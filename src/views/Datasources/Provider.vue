@@ -20,7 +20,7 @@
               {{ providerName }}
             </h1>
             <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-              {{ datasource.Region || 'Region unavailable' }} · {{ datasetCount }} {{ datasetCount === 1 ? 'dataset' : 'datasets' }}
+              {{ regionLabel }} · {{ datasetCount }} {{ datasetCount === 1 ? 'dataset' : 'datasets' }}
             </p>
           </div>
         </div>
@@ -43,7 +43,7 @@
         <div class="px-4 py-3 sm:px-5">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Region</p>
           <p class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">
-            {{ datasource.Region || 'Unknown' }}
+            {{ regionLabel }}
           </p>
         </div>
         <div class="px-4 py-3 sm:px-5">
@@ -129,6 +129,7 @@ import Alert from '@/components/Alert.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import axios from 'axios'
 import API from '@/API'
+import Pretty from '@/pretty'
 
 export default {
   name: 'DatasourcesProvider',
@@ -138,6 +139,7 @@ export default {
   },
   data () {
     return {
+      pretty: Pretty,
       datasource: null,
       loading: true,
       error: undefined,
@@ -146,6 +148,9 @@ export default {
   computed: {
     providerName() {
       return this.datasource?.Provider?.Name || 'Datasource provider'
+    },
+    regionLabel() {
+      return this.pretty.countryLabel(this.datasource?.Region)
     },
     datasets() {
       return this.datasource?.Datasets || []

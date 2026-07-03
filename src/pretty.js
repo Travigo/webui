@@ -68,5 +68,34 @@ export default {
     }
 
     return duration
+  },
+  countryName(code) {
+    if (!this.isAlpha2CountryCode(code)) {
+      return code
+    }
+
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code.toUpperCase()) || code
+  },
+  countryFlag(code) {
+    if (!this.isAlpha2CountryCode(code)) {
+      return ''
+    }
+
+    return code
+      .toUpperCase()
+      .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()))
+  },
+  countryLabel(code) {
+    if (!code) {
+      return 'Unknown region'
+    }
+
+    const flag = this.countryFlag(code)
+    const name = this.countryName(code)
+
+    return flag ? `${flag} ${name}` : name
+  },
+  isAlpha2CountryCode(code) {
+    return typeof code === 'string' && /^[A-Za-z]{2}$/.test(code)
   }
 }

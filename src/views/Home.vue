@@ -133,6 +133,22 @@
           </span>
         </button>
       </div>
+
+      <router-link
+        :to="{ name: 'datasources/home' }"
+        class="mt-4 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-left transition hover:border-blue-100 hover:bg-blue-50 dark:border-slate-800 dark:bg-slate-900/70 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10 sm:px-4"
+      >
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm dark:bg-slate-950 dark:text-blue-200">
+          <span class="material-symbols-outlined text-[22px]">database</span>
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">Supported data</span>
+          <span class="mt-0.5 block text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
+            View transport data providers, datasets, coverage, and supported object types.
+          </span>
+        </span>
+        <span class="material-symbols-outlined shrink-0 text-xl text-slate-400">chevron_right</span>
+      </router-link>
     </section>
 
     <Teleport to="body">
