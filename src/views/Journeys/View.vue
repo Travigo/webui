@@ -7,33 +7,29 @@
   />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <div class="mb-2 flex flex-wrap items-center gap-2">
-            <ServiceIcon
-              v-if="journey.Service!==undefined"
-              class="h-7 rounded-md px-2 text-sm font-bold shadow-sm"
-              style="line-height: 28px"
-              :service="journey.Service"
-            />
-            <span
-              class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
-              :class="journeyStatus.classes"
-            >
-              <DepartureTypeIcon :journey="journey"/>
-              {{ journeyStatus.label }}
-            </span>
-          </div>
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-            {{ journeyTitle }}
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500">
-            {{ journeySubtitle }}
-          </p>
+    <PageHeader
+      :title="journeyTitle"
+      :subtitle="journeySubtitle"
+    >
+      <template #meta>
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <ServiceIcon
+            v-if="journey.Service!==undefined"
+            class="h-7 rounded-md px-2 text-sm font-bold shadow-sm"
+            style="line-height: 28px"
+            :service="journey.Service"
+          />
+          <span
+            class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
+            :class="journeyStatus.classes"
+          >
+            <DepartureTypeIcon :journey="journey"/>
+            {{ journeyStatus.label }}
+          </span>
         </div>
+      </template>
 
-        <div class="flex shrink-0 items-center gap-2">
+      <template #actions>
           <IconButton
             icon="refresh"
             label="Refresh realtime journey"
@@ -49,8 +45,7 @@
             :notification-types="journeyNotificationTypes"
             shape="square"
           />
-        </div>
-      </div>
+      </template>
 
       <p
         class="rounded-2xl bg-white/80 px-3 py-2 text-sm font-medium text-slate-600"
@@ -62,7 +57,7 @@
       <div v-if="showDetailedInformationRail" class="rounded-2xl bg-white/75 p-3">
         <DetailedInformationRail :journey="journey"/>
       </div>
-    </section>
+    </PageHeader>
 
     <ServiceAlertList :alerts="serviceAlerts" collapsible />
 
@@ -279,6 +274,7 @@ import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import IconButton from '@/components/IconButton.vue'
 import LoadingState from '@/components/LoadingState.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import TabBar from '@/components/TabBar.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import axios from "axios"
@@ -346,6 +342,7 @@ export default {
     EntityActionButtons,
     IconButton,
     LoadingState,
+    PageHeader,
     TabBar,
     ServiceAlertList
   },

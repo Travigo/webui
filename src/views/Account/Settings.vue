@@ -1,18 +1,12 @@
 <template>
   <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <p class="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">Account</p>
-          <h1 class="mt-1 text-2xl font-extrabold leading-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
-            Settings
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            Manage account preferences and notification devices.
-          </p>
-        </div>
-      </div>
-    </section>
+    <PageHeader
+      eyebrow="Account"
+      title="Settings"
+      subtitle="Manage account preferences and notification devices."
+      icon="settings"
+      variant="panel"
+    />
 
     <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -97,32 +91,17 @@
       </div>
     </section>
 
-    <Teleport to="body">
-      <Transition name="modal-overlay">
-        <div
-          v-if="confirmDeleteNotificationTargetOpen"
-          class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-          @click.self="closeDeleteNotificationTargetConfirm"
-        >
-          <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:max-w-md">
-            <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5">
-              <div>
-                <h2 class="text-lg font-extrabold text-slate-950 dark:text-slate-100">Remove notification device?</h2>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {{ notificationTargetName(notificationTargetPendingDelete) }} will stop receiving notification updates.
-                </p>
-              </div>
-              <button
-                type="button"
-                @click="closeDeleteNotificationTargetConfirm"
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                aria-label="Close notification device removal"
-                :disabled="deletingNotificationToken !== ''"
-              >
-                <span class="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-            <div class="space-y-4 p-4 sm:p-5">
+    <Modal
+      v-model:open="confirmDeleteNotificationTargetOpen"
+      title="Remove notification device?"
+      :subtitle="`${notificationTargetName(notificationTargetPendingDelete)} will stop receiving notification updates.`"
+      icon="delete"
+      size="sm"
+      close-label="Close notification device removal"
+      :close-disabled="deletingNotificationToken !== ''"
+      body-class="space-y-4 p-4 sm:p-5"
+      @close="closeDeleteNotificationTargetConfirm"
+    >
               <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
@@ -144,20 +123,22 @@
                   {{ deletingNotificationToken !== '' ? 'Removing...' : 'Remove device' }}
                 </button>
               </div>
-            </div>
-          </section>
-        </div>
-      </Transition>
-    </Teleport>
+    </Modal>
   </div>
 </template>
 
 <script>
 import { useAuth0 } from '@auth0/auth0-vue'
 import notify from '@/notify'
+import Modal from '@/components/Modal.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 export default {
   name: 'AccountSettings',
+  components: {
+    Modal,
+    PageHeader
+  },
   data() {
     return {
       auth0: useAuth0(),
@@ -269,6 +250,10 @@ export default {
       return this.notify.getNotificationTargetToken(target)
     },
     notificationTargetName(target) {
+      if (!target) {
+        return 'Notification device'
+      }
+
       const deviceType = target.DeviceType || target.deviceType || 'Notification device'
       const vendor = target.DeviceVendor || target.deviceVendor || ''
       const model = target.DeviceModel || target.deviceModel || ''

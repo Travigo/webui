@@ -8,24 +8,19 @@
   />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-            {{ stop.PrimaryName }}
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500" v-if="stop.OtherNames?.Descriptor">
-            {{ stop.OtherNames.Descriptor }}
-          </p>
-        </div>
-
+    <PageHeader
+      :title="stop.PrimaryName"
+      :subtitle="stop.OtherNames?.Descriptor || ''"
+      icon="location_on"
+    >
+      <template #actions>
         <EntityActionButtons
           entity-type="Stop"
           :entity-name="stop.PrimaryName"
           :entity-identifier="stop.PrimaryIdentifier"
           shape="square"
         />
-      </div>
+      </template>
 
       <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" v-if="visibleServices.length > 0">
         <router-link
@@ -51,7 +46,7 @@
         empty-label="No amenities listed"
         @select="openAmenityModal"
       />
-    </section>
+    </PageHeader>
 
     <ServiceAlertList
       :alerts="serviceAlerts"
@@ -126,34 +121,15 @@
     </Teleport>
   </div>
 
-  <Teleport to="body">
-    <Transition name="modal-overlay">
-      <div
-        v-if="amenityModalOpen"
-        class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-        @click.self="closeAmenityModal"
-      >
-        <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-2xl">
-          <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
-            <div class="flex min-w-0 items-start gap-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                <span class="material-symbols-outlined text-[24px] leading-none">{{ selectedAmenity?.icon }}</span>
-              </span>
-              <div class="min-w-0">
-                <h2 class="truncate text-lg font-bold text-slate-950 sm:text-xl">{{ selectedAmenity?.label }}</h2>
-                <p class="mt-1 text-sm text-slate-500">{{ selectedAmenity?.count }} item{{ selectedAmenity?.count === 1 ? '' : 's' }} at or near this stop.</p>
-              </div>
-            </div>
-            <button
-              @click="closeAmenityModal"
-              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-              aria-label="Close amenity details"
-            >
-              <span class="material-symbols-outlined text-xl">close</span>
-            </button>
-          </div>
-
-          <div class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5">
+  <Modal
+    v-model:open="amenityModalOpen"
+    :title="selectedAmenity?.label || ''"
+    :subtitle="selectedAmenity ? `${selectedAmenity.count} item${selectedAmenity.count === 1 ? '' : 's'} at or near this stop.` : ''"
+    :icon="selectedAmenity?.icon || 'info'"
+    size="lg"
+    close-label="Close amenity details"
+    body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
+  >
             <div v-if="selectedAmenity?.type === 'place-list'" class="space-y-2">
               <article
                 v-for="item in selectedAmenity.items"
@@ -323,11 +299,7 @@
                 {{ item.PrimaryName || item.Type || item.LocationDescription || `Item ${index + 1}` }}
               </article>
             </div>
-          </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+  </Modal>
 </template>
 
 <script>
@@ -337,6 +309,8 @@ import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
 import LoadingState from '@/components/LoadingState.vue'
+import Modal from '@/components/Modal.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
 import axios from 'axios'
@@ -418,6 +392,8 @@ export default {
     EntityActionButtons,
     IconPillRow,
     LoadingState,
+    Modal,
+    PageHeader,
     ServiceAlertList,
     StopDeparturesTable
   },

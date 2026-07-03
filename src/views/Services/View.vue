@@ -1,36 +1,33 @@
 <template>
   <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
 
-  <div v-if="loadingService" class="px-1 py-6 text-sm font-semibold text-slate-500">
-    Loading service...
-  </div>
+  <LoadingState
+    v-if="loadingService"
+    title="Loading service"
+    subtitle="Fetching service details and datasource attribution."
+    :show-tabs="false"
+  />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <div class="mb-2 flex flex-wrap items-center gap-2">
-            <ServiceIcon
-              v-if="service !== undefined"
-              class="h-8 rounded-md px-2 text-sm font-bold shadow-sm"
-              style="line-height: 32px"
-              :service="service"
-            />
-            <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600">
-              <span class="material-symbols-outlined text-[17px]">{{ transportIcon }}</span>
-              {{ service.TransportType || 'Service' }}
-            </span>
-          </div>
-
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-            {{ serviceTitle }}
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500">
-            {{ serviceDescription }}
-          </p>
+    <PageHeader
+      :title="serviceTitle"
+      :subtitle="serviceDescription"
+    >
+      <template #meta>
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <ServiceIcon
+            v-if="service !== undefined"
+            class="h-8 rounded-md px-2 text-sm font-bold shadow-sm"
+            style="line-height: 32px"
+            :service="service"
+          />
+          <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
+            <span class="material-symbols-outlined text-[17px]">{{ transportIcon }}</span>
+            {{ service.TransportType || 'Service' }}
+          </span>
         </div>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div class="border-b border-slate-100 px-4 py-3 sm:px-5">
@@ -105,6 +102,8 @@
 import Alert from "@/components/Alert.vue"
 import ServiceIcon from "@/components/ServiceIcon.vue"
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
+import LoadingState from '@/components/LoadingState.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import axios from "axios"
 import API from "@/API"
 import Utils from "@/utils"
@@ -114,7 +113,9 @@ export default {
   components: {
     Alert,
     ServiceIcon,
-    DatasourceAttributes
+    DatasourceAttributes,
+    LoadingState,
+    PageHeader
   },
   data(){
     return {

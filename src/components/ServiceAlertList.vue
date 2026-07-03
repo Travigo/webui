@@ -31,29 +31,15 @@
       </button>
     </article>
 
-    <Teleport to="body">
-      <Transition name="modal-overlay">
-        <div
-          v-if="alertsModalOpen"
-          class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-          @click.self="closeAlertsModal"
-        >
-          <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-2xl">
-            <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
-              <div>
-                <h2 class="text-lg font-bold text-slate-950 sm:text-xl">Service updates</h2>
-                <p class="mt-1 text-sm text-slate-500">{{ modalDescription }}</p>
-              </div>
-              <button
-                @click="closeAlertsModal"
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                aria-label="Close service updates"
-              >
-                <span class="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-
-            <div class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5">
+    <Modal
+      v-model:open="alertsModalOpen"
+      title="Service updates"
+      :subtitle="modalDescription"
+      icon="campaign"
+      size="lg"
+      close-label="Close service updates"
+      body-class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5"
+    >
               <article
                 v-for="card in hiddenAlertCards"
                 v-bind:key="`modal-${card.key}`"
@@ -62,16 +48,13 @@
               >
                 <ServiceAlertCard :card="card" />
               </article>
-            </div>
-          </section>
-        </div>
-      </Transition>
-    </Teleport>
+    </Modal>
   </section>
 </template>
 
 <script>
 import Pretty from '@/pretty'
+import Modal from '@/components/Modal.vue'
 import ServiceAlertCard from '@/components/ServiceAlertCard.vue'
 
 const ALERT_FALLBACKS = {
@@ -92,6 +75,7 @@ const ALERT_FALLBACKS = {
 export default {
   name: 'ServiceAlertList',
   components: {
+    Modal,
     ServiceAlertCard
   },
   props: {

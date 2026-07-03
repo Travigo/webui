@@ -2,36 +2,31 @@
   <div class="space-y-4 pb-16 pt-2 sm:pb-20">
     <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
 
-    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <div class="mb-2 flex flex-wrap items-center gap-2">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
-              <span class="material-symbols-outlined text-[22px]">route</span>
-            </span>
-            <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600">
-              Direct journeys
-            </span>
-          </div>
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-            Journey results
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500">
-            {{ originName }} to {{ destinationName }}
-          </p>
+    <PageHeader
+      title="Journey results"
+      :subtitle="`${originName} to ${destinationName}`"
+      icon="route"
+    >
+      <template #meta>
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
+            Direct journeys
+          </span>
         </div>
+      </template>
 
+      <template #actions>
         <button
           type="button"
-          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-50 disabled:opacity-70"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-50 disabled:opacity-70 dark:bg-slate-900 dark:text-blue-200 dark:hover:bg-blue-500/10"
           :disabled="loadingResults"
           @click="getJourneyPlan()"
           aria-label="Refresh journey results"
         >
           <span class="material-symbols-outlined text-[23px]" :class="{'animate-spin': loadingResults}">refresh</span>
         </button>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
@@ -137,6 +132,7 @@
 <script>
 import Alert from '@/components/Alert.vue'
 import LoadingState from '@/components/LoadingState.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -145,7 +141,8 @@ export default {
   name: 'JourneyPlannerSearch',
   components: {
     Alert,
-    LoadingState
+    LoadingState,
+    PageHeader
   },
   data () {
     return {

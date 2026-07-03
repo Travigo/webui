@@ -1,18 +1,11 @@
 <template>
   <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-
-          <h1 class="mt-1 text-2xl font-extrabold leading-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
-            Saved items
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            Manage stops &amp; services you want quick access to.
-          </p>
-        </div>
-      </div>
-    </section>
+    <PageHeader
+      title="Saved items"
+      subtitle="Manage stops and services you want quick access to."
+      icon="bookmark"
+      variant="panel"
+    />
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl">
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5 sm:py-4">
@@ -83,32 +76,17 @@
       </article>
     </section>
 
-    <Teleport to="body">
-      <Transition name="modal-overlay">
-        <div
-          v-if="confirmRemoveModalOpen"
-          class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-          @click.self="closeRemoveConfirm"
-        >
-          <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:max-w-md">
-            <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5">
-              <div>
-                <h2 class="text-lg font-extrabold text-slate-950 dark:text-slate-100">Remove saved stop?</h2>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {{ stopPendingRemoval?.PrimaryName }} will be removed from your saved stops.
-                </p>
-              </div>
-              <button
-                type="button"
-                @click="closeRemoveConfirm"
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                aria-label="Close saved stop action"
-                :disabled="removingSavedStop"
-              >
-                <span class="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-            <div class="space-y-4 p-4 sm:p-5">
+    <Modal
+      v-model:open="confirmRemoveModalOpen"
+      title="Remove saved stop?"
+      :subtitle="`${stopPendingRemoval?.PrimaryName || 'This stop'} will be removed from your saved stops.`"
+      icon="delete"
+      size="sm"
+      close-label="Close saved stop action"
+      :close-disabled="removingSavedStop"
+      body-class="space-y-4 p-4 sm:p-5"
+      @close="closeRemoveConfirm"
+    >
               <div
                 v-if="removeSavedStopError"
                 class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100"
@@ -137,11 +115,7 @@
                   {{ removingSavedStop ? 'Removing...' : 'Remove stop' }}
                 </button>
               </div>
-            </div>
-          </section>
-        </div>
-      </Transition>
-    </Teleport>
+    </Modal>
   </div>
 </template>
 
@@ -151,12 +125,16 @@ import axios from 'axios'
 import API from '@/API'
 import { getApiAccessToken } from '@/auth'
 import LoadingState from '@/components/LoadingState.vue'
+import Modal from '@/components/Modal.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
 
 export default {
   name: 'SavedStops',
   components: {
     LoadingState,
+    Modal,
+    PageHeader,
     StopInfo
   },
   data() {

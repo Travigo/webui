@@ -1,20 +1,10 @@
 <template>
   <div class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div class="flex items-start gap-3">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
-          <span class="material-symbols-outlined text-[24px]">route</span>
-        </span>
-        <div class="min-w-0">
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-            Journey planner
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500">
-            Find direct public transport journeys between stops.
-          </p>
-        </div>
-      </div>
-    </section>
+    <PageHeader
+      title="Journey planner"
+      subtitle="Find direct public transport journeys between stops."
+      icon="route"
+    />
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div class="border-b border-slate-100 px-4 py-3 sm:px-5">
@@ -66,10 +56,12 @@
 
 <script>
 import SearchBar from '@/components/SearchBar.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 export default {
   name: 'JourneyPlannerHome',
   components: {
+    PageHeader,
     SearchBar
   },
   data(){

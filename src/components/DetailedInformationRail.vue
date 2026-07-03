@@ -29,34 +29,14 @@
     </div>
   </div>
 
-  <Teleport to="body">
-    <Transition name="modal-overlay">
-      <div
-        v-if="facilityModalOpen"
-        class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-        @click.self="closeFacilityModal"
-      >
-        <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-lg">
-          <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
-            <div class="flex min-w-0 items-start gap-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                <span class="material-symbols-outlined text-[24px] leading-none">{{ selectedFacility?.icon }}</span>
-              </span>
-              <div class="min-w-0">
-                <h2 class="truncate text-lg font-bold text-slate-950 sm:text-xl">{{ selectedFacility?.label }}</h2>
-                <p class="mt-1 text-sm text-slate-500">{{ selectedFacility?.summary }}</p>
-              </div>
-            </div>
-            <button
-              @click="closeFacilityModal"
-              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-              aria-label="Close facility details"
-            >
-              <span class="material-symbols-outlined text-xl">close</span>
-            </button>
-          </div>
-
-          <div class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5">
+  <Modal
+    v-model:open="facilityModalOpen"
+    :title="selectedFacility?.label || ''"
+    :subtitle="selectedFacility?.summary || ''"
+    :icon="selectedFacility?.icon || 'info'"
+    close-label="Close facility details"
+    body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
+  >
             <div class="rounded-2xl bg-slate-50 px-3 py-3 text-sm leading-relaxed text-slate-700">
               {{ selectedFacility?.description }}
             </div>
@@ -89,21 +69,19 @@
                 <dd class="mt-1 font-bold text-slate-950">{{ detail.value }}</dd>
               </div>
             </dl>
-          </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+  </Modal>
 </template>
 
 <script>
 import Pretty from "@/pretty"
 import IconPillRow from '@/components/IconPillRow.vue'
+import Modal from '@/components/Modal.vue'
 
 export default {
   name: 'DetailedInformationRail',
   components: {
-    IconPillRow
+    IconPillRow,
+    Modal
   },
   props: {
     journey: {},

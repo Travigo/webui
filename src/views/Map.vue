@@ -1,10 +1,4 @@
 <template>
-  <!-- <PageTitle>
-    Bus Map
-    <span v-if="this.currentZoom < this.dataLoadMinZoom" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-amber-600 bg-amber-200 mr-1">
-      Zoom in some more to load the stops
-    </span>
-  </PageTitle> -->
   <div v-if="loading" class="flex min-h-[60dvh] items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400">
     <span class="material-symbols-outlined mr-2 animate-spin text-[20px]">progress_activity</span>
     Loading map
@@ -89,29 +83,14 @@
     </button>
   </div>
 
-  <Teleport to="body">
-    <Transition name="modal-overlay">
-      <div
-        v-if="mapFiltersOpen"
-        class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-        @click.self="closeMapFilters"
-      >
-        <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:max-w-lg">
-          <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5">
-            <div>
-              <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100 sm:text-xl">Map filters</h2>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Choose which live map layers are shown.</p>
-            </div>
-            <button
-              @click="closeMapFilters"
-              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-              aria-label="Close map filters"
-            >
-              <span class="material-symbols-outlined text-xl">close</span>
-            </button>
-          </div>
-
-          <div class="p-4 sm:p-5">
+  <Modal
+    v-model:open="mapFiltersOpen"
+    title="Map filters"
+    subtitle="Choose which live map layers are shown."
+    icon="tune"
+    close-label="Close map filters"
+    body-class="p-4 sm:p-5"
+  >
             <section>
               <div class="mb-2 flex items-end justify-between gap-3">
                 <div>
@@ -169,39 +148,17 @@
                 Apply filters
               </button>
             </div>
-          </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+  </Modal>
 
-  <Teleport to="body">
-    <Transition name="modal-overlay">
-      <div
-        v-if="stopModalOpen"
-        class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-        @click.self="closeStopModal"
-      >
-      <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:max-w-2xl">
-        <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5">
-          <div class="min-w-0">
-            <h2 class="truncate text-lg font-bold text-slate-950 dark:text-slate-100 sm:text-xl">
-              {{ currentViewedStop?.PrimaryName || 'Stop details' }}
-            </h2>
-            <p class="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-              {{ currentViewedStop?.Descriptor || currentViewedStop?.OtherNames?.Descriptor || 'Departures and stop information' }}
-            </p>
-          </div>
-          <button
-            @click="closeStopModal"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            aria-label="Close stop departures"
-          >
-            <span class="material-symbols-outlined text-xl">close</span>
-          </button>
-        </div>
-
-        <div class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5">
+  <Modal
+    v-model:open="stopModalOpen"
+    :title="currentViewedStop?.PrimaryName || 'Stop details'"
+    :subtitle="currentViewedStop?.Descriptor || currentViewedStop?.OtherNames?.Descriptor || 'Departures and stop information'"
+    icon="location_on"
+    size="lg"
+    close-label="Close stop departures"
+    body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
+  >
           <div v-if="currentViewedStop !== undefined" class="space-y-4">
             <div class="rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10">
               <StopStatus :currentViewedStop="currentViewedStop" />
@@ -233,11 +190,7 @@
           <div v-else class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
             Select a stop on the map to view departures.
           </div>
-        </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+  </Modal>
 </template>
 
 <style scoped lang="scss">
@@ -447,6 +400,7 @@
 <script>
 import StopStatus from '@/components/StopStatus.vue'
 import StopIcon from '@/components/StopIcon.vue'
+import Modal from '@/components/Modal.vue'
 import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
 import axios from 'axios'
 import API from '@/API'
@@ -522,6 +476,7 @@ export default {
     }
   },
   components: {
+    Modal,
     StopStatus,
     StopIcon,
     StopDeparturesTable,

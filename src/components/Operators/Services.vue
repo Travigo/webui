@@ -1,8 +1,14 @@
 <template>
   <div class="p-4 sm:p-5">
-    <div v-if="services === null" class="rounded-2xl bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-500">
-      Loading services...
-    </div>
+    <LoadingState
+      v-if="services === null"
+      title="Loading services"
+      subtitle="Fetching services for this operator."
+      compact
+      bare
+      :rows="3"
+      :show-tabs="false"
+    />
 
     <div v-else-if="services.length === 0" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
       No services are listed for this operator.
@@ -38,6 +44,7 @@
 
 <script>
 import ServiceIcon from '@/components/ServiceIcon.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import axios from 'axios'
 import API from '@/API'
 
@@ -48,6 +55,7 @@ export default {
     }
   },
   components: {
+    LoadingState,
     ServiceIcon
   },
   props: {

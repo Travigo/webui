@@ -1,8 +1,14 @@
 <template>
   <div class="space-y-4 p-4 sm:p-5">
-    <div v-if="operatorStats === null" class="rounded-2xl bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-500">
-      Loading statistics...
-    </div>
+    <LoadingState
+      v-if="operatorStats === null"
+      title="Loading statistics"
+      subtitle="Fetching realtime matching performance."
+      compact
+      bare
+      :rows="2"
+      :show-tabs="false"
+    />
 
     <section v-else class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
       <div class="mb-3">
@@ -30,8 +36,12 @@
 <script>
 import axios from 'axios'
 import API from '@/API'
+import LoadingState from '@/components/LoadingState.vue'
 
 export default {
+  components: {
+    LoadingState
+  },
   data () {
     return {
       operatorStats: null,

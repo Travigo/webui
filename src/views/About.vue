@@ -1,20 +1,22 @@
 <script setup>
-import PageTitle from '@/components/PageTitle.vue'
-import Card from '@/components/Card.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import Panel from '@/components/Panel.vue'
 </script>
 
 <template>
-  <div>
-    <PageTitle>
-      About
-    </PageTitle>
-    <Card>
+  <div class="space-y-4 pb-16 pt-3 sm:space-y-5 sm:pb-20 sm:pt-4">
+    <PageHeader
+      title="About"
+      subtitle="Open public transport data for realtime journey information."
+      icon="info"
+      variant="panel"
+    />
+
+    <Panel padded>
       Travigo is an app that uses open datasets to provide realtime &amp; up to date information on public transport within Great Britain.
-    </Card>
-    <PageTitle>
-      Datasets Used
-    </PageTitle>
-    <Card>
+    </Panel>
+
+    <Panel title="Datasets used" padded>
       <div>
         <h3 class="text-xl font-bold">Bus Open Data Service</h3>
 
@@ -86,6 +88,6 @@ import Card from '@/components/Card.vue'
           Stagecoach also provide all the service and timetable data on all their routes on their website. Including services in Scotland which are not already present in the Department for Transport Open Data system.
         </div>
       </div>
-    </Card>
+    </Panel>
   </div>
 </template>

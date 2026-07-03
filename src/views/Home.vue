@@ -151,29 +151,15 @@
       </router-link>
     </section>
 
-    <Teleport to="body">
-      <Transition name="modal-overlay">
-        <div
-          v-if="statsModalOpen"
-          class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-4 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-          @click.self="closeStatsModal"
-        >
-        <section class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:max-w-2xl">
-          <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 sm:p-5">
-            <div>
-              <h2 class="text-lg font-bold text-slate-950 sm:text-xl">{{ selectedStatsSummary?.label }}</h2>
-              <p class="mt-1 text-sm text-slate-500">{{ selectedStatsSummary?.description }}</p>
-            </div>
-            <button
-              @click="closeStatsModal"
-              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-              aria-label="Close stats detail"
-            >
-              <span class="material-symbols-outlined text-xl">close</span>
-            </button>
-          </div>
-
-          <div class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5">
+    <Modal
+      v-model:open="statsModalOpen"
+      :title="selectedStatsSummary?.label || ''"
+      :subtitle="selectedStatsSummary?.description || ''"
+      :icon="selectedStatsSummary?.icon || 'monitoring'"
+      size="lg"
+      close-label="Close stats detail"
+      body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
+    >
             <div :class="selectedStatsSummary?.bg" class="mb-4 rounded-2xl p-4">
               <div class="flex items-center gap-3">
                 <span :class="selectedStatsSummary?.iconColor" class="material-symbols-outlined text-3xl">{{ selectedStatsSummary?.icon }}</span>
@@ -207,17 +193,14 @@
             <div v-else class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
               {{ statsDetailEmptyMessage }}
             </div>
-          </div>
-          </section>
-        </div>
-      </Transition>
-    </Teleport>
+    </Modal>
   </div>
 </template>
 
 <script>
 import SearchBar from '@/components/SearchBar.vue'
 import LocationPicker from '@/components/LocationPicker.vue'
+import Modal from '@/components/Modal.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
 
 import axios from 'axios'
@@ -228,6 +211,7 @@ export default {
   components: {
     SearchBar,
     LocationPicker,
+    Modal,
     StopInfo
   },
   data () {

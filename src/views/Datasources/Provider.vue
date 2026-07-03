@@ -8,23 +8,13 @@
   />
 
   <div v-else-if="datasource" class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex min-w-0 items-start gap-3">
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-200">
-            <span class="material-symbols-outlined text-[23px]">database</span>
-          </span>
-          <div class="min-w-0">
-            <p class="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">Datasource</p>
-            <h1 class="mt-1 text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-3xl">
-              {{ providerName }}
-            </h1>
-            <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-              {{ regionLabel }} · {{ datasetCount }} {{ datasetCount === 1 ? 'dataset' : 'datasets' }}
-            </p>
-          </div>
-        </div>
-
+    <PageHeader
+      eyebrow="Datasource"
+      :title="providerName"
+      :subtitle="`${regionLabel} · ${datasetCount} ${datasetCount === 1 ? 'dataset' : 'datasets'}`"
+      icon="database"
+    >
+      <template #actions>
         <a
           v-if="datasource.Provider?.Website"
           :href="datasource.Provider.Website"
@@ -35,8 +25,8 @@
         >
           <span class="material-symbols-outlined text-[22px]">open_in_new</span>
         </a>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
@@ -127,6 +117,7 @@
 <script>
 import Alert from '@/components/Alert.vue'
 import LoadingState from '@/components/LoadingState.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -135,7 +126,8 @@ export default {
   name: 'DatasourcesProvider',
   components: {
     Alert,
-    LoadingState
+    LoadingState,
+    PageHeader
   },
   data () {
     return {

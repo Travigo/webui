@@ -1,27 +1,29 @@
 <template>
-  <div>
-    <PageTitle>
-      Timetables
-    </PageTitle>
-    <Card>
-      <strong>Coming Soon</strong>
+  <div class="space-y-4 pb-16 pt-3 sm:space-y-5 sm:pb-20 sm:pt-4">
+    <PageHeader
+      title="Timetables"
+      subtitle="Scheduled transport service timings."
+      icon="schedule"
+      variant="panel"
+    />
 
-      <p>
+    <Notice type="warning" title="Coming soon">
+      <p class="leading-relaxed">
         Here you will be able to see scheduled timings for transport services.
       </p>
-    </Card>
+    </Notice>
   </div>
 </template>
 
 <script>
-import Card from '@/components/Card.vue'
-import PageTitle from '@/components/PageTitle.vue'
+import Notice from '@/components/Notice.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 export default {
   name: 'TimetablesHome',
   components: {
-    Card,
-    PageTitle,
+    Notice,
+    PageHeader,
   },
 }
 </script>

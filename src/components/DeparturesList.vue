@@ -1,10 +1,10 @@
 <template>
-  <span v-if="this.stop.Services.length == 0 && this.departures.length == 0" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 ml-1">
+  <Notice v-if="this.stop.Services.length == 0 && this.departures.length == 0" type="warning" class="m-3">
     No services run at this stop
-  </span>
-  <span v-else-if="this.departures.length == 0" class="text-xs font-semibold inline-block py-1 px-2 rounded text-amber-600 bg-amber-200 mr-1">
+  </Notice>
+  <Notice v-else-if="this.departures.length == 0" type="warning" class="m-3">
     No upcoming departures at this stop
-  </span>
+  </Notice>
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
     <div v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
       <div class="px-3 pt-3 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400" v-if="this.departureDayChange(index)">
@@ -158,6 +158,7 @@
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import DepartureTimeView from '@/components/Stops/DepartureTimeView.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
+import Notice from '@/components/Notice.vue'
 import Pretty from '@/pretty'
 
 export default {
@@ -172,7 +173,8 @@ export default {
   components: {
     ServiceIcon,
     DepartureTimeView,
-    DepartureTypeIcon
+    DepartureTypeIcon,
+    Notice
   },
   data () {
     return {

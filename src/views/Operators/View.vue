@@ -1,30 +1,26 @@
 <template>
   <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
-  <div v-if="loading" class="px-1 py-6 text-sm font-semibold text-slate-500">
-    Loading operator...
-  </div>
+  <LoadingState
+    v-if="loading"
+    title="Loading operator"
+    subtitle="Fetching operator details, services, and statistics."
+    :show-tabs="false"
+  />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <section class="space-y-3 rounded-2xl bg-blue-50 p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <div class="mb-2 flex flex-wrap items-center gap-2">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
-              <span class="material-symbols-outlined text-[22px]">business</span>
-            </span>
-            <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600">
-              Operator
-            </span>
-          </div>
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 sm:text-3xl">
-            {{ operator.PrimaryName }}
-          </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500">
-            {{ operatorSubtitle }}
-          </p>
+    <PageHeader
+      :title="operator.PrimaryName"
+      :subtitle="operatorSubtitle"
+      icon="business"
+    >
+      <template #meta>
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
+            Operator
+          </span>
         </div>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
@@ -46,6 +42,8 @@ import OperatorOverview from '@/components/Operators/Overview.vue'
 import OperatorServices from '@/components/Operators/Services.vue'
 import OperatorStats from '@/components/Operators/Stats.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
+import LoadingState from '@/components/LoadingState.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import TabBar from '@/components/TabBar.vue'
 import axios from 'axios'
 import API from '@/API'
@@ -87,6 +85,8 @@ export default {
     OperatorStats,
     Alert,
     DatasourceAttributes,
+    LoadingState,
+    PageHeader,
     TabBar
   },
   computed: {
