@@ -90,7 +90,7 @@
             </mapbox-map>
           </div>
 
-          <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts)" />
+          <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts, stopDetails)" />
         </div>
       </template>
     </StopDeparturesTable>

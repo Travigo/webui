@@ -13,21 +13,7 @@
     />
   </div>
 
-  <div v-if="this.carriages.length > 0" class="mt-3 flex gap-2 overflow-x-auto pb-1">
-    <div class="min-w-24 text-center" v-for="(carriage, index) in this.carriages" v-bind:key="carriage.ID || index">
-      <div
-        class="min-h-14 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-bold text-slate-700 shadow-sm"
-        v-bind:class="{ 'rounded-l-3xl': isFrontTrain(carriage, index), 'rounded-r-3xl': isRearTrain(carriage, index) }"
-      >
-        {{ pretty.occupancyDescription(carriage.Occupancy) }}
-        <div class="mt-1 flex justify-center gap-1" v-for="(toilet, toiletIndex) in carriage.Toilets" v-bind:key="toiletIndex">
-          <span class="material-symbols-outlined text-base">wc</span>
-          <span class="material-symbols-outlined text-base" v-if="toilet.Type=='Accessible'">accessible</span>
-        </div>
-      </div>
-      <div class="mt-1 text-xs font-semibold text-slate-600">{{ carriage.ID }}</div>
-    </div>
-  </div>
+  <TrainLayout :carriages="carriages" />
 
   <Modal
     v-model:open="facilityModalOpen"
@@ -52,7 +38,7 @@
                     <span class="material-symbols-outlined text-[20px]">wc</span>
                   </span>
                   <div class="min-w-0">
-                    <h3 class="text-sm font-extrabold text-slate-950">Carriage {{ item.carriage.ID || 'unknown' }}</h3>
+                    <h3 class="text-sm font-extrabold text-slate-950">Toilet in {{ carriageLabel(item.carriage) }}</h3>
                     <p class="mt-1 text-sm text-slate-600">{{ item.toilet.Type || 'Toilet available' }}</p>
                   </div>
                 </div>
@@ -73,15 +59,16 @@
 </template>
 
 <script>
-import Pretty from "@/pretty"
 import IconPillRow from '@/components/IconPillRow.vue'
 import Modal from '@/components/Modal.vue'
+import TrainLayout from '@/components/TrainLayout.vue'
 
 export default {
   name: 'DetailedInformationRail',
   components: {
     IconPillRow,
-    Modal
+    Modal,
+    TrainLayout
   },
   props: {
     journey: {},
@@ -224,9 +211,8 @@ export default {
   },
   data() {
     return {
-      pretty: Pretty,
       facilityModalOpen: false,
-      selectedFacilityKey: null,
+      selectedFacilityKey: null
     }
   },
   methods: {
@@ -240,54 +226,15 @@ export default {
     closeFacilityModal() {
       this.facilityModalOpen = false
     },
-    isNumericChar(c) { return /\d/.test(c); },
-    isFrontTrain(carriage, index) {
-      if (index===0) {
-        return true
+    carriageLabel(carriage) {
+      const carriageIndex = this.carriages.indexOf(carriage)
+
+      if (carriage.Label || carriage.Name) {
+        return carriage.Label || carriage.Name
       }
 
-      let previousCarriage = this.carriages[index-1]
-      let currentCarriageFirstChar = carriage.ID[0]
-      let previousCarriageFirstChar = previousCarriage.ID[0]
-
-      if (!this.isNumericChar(currentCarriageFirstChar) && !this.isNumericChar(previousCarriageFirstChar) && 
-          currentCarriageFirstChar !== previousCarriageFirstChar) {
-        return true
-      }
-    },
-    isRearTrain(carriage, index) {
-      if (index===this.carriages.length-1) {
-        return true
-      }
-
-      let nextCarriage = this.carriages[index+1]
-      let currentCarriageFirstChar = carriage.ID[0]
-      let nextCarriageFirstChar = nextCarriage.ID[0]
-
-      if (!this.isNumericChar(currentCarriageFirstChar) && !this.isNumericChar(nextCarriageFirstChar) && 
-          currentCarriageFirstChar !== nextCarriageFirstChar) {
-        return true
-      }
+      return carriageIndex >= 0 ? `Coach ${carriageIndex + 1}` : 'this coach'
     }
   }
 }
 </script>
-
-<style scoped lang="scss">
-.carriage {
-  width: 100px;
-  display: inline-block;
-
-  .carriage-icon {
-    background: white;
-    border: 1px solid gray;
-    height: 50px;
-  }
-  .carriage-icon-front {
-    border-top-left-radius: 20px;
-  }
-  .carriage-icon-rear {
-    border-top-right-radius: 20px;
-  }
-}
-</style>

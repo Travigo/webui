@@ -70,6 +70,10 @@ export default {
     return duration
   },
   countryName(code) {
+    if (this.isGlobalRegion(code)) {
+      return 'Global'
+    }
+
     if (!this.isAlpha2CountryCode(code)) {
       return code
     }
@@ -77,6 +81,10 @@ export default {
     return new Intl.DisplayNames(['en'], { type: 'region' }).of(code.toUpperCase()) || code
   },
   countryFlag(code) {
+    if (this.isGlobalRegion(code)) {
+      return '🌍'
+    }
+
     if (!this.isAlpha2CountryCode(code)) {
       return ''
     }
@@ -94,6 +102,9 @@ export default {
     const name = this.countryName(code)
 
     return flag ? `${flag} ${name}` : name
+  },
+  isGlobalRegion(code) {
+    return typeof code === 'string' && code.trim().toLowerCase() === 'global'
   },
   isAlpha2CountryCode(code) {
     return typeof code === 'string' && /^[A-Za-z]{2}$/.test(code)
