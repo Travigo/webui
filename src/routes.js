@@ -151,6 +151,14 @@ export const routes = [
     component: () => import('./views/Account/Notifications.vue')
   },
   {
+    name: 'account/batch',
+    path: '/account/batch',
+    meta: {
+      title: 'Batch runner'
+    },
+    component: () => import('./views/BatchRunner/Home.vue')
+  },
+  {
     name: 'saved/home',
     path: '/saved/',
     meta: {

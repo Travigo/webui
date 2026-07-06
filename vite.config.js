@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path'
 import mkcert from'vite-plugin-mkcert'
 
+const batchApiProxyTarget = process.env.VITE_BATCH_API_PROXY_TARGET || 'http://127.0.0.1:8080'
+
 export default defineConfig({
   plugins: [
     mkcert(),
@@ -56,6 +58,11 @@ export default defineConfig({
         target: 'http://127.0.0.1:8081',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/batch-api': {
+        target: batchApiProxyTarget,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/batch-api/, '')
       }
     },
   },
