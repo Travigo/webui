@@ -165,14 +165,43 @@
               ></span>
               <span
                 class="relative z-10 flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm"
-                :class="step.journeyId ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
+                :class="step.journeyId
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200'
+                  : step.isTransfer
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
               >
                 <span class="material-symbols-outlined text-[22px]">{{ step.icon }}</span>
               </span>
             </div>
 
-            <article class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <div class="flex items-start justify-between gap-3">
+            <article
+              class="rounded-2xl border p-3 shadow-sm"
+              :class="step.isTransfer
+                ? 'border-emerald-100 bg-emerald-50/70 dark:border-emerald-500/20 dark:bg-emerald-500/10'
+                : 'border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950'"
+            >
+              <div v-if="step.isTransfer" class="flex items-center justify-between gap-3">
+                <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
+                <div class="flex shrink-0 flex-wrap justify-end gap-2">
+                  <span
+                    v-if="step.distanceLabel"
+                    class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-extrabold text-emerald-800 shadow-sm dark:bg-slate-950/80 dark:text-emerald-200"
+                  >
+                    <span class="material-symbols-outlined text-[15px]">straighten</span>
+                    {{ step.distanceLabel }}
+                  </span>
+                  <span
+                    v-if="step.durationLabel"
+                    class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-extrabold text-emerald-800 shadow-sm dark:bg-slate-950/80 dark:text-emerald-200"
+                  >
+                    <span class="material-symbols-outlined text-[15px]">schedule</span>
+                    {{ step.durationLabel }}
+                  </span>
+                </div>
+              </div>
+
+              <div v-else class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
                   <p v-if="step.subtitle" class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">{{ step.subtitle }}</p>
@@ -241,7 +270,8 @@ export default {
       earliestArrivalJourneyID: 0,
       error: undefined,
       selectedJourneyPlan: undefined,
-      journeyPlanModalOpen: false
+      journeyPlanModalOpen: false,
+      stopNameCache: {}
     }
   },
   computed: {
@@ -428,6 +458,15 @@ export default {
         item?.startStop ||
         null
     },
+    itemOriginStopRef(item) {
+      return item?.OriginStopRef ||
+        item?.originStopRef ||
+        item?.FromStopRef ||
+        item?.fromStopRef ||
+        item?.StartStopRef ||
+        item?.startStopRef ||
+        ''
+    },
     itemDestinationStop(item) {
       return item?.DestinationStop ||
         item?.destinationStop ||
@@ -437,16 +476,28 @@ export default {
         item?.endStop ||
         null
     },
+    itemDestinationStopRef(item) {
+      return item?.DestinationStopRef ||
+        item?.destinationStopRef ||
+        item?.ToStopRef ||
+        item?.toStopRef ||
+        item?.EndStopRef ||
+        item?.endStopRef ||
+        ''
+    },
     normaliseStep(item, index) {
       const journey = this.itemJourney(item)
       const service = journey?.Service || item?.Service || {}
       const transportType = this.transportTypeForItem(item)
-      const originName = this.stopName(this.itemOriginStop(item)) || item?.OriginStopRef || item?.originStopRef
-      const destinationName = this.stopName(this.itemDestinationStop(item)) || item?.DestinationStopRef || item?.destinationStopRef
+      const originName = this.routeItemStopName(item, 'origin')
+      const destinationName = this.routeItemStopName(item, 'destination')
       const startTime = item?.StartTime || item?.DepartureTime || item?.startTime || item?.departureTime || journey?.StartTime
       const arrivalTime = item?.ArrivalTime || item?.EndTime || item?.arrivalTime || item?.endTime || journey?.ArrivalTime
       const journeyId = this.journeyIdentifier(journey)
-      const title = this.isTransferItem(item)
+      const isTransfer = this.isTransferItem(item)
+      const durationLabel = this.routeItemDuration(item)
+      const distanceLabel = this.routeItemDistance(item)
+      const title = isTransfer
         ? this.transferTitle(item)
         : service.ServiceName ||
           journey?.DestinationDisplay ||
@@ -455,17 +506,20 @@ export default {
           item?.JourneyType ||
           item?.Type ||
           'Journey step'
-      const chips = [
+      const chips = isTransfer ? [] : [
         transportType,
-        this.routeItemDuration(item),
-        this.routeItemDistance(item),
+        durationLabel,
+        distanceLabel,
         journey?.Operator?.PrimaryName || item?.Operator?.PrimaryName || service.OperatorName || ''
       ].filter(Boolean)
 
       return {
         key: item?.PrimaryIdentifier || item?.Identifier || journeyId || `${index}-${startTime || ''}-${arrivalTime || ''}`,
         title,
-        subtitle: [originName, destinationName].filter(Boolean).join(' to '),
+        subtitle: isTransfer ? '' : [originName, destinationName].filter(Boolean).join(' to '),
+        isTransfer,
+        distanceLabel,
+        durationLabel,
         chips,
         startTime: this.formatTime(startTime),
         arrivalTime: this.formatTime(arrivalTime),
@@ -473,15 +527,32 @@ export default {
         icon: this.transportIcon(transportType)
       }
     },
+    routeItemStopName(item, direction) {
+      const stop = direction === 'origin' ? this.itemOriginStop(item) : this.itemDestinationStop(item)
+      const ref = direction === 'origin' ? this.itemOriginStopRef(item) : this.itemDestinationStopRef(item)
+
+      return this.stopName(stop) || this.stopNameCache[ref] || ''
+    },
     transferTitle(item) {
       const transferType = item?.TransferType || item?.transferType
 
-      return {
-        Walking: 'Walk transfer',
-        Walk: 'Walk transfer',
-        Interchange: 'Change services',
-        Connection: 'Change services'
-      }[transferType] || 'Transfer'
+      if (['Interchange', 'Connection'].includes(transferType)) {
+        return 'Change services'
+      }
+
+      if (this.hasWalkingTransferData(item) || ['Walking', 'Walk'].includes(transferType)) {
+        return 'Walk'
+      }
+
+      return 'Transfer'
+    },
+    hasWalkingTransferData(item) {
+      return Boolean(
+        item?.DistanceMetres ||
+        item?.distanceMetres ||
+        item?.WalkDurationSeconds ||
+        item?.walkDurationSeconds
+      )
     },
     routeItemDuration(item) {
       const duration = item?.Duration || item?.duration
@@ -522,6 +593,104 @@ export default {
         stop?.DisplayName ||
         stop?.displayName ||
         ''
+    },
+    stopIdentifier(stop) {
+      return stop?.PrimaryIdentifier ||
+        stop?.primaryIdentifier ||
+        stop?.Identifier ||
+        stop?.identifier ||
+        stop?.ID ||
+        stop?.Id ||
+        stop?.id ||
+        ''
+    },
+    seedStopName(stop) {
+      const identifier = this.stopIdentifier(stop)
+      const name = this.stopName(stop)
+
+      if (!identifier || !name) {
+        return
+      }
+
+      this.stopNameCache = {
+        ...this.stopNameCache,
+        [identifier]: name
+      }
+    },
+    collectPlannerStopRefs() {
+      const refs = new Set()
+
+      this.journeyPlans.forEach(journeyPlan => {
+        this.routeItems(journeyPlan).forEach(item => {
+          const originRef = this.itemOriginStopRef(item)
+          const destinationRef = this.itemDestinationStopRef(item)
+
+          if (originRef) {
+            refs.add(originRef)
+          }
+
+          if (destinationRef) {
+            refs.add(destinationRef)
+          }
+        })
+      })
+
+      return [...refs].filter(ref => !this.stopNameCache[ref])
+    },
+    hydratePlannerStopNames() {
+      this.seedStopName(this.results?.OriginStop || this.results?.originStop)
+      this.seedStopName(this.results?.DestinationStop || this.results?.destinationStop)
+
+      const refs = this.collectPlannerStopRefs()
+
+      if (refs.length === 0) {
+        return Promise.resolve()
+      }
+
+      return Promise.allSettled(refs.map(ref => axios.get(`${API.URL}/core/stops/${encodeURIComponent(ref)}`)))
+        .then(results => {
+          const nextCache = { ...this.stopNameCache }
+
+          results.forEach((result, index) => {
+            if (result.status !== 'fulfilled') {
+              return
+            }
+
+            const ref = refs[index]
+            const stop = this.unwrapStop(result.value.data)
+            const identifier = this.stopIdentifier(stop)
+            const name = this.stopName(stop)
+
+            if (ref && name) {
+              nextCache[ref] = name
+            }
+
+            if (identifier && name) {
+              nextCache[identifier] = name
+            }
+          })
+
+          this.stopNameCache = nextCache
+        })
+    },
+    unwrapStop(result) {
+      if (Array.isArray(result)) {
+        return undefined
+      }
+
+      return result?.Stop ||
+        result?.stop ||
+        result?.Station ||
+        result?.station ||
+        result?.Data?.Stop ||
+        result?.Data?.stop ||
+        result?.data?.Stop ||
+        result?.data?.stop ||
+        result?.Data ||
+        result?.data ||
+        result?.Result ||
+        result?.result ||
+        result
     },
     formatTime(value) {
       if (!value) {
@@ -579,6 +748,7 @@ export default {
       this.error = undefined
       this.selectedJourneyPlan = undefined
       this.journeyPlanModalOpen = false
+      this.stopNameCache = {}
 
       axios
         .get(`${API.URL}/core/planner/${this.plannerPathSegment(origin)}/${this.plannerPathSegment(destination)}`)
@@ -596,6 +766,8 @@ export default {
               this.earliestArrivalJourneyID = index
             }
           }
+
+          return this.hydratePlannerStopNames()
         })
         .catch(error => {
           console.log(error)
