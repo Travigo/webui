@@ -7,42 +7,6 @@
       icon="manufacturing"
       variant="panel"
     >
-      <template #actions>
-        <div class="flex flex-wrap items-center justify-end gap-2">
-          <button
-            type="button"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-extrabold transition sm:rounded-2xl"
-            :class="activeScreen === 'runs' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'"
-            @click="showRunsScreen"
-          >
-            <span class="material-symbols-outlined text-[20px]">history</span>
-            Runs
-          </button>
-
-          <button
-            type="button"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-extrabold transition sm:rounded-2xl"
-            :class="activeScreen === 'create' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'"
-            @click="showCreateScreen"
-          >
-            <span class="material-symbols-outlined text-[20px]">add_circle</span>
-            New run
-          </button>
-
-          <button
-            type="button"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
-            :disabled="!isAuthenticated || loadingRunner || refreshingRunner"
-            @click="loadBatchRunner"
-          >
-            <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': loadingRunner || refreshingRunner }">
-              {{ loadingRunner || refreshingRunner ? 'progress_activity' : 'refresh' }}
-            </span>
-            Refresh
-          </button>
-        </div>
-      </template>
-
       <div v-if="activeRun" class="flex flex-wrap items-center gap-2">
         <span :class="statusClass(activeRun.status)">
           <span class="material-symbols-outlined text-[17px]">{{ statusIcon(activeRun.status) }}</span>
@@ -71,7 +35,27 @@
       {{ batchRunnerError }}
     </Notice>
 
-    <section v-else-if="activeScreen === 'create'" class="space-y-4">
+    <Panel v-if="isAuthenticated && !isAuthLoading && !(loadingRunner && !plan)" :padded="false">
+      <div class="grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <TabBar :tabs="screenTabs" :model-value="activeScreen" @update:model-value="changeScreen" />
+
+        <div class="border-t border-slate-100 p-2 dark:border-slate-800 sm:border-l sm:border-t-0">
+          <button
+            type="button"
+            class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto sm:rounded-2xl"
+            :disabled="!isAuthenticated || loadingRunner || refreshingRunner"
+            @click="loadBatchRunner"
+          >
+            <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': loadingRunner || refreshingRunner }">
+              {{ loadingRunner || refreshingRunner ? 'progress_activity' : 'refresh' }}
+            </span>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </Panel>
+
+    <section v-if="isAuthenticated && !batchRunnerError && activeScreen === 'create'" class="space-y-4">
       <Panel title="Create run" subtitle="Choose workflow tasks and runtime options." icon="play_arrow" padded body-class="space-y-5">
         <div class="grid gap-3 sm:grid-cols-3">
           <label class="flex min-h-11 items-center gap-3 rounded-xl bg-slate-50 px-3 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
@@ -107,7 +91,7 @@
         <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:rounded-2xl"
+            class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:flex-none sm:rounded-2xl"
             :disabled="startingRun || selectedPlanTasks.size === 0"
             @click="startRun"
           >
@@ -119,7 +103,7 @@
 
           <button
             type="button"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+            class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:flex-none sm:rounded-2xl"
             @click="selectAllPlanTasks"
           >
             <span class="material-symbols-outlined text-[20px]">select_all</span>
@@ -128,7 +112,7 @@
 
           <button
             type="button"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+            class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:flex-none sm:rounded-2xl"
             @click="selectNoPlanTasks"
           >
             <span class="material-symbols-outlined text-[20px]">deselect</span>
@@ -196,13 +180,13 @@
       </Panel>
     </section>
 
-    <section v-else class="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start">
+    <section v-else-if="isAuthenticated && !batchRunnerError" class="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start">
       <Panel title="Runs" subtitle="Recent batch executions." icon="history" :padded="false">
         <div v-if="runs.length === 0" class="px-4 py-5 text-sm font-medium text-slate-500 dark:text-slate-400 sm:px-5">
           No runs have been recorded yet.
         </div>
 
-        <div v-else class="max-h-[42rem] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+        <div v-else class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 lg:max-h-[42rem]">
           <button
             v-for="run in runs"
             v-bind:key="run.id"
@@ -276,18 +260,18 @@
                 </p>
               </div>
 
-              <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:text-right">
+              <dl class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:grid-cols-2 sm:text-right">
                 <dt>Created</dt>
-                <dd class="text-slate-700 dark:text-slate-200">{{ formatDate(selectedRun.createdAt) }}</dd>
+                <dd class="min-w-0 break-words text-slate-700 dark:text-slate-200">{{ formatDate(selectedRun.createdAt) }}</dd>
                 <dt>Started</dt>
-                <dd class="text-slate-700 dark:text-slate-200">{{ formatDate(selectedRun.startedAt) || '-' }}</dd>
+                <dd class="min-w-0 break-words text-slate-700 dark:text-slate-200">{{ formatDate(selectedRun.startedAt) || '-' }}</dd>
                 <dt>Finished</dt>
-                <dd class="text-slate-700 dark:text-slate-200">{{ formatDate(selectedRun.finishedAt) || '-' }}</dd>
+                <dd class="min-w-0 break-words text-slate-700 dark:text-slate-200">{{ formatDate(selectedRun.finishedAt) || '-' }}</dd>
               </dl>
             </div>
 
             <div class="grid divide-y divide-slate-100 dark:divide-slate-800 lg:grid-cols-[17rem_minmax(0,1fr)] lg:divide-x lg:divide-y-0">
-              <div class="max-h-[34rem] overflow-y-auto">
+              <div class="max-h-72 overflow-y-auto lg:max-h-[34rem]">
                 <button
                   v-for="stage in workflowStages"
                   v-bind:key="stage.key"
@@ -328,7 +312,7 @@
                     </p>
                   </div>
 
-                  <div class="overflow-x-auto">
+                  <div class="hidden overflow-x-auto sm:block">
                     <table class="min-w-full divide-y divide-slate-100 text-left dark:divide-slate-800">
                       <thead class="bg-slate-50 text-xs font-extrabold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                         <tr>
@@ -365,6 +349,38 @@
                       </tbody>
                     </table>
                   </div>
+
+                  <div class="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
+                    <button
+                      v-for="task in selectedStageTasks"
+                      v-bind:key="task.id"
+                      type="button"
+                      class="block w-full px-4 py-3 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10"
+                      :class="{ 'bg-blue-50 dark:bg-blue-500/10': task.id === selectedTaskId }"
+                      @click="selectTask(task.id)"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <h4 class="break-words text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
+                          <p class="mt-1 break-words text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
+                        </div>
+                        <span :class="statusClass(task.status, true)">
+                          {{ formatStatus(task.status) }}
+                        </span>
+                      </div>
+
+                      <dl class="mt-3 grid gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <div class="min-w-0">
+                          <dt>Job</dt>
+                          <dd class="mt-0.5 break-words text-sm font-medium text-slate-700 dark:text-slate-200">{{ task.jobName || '-' }}</dd>
+                        </div>
+                        <div v-if="task.error" class="min-w-0">
+                          <dt>Error</dt>
+                          <dd class="mt-0.5 break-words text-sm font-medium text-red-600 dark:text-red-300">{{ task.error }}</dd>
+                        </div>
+                      </dl>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -391,12 +407,12 @@
                 v-for="task in selectedStageTasks"
                 v-bind:key="task.id"
                 type="button"
-                class="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-extrabold transition"
+                class="inline-flex h-9 max-w-64 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-extrabold transition"
                 :class="task.id === selectedTaskId ? 'border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
                 @click="selectTask(task.id)"
               >
                 <span :class="['h-2 w-2 rounded-full', statusDotClass(task.status)]"></span>
-                {{ task.name }}
+                <span class="truncate">{{ task.name }}</span>
               </button>
             </div>
 
@@ -411,7 +427,7 @@
               </Notice>
             </div>
 
-            <pre v-else class="max-h-[32rem] min-h-72 overflow-auto bg-slate-950 px-4 py-4 text-xs leading-relaxed text-slate-100 sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
+            <pre v-else class="max-h-[60dvh] min-h-72 overflow-auto whitespace-pre-wrap break-words bg-slate-950 px-4 py-4 text-xs leading-relaxed text-slate-100 sm:max-h-[32rem] sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
           </div>
         </Panel>
       </div>
@@ -428,6 +444,7 @@ import LoadingState from '@/components/LoadingState.vue'
 import Notice from '@/components/Notice.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import Panel from '@/components/Panel.vue'
+import TabBar from '@/components/TabBar.vue'
 
 const PLAN_GROUP_ORDER = ['small', 'medium', 'large', 'post-processing']
 
@@ -441,7 +458,8 @@ export default {
     LoadingState,
     Notice,
     PageHeader,
-    Panel
+    Panel,
+    TabBar
   },
   data() {
     return {
@@ -489,6 +507,20 @@ export default {
       const extraGroups = Object.keys(groups).filter(group => !PLAN_GROUP_ORDER.includes(group))
 
       return [...PLAN_GROUP_ORDER, ...extraGroups].filter(group => Array.isArray(groups[group]))
+    },
+    screenTabs() {
+      return [
+        {
+          id: 'runs',
+          name: 'Runs',
+          icon: 'history'
+        },
+        {
+          id: 'create',
+          name: 'New run',
+          icon: 'add_circle'
+        }
+      ]
     },
     selectedStageTasks() {
       return this.selectedWorkflowStage?.tasks || []
@@ -575,13 +607,18 @@ export default {
       }
 
       const silent = options.silent === true
+      const preserveVisibleState = silent || Boolean(this.plan)
+      const scrollY = preserveVisibleState ? window.scrollY : 0
       if (silent && (this.loadingRunner || this.refreshingRunner)) {
         return
       }
 
-      this.batchRunnerError = ''
-      this.loadingRunner = !silent
-      this.refreshingRunner = silent
+      if (!silent) {
+        this.batchRunnerError = ''
+      }
+
+      this.loadingRunner = !preserveVisibleState
+      this.refreshingRunner = preserveVisibleState
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
@@ -594,17 +631,26 @@ export default {
         this.runs = this.normaliseRuns(runs)
         this.initialisePlanTaskSelection()
         this.reconcileSelectedRun()
-        await this.loadSelectedRun(auth0token)
+        await this.loadSelectedRun(auth0token, { silent: preserveVisibleState })
       } catch (error) {
         console.log(error)
-        this.batchRunnerError = this.errorMessage(error, 'Batch runner could not be loaded.')
+        if (!preserveVisibleState) {
+          this.batchRunnerError = this.errorMessage(error, 'Batch runner could not be loaded.')
+        }
       } finally {
         this.loadingRunner = false
         this.refreshingRunner = false
+        if (preserveVisibleState) {
+          this.restoreScrollPosition(scrollY)
+        }
       }
     },
-    async loadSelectedRun(auth0token) {
-      this.runDetailError = ''
+    async loadSelectedRun(auth0token, options = {}) {
+      const silent = options.silent === true
+
+      if (!silent) {
+        this.runDetailError = ''
+      }
 
       if (!this.selectedRunId) {
         this.selectedRun = undefined
@@ -614,7 +660,9 @@ export default {
         return
       }
 
-      this.loadingDetail = true
+      if (!silent) {
+        this.loadingDetail = true
+      }
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
@@ -622,35 +670,49 @@ export default {
         this.selectedRun = run
         this.reconcileSelectedStage()
         this.reconcileSelectedTask()
-        await this.loadSelectedTaskLog(token)
+        await this.loadSelectedTaskLog(token, { silent })
       } catch (error) {
         console.log(error)
-        this.selectedRun = undefined
-        this.selectedLog = ''
-        this.runDetailError = this.errorMessage(error, 'Run details could not be loaded.')
+        if (!silent) {
+          this.selectedRun = undefined
+          this.selectedLog = ''
+          this.runDetailError = this.errorMessage(error, 'Run details could not be loaded.')
+        }
       } finally {
-        this.loadingDetail = false
+        if (!silent) {
+          this.loadingDetail = false
+        }
       }
     },
-    async loadSelectedTaskLog(auth0token) {
-      this.logError = ''
+    async loadSelectedTaskLog(auth0token, options = {}) {
+      const silent = options.silent === true
+
+      if (!silent) {
+        this.logError = ''
+      }
 
       if (!this.selectedRunId || !this.selectedTaskId) {
         this.selectedLog = ''
         return
       }
 
-      this.loadingLog = true
+      if (!silent) {
+        this.loadingLog = true
+      }
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
         this.selectedLog = await this.batchApiText(`/api/runs/${encodeURIComponent(this.selectedRunId)}/tasks/${encodeURIComponent(this.selectedTaskId)}/log`, token)
       } catch (error) {
         console.log(error)
-        this.selectedLog = ''
-        this.logError = this.errorMessage(error, 'Task log could not be loaded.')
+        if (!silent) {
+          this.selectedLog = ''
+          this.logError = this.errorMessage(error, 'Task log could not be loaded.')
+        }
       } finally {
-        this.loadingLog = false
+        if (!silent) {
+          this.loadingLog = false
+        }
       }
     },
     async startRun() {
@@ -729,6 +791,20 @@ export default {
 
       this.selectedTaskId = taskId
       await this.loadSelectedTaskLog()
+    },
+    restoreScrollPosition(scrollY) {
+      this.$nextTick(() => {
+        if (Math.abs(window.scrollY - scrollY) > 2) {
+          window.scrollTo({
+            top: scrollY,
+            left: window.scrollX,
+            behavior: 'auto'
+          })
+        }
+      })
+    },
+    changeScreen(screen) {
+      this.activeScreen = screen
     },
     showCreateScreen() {
       this.activeScreen = 'create'
