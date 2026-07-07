@@ -352,11 +352,25 @@
                 </div>
 
                 <div class="overflow-hidden rounded-xl bg-slate-950">
-                  <div class="border-b border-slate-800 px-4 py-3">
-                    <h3 class="text-sm font-extrabold text-white">Log</h3>
-                    <p class="mt-0.5 truncate text-xs font-semibold text-slate-400">
-                      {{ selectedTask?.name || 'Select a task' }}
-                    </p>
+                  <div class="flex items-start justify-between gap-3 border-b border-slate-800 px-4 py-3">
+                    <div class="min-w-0">
+                      <h3 class="text-sm font-extrabold text-white">Log</h3>
+                      <p class="mt-0.5 truncate text-xs font-semibold text-slate-400">
+                        {{ selectedTask?.name || 'Select a task' }}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-800 px-3 text-xs font-extrabold text-slate-100 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      :disabled="loadingLog || !selectedLog"
+                      title="Jump to bottom"
+                      aria-label="Jump to bottom of log"
+                      @click="scrollLogToBottom"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">vertical_align_bottom</span>
+                      Bottom
+                    </button>
                   </div>
 
                   <div v-if="loadingLog" class="flex items-center gap-3 px-4 py-5 text-sm font-bold text-slate-400 sm:px-5">
@@ -370,7 +384,7 @@
                     </Notice>
                   </div>
 
-                  <pre v-else class="max-h-[60dvh] min-h-72 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:max-h-[32rem] sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
+                  <pre v-else ref="logOutput" class="max-h-[60dvh] min-h-72 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:max-h-[32rem] sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
                 </div>
               </div>
             </div>
@@ -753,6 +767,19 @@ export default {
     },
     changeScreen(screen) {
       this.activeScreen = screen
+    },
+    scrollLogToBottom() {
+      this.$nextTick(() => {
+        const logOutput = this.$refs.logOutput
+        if (!logOutput) {
+          return
+        }
+
+        logOutput.scrollTo({
+          top: logOutput.scrollHeight,
+          behavior: 'smooth'
+        })
+      })
     },
     initialisePlanTaskSelection() {
       if (this.planTaskSelectionInitialized) {
