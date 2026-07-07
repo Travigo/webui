@@ -585,8 +585,8 @@ export default {
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         const [plan, runs] = await Promise.all([
-          this.batchApiGet('/api/plan', auth0token),
-          this.batchApiGet('/api/runs', auth0token)
+          this.batchApiGet('/plan', auth0token),
+          this.batchApiGet('/runs', auth0token)
         ])
 
         this.plan = plan
@@ -628,7 +628,7 @@ export default {
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
-        const run = await this.batchApiGet(`/api/runs/${encodeURIComponent(this.selectedRunId)}`, token)
+        const run = await this.batchApiGet(`/runs/${encodeURIComponent(this.selectedRunId)}`, token)
         this.selectedRun = run
         this.reconcileSelectedStage()
         this.reconcileSelectedTask()
@@ -664,7 +664,7 @@ export default {
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
-        this.selectedLog = await this.batchApiText(`/api/runs/${encodeURIComponent(this.selectedRunId)}/tasks/${encodeURIComponent(this.selectedTaskId)}/log`, token)
+        this.selectedLog = await this.batchApiText(`/runs/${encodeURIComponent(this.selectedRunId)}/tasks/${encodeURIComponent(this.selectedTaskId)}/log`, token)
       } catch (error) {
         console.log(error)
         if (!silent) {
@@ -686,7 +686,7 @@ export default {
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
-        const run = await this.batchApiPost('/api/runs', {
+        const run = await this.batchApiPost('/runs', {
           taskIds: Array.from(this.selectedPlanTasks),
           includeAllTasks: false,
           forceImport: this.forceImport,
@@ -716,7 +716,7 @@ export default {
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
-        await this.batchApiPost(`/api/runs/${encodeURIComponent(this.selectedRunId)}/cancel`, {}, auth0token)
+        await this.batchApiPost(`/runs/${encodeURIComponent(this.selectedRunId)}/cancel`, {}, auth0token)
         this.showToast(`Import run ${this.selectedRunId} cancelled.`, 'success')
         await this.loadBatchRunner()
       } catch (error) {
