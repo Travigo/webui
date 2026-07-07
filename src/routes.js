@@ -151,12 +151,20 @@ export const routes = [
     component: () => import('./views/Account/Notifications.vue')
   },
   {
-    name: 'account/batch',
-    path: '/account/batch',
+    name: 'admin/home',
+    path: '/admin',
     meta: {
-      title: 'Batch runner'
+      title: 'Admin'
     },
-    component: () => import('./views/BatchRunner/Home.vue')
+    redirect: { name: 'admin/importer' }
+  },
+  {
+    name: 'admin/importer',
+    path: '/admin/importer',
+    meta: {
+      title: 'Data importer'
+    },
+    component: () => import('./views/Admin/DataImporter.vue')
   },
   {
     name: 'saved/home',

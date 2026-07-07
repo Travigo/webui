@@ -71,13 +71,20 @@
               <span class="material-symbols-outlined text-[20px]">notifications_active</span>
               Notifications
             </router-link>
+
+            <div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+
+            <p class="px-3 pb-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+              Admin
+            </p>
+
             <router-link
-              :to="{ name: 'account/batch' }"
+              :to="{ name: 'admin/importer' }"
               @click="closeMenu"
               class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
             >
               <span class="material-symbols-outlined text-[20px]">manufacturing</span>
-              Batch runner
+              Data importer
             </router-link>
             <button
               type="button"

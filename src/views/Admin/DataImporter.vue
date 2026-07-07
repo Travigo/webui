@@ -1,26 +1,34 @@
 <template>
   <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
     <PageHeader
-      eyebrow="Operations"
-      title="Batch runner"
-      :subtitle="activeScreen === 'create' ? 'Create a new scheduled data import run.' : 'Inspect workflow stages, task state, and logs.'"
+      eyebrow="Admin"
+      title="Data importer"
+      subtitle="Create import runs and inspect their progress."
       icon="manufacturing"
       variant="panel"
     >
-      <div v-if="activeRun" class="flex flex-wrap items-center gap-2">
-        <span :class="statusClass(activeRun.status)">
-          <span class="material-symbols-outlined text-[17px]">{{ statusIcon(activeRun.status) }}</span>
-          {{ formatStatus(activeRun.status) }}
-        </span>
-        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
-          Active: {{ activeRun.id }}
-        </span>
-      </div>
+      <template #actions>
+        <button
+          type="button"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+          :disabled="!isAuthenticated || loadingRunner || refreshingRunner"
+          @click="loadBatchRunner"
+        >
+          <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': loadingRunner || refreshingRunner }">
+            {{ loadingRunner || refreshingRunner ? 'progress_activity' : 'refresh' }}
+          </span>
+          Refresh
+        </button>
+      </template>
     </PageHeader>
+
+    <Panel v-if="isAuthenticated && !isAuthLoading && !(loadingRunner && !plan)" :padded="false">
+      <TabBar :tabs="screenTabs" :model-value="activeScreen" @update:model-value="changeScreen" />
+    </Panel>
 
     <LoadingState
       v-if="isAuthLoading || (loadingRunner && !plan)"
-      title="Loading batch runner"
+      title="Loading data importer"
       subtitle="Fetching the import plan and recent runs."
       compact
       :show-tabs="false"
@@ -28,171 +36,157 @@
     />
 
     <Notice v-else-if="!isAuthenticated" type="warning" title="Sign in required">
-      Sign in to access the batch runner.
+      Sign in to access the data importer.
     </Notice>
 
-    <Notice v-else-if="batchRunnerError" type="error" title="Batch runner unavailable">
+    <Notice v-else-if="batchRunnerError" type="error" title="Data importer unavailable">
       {{ batchRunnerError }}
     </Notice>
 
-    <Panel v-if="isAuthenticated && !isAuthLoading && !(loadingRunner && !plan)" :padded="false">
-      <div class="grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <TabBar :tabs="screenTabs" :model-value="activeScreen" @update:model-value="changeScreen" />
-
-        <div class="border-t border-slate-100 p-2 dark:border-slate-800 sm:border-l sm:border-t-0">
-          <button
-            type="button"
-            class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto sm:rounded-2xl"
-            :disabled="!isAuthenticated || loadingRunner || refreshingRunner"
-            @click="loadBatchRunner"
-          >
-            <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': loadingRunner || refreshingRunner }">
-              {{ loadingRunner || refreshingRunner ? 'progress_activity' : 'refresh' }}
-            </span>
-            Refresh
-          </button>
-        </div>
-      </div>
-    </Panel>
-
     <section v-if="isAuthenticated && !batchRunnerError && activeScreen === 'create'" class="space-y-4">
-      <Panel title="Create run" subtitle="Choose workflow tasks and runtime options." icon="play_arrow" padded body-class="space-y-5">
-        <div class="grid gap-3 sm:grid-cols-3">
-          <label class="flex min-h-11 items-center gap-3 rounded-xl bg-slate-50 px-3 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-            <input
-              v-model="forceImport"
-              type="checkbox"
-              class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
-            >
-            Force import
-          </label>
-
-          <label class="flex min-h-11 items-center gap-3 rounded-xl bg-slate-50 px-3 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-            <input
-              v-model="continueOnFailure"
-              type="checkbox"
-              class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
-            >
-            Continue after failures
-          </label>
-
-          <label class="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-            <span>Max active tasks</span>
-            <input
-              v-model.number="maxActiveTasks"
-              type="number"
-              min="1"
-              max="64"
-              class="h-9 w-20 rounded-xl border border-slate-200 bg-white px-2 text-sm font-bold text-slate-900 focus:border-blue-400 focus:ring-blue-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            >
-          </label>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:flex-none sm:rounded-2xl"
-            :disabled="startingRun || selectedPlanTasks.size === 0"
-            @click="startRun"
-          >
-            <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': startingRun }">
-              {{ startingRun ? 'progress_activity' : 'play_arrow' }}
-            </span>
-            {{ startingRun ? 'Starting...' : 'Run selected' }}
-          </button>
-
-          <button
-            type="button"
-            class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:flex-none sm:rounded-2xl"
-            @click="selectAllPlanTasks"
-          >
-            <span class="material-symbols-outlined text-[20px]">select_all</span>
-            Select all
-          </button>
-
-          <button
-            type="button"
-            class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:flex-none sm:rounded-2xl"
-            @click="selectNoPlanTasks"
-          >
-            <span class="material-symbols-outlined text-[20px]">deselect</span>
-            Select none
-          </button>
-
-          <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
-            {{ selectedPlanTasks.size }} selected
-          </span>
-        </div>
-
-        <div class="divide-y divide-slate-100 dark:divide-slate-800">
-          <section
-            v-for="group in planGroups"
-            v-bind:key="group"
-            class="py-4 first:pt-0 last:pb-0"
-          >
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">
-                  {{ groupLabel(group) }}
-                </h3>
-                <p class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {{ selectedGroupCount(group) }} of {{ groupItems(group).length }} selected
-                </p>
-              </div>
+      <Panel title="New import run" subtitle="Choose the stages to run and start the importer." icon="play_arrow" padded body-class="space-y-5">
+        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+                @click="selectAllPlanTasks"
+              >
+                <span class="material-symbols-outlined text-[20px]">select_all</span>
+                Select all
+              </button>
 
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center rounded-lg bg-slate-100 px-2 text-xs font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                @click="toggleGroupSelection(group)"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+                @click="selectNoPlanTasks"
               >
-                {{ isGroupFullySelected(group) ? 'Clear' : 'Select' }}
+                <span class="material-symbols-outlined text-[20px]">deselect</span>
+                Clear
+              </button>
+
+              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                {{ selectedPlanTasks.size }} selected
+              </span>
+            </div>
+
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+              <section
+                v-for="group in planGroups"
+                v-bind:key="group"
+                class="py-4 first:pt-0 last:pb-0"
+              >
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">
+                      {{ groupLabel(group) }}
+                    </h3>
+                    <p class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {{ selectedGroupCount(group) }} of {{ groupItems(group).length }} selected
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="inline-flex h-8 items-center justify-center rounded-lg bg-slate-100 px-2 text-xs font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    @click="toggleGroupSelection(group)"
+                  >
+                    {{ isGroupFullySelected(group) ? 'Clear' : 'Select' }}
+                  </button>
+                </div>
+
+                <div v-if="groupItems(group).length === 0" class="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  No tasks in this group.
+                </div>
+
+                <div v-else class="grid gap-2 sm:grid-cols-2">
+                  <label
+                    v-for="item in groupItems(group)"
+                    v-bind:key="item.identifier"
+                    class="flex min-w-0 items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
+                    <input
+                      type="checkbox"
+                      class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                      :checked="isPlanTaskSelected(item.identifier)"
+                      @change="togglePlanTask(item.identifier, $event.target.checked)"
+                    >
+                    <span class="min-w-0">
+                      <span class="block break-words text-sm font-bold text-slate-800 dark:text-slate-100">
+                        {{ item.name || item.identifier }}
+                      </span>
+                      <span class="mt-0.5 block break-words text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {{ planItemMeta(item) }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <aside class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800 lg:sticky lg:top-4">
+            <div class="space-y-3">
+              <label class="flex min-h-10 items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200">
+                <input
+                  v-model="forceImport"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                >
+                Force import
+              </label>
+
+              <label class="flex min-h-10 items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200">
+                <input
+                  v-model="continueOnFailure"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                >
+                Continue after failures
+              </label>
+
+              <label class="grid gap-1 text-sm font-bold text-slate-700 dark:text-slate-200">
+                <span>Max active tasks</span>
+                <input
+                  v-model.number="maxActiveTasks"
+                  type="number"
+                  min="1"
+                  max="64"
+                  class="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 focus:border-blue-400 focus:ring-blue-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                >
+              </label>
+
+              <button
+                type="button"
+                class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                :disabled="startingRun || selectedPlanTasks.size === 0"
+                @click="startRun"
+              >
+                <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': startingRun }">
+                  {{ startingRun ? 'progress_activity' : 'play_arrow' }}
+                </span>
+                {{ startingRun ? 'Starting...' : 'Start run' }}
               </button>
             </div>
-
-            <div v-if="groupItems(group).length === 0" class="text-sm font-medium text-slate-500 dark:text-slate-400">
-              No tasks in this group.
-            </div>
-
-            <div v-else class="grid gap-2 sm:grid-cols-2">
-              <label
-                v-for="item in groupItems(group)"
-                v-bind:key="item.identifier"
-                class="flex min-w-0 items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                <input
-                  type="checkbox"
-                  class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
-                  :checked="isPlanTaskSelected(item.identifier)"
-                  @change="togglePlanTask(item.identifier, $event.target.checked)"
-                >
-                <span class="min-w-0">
-                  <span class="block break-words text-sm font-bold text-slate-800 dark:text-slate-100">
-                    {{ item.name || item.identifier }}
-                  </span>
-                  <span class="mt-0.5 block break-words text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {{ planItemMeta(item) }}
-                  </span>
-                </span>
-              </label>
-            </div>
-          </section>
+          </aside>
         </div>
       </Panel>
     </section>
 
-    <section v-else-if="isAuthenticated && !batchRunnerError" class="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start">
-      <Panel title="Runs" subtitle="Recent batch executions." icon="history" :padded="false">
+    <section v-else-if="isAuthenticated && !batchRunnerError" class="space-y-4">
+      <Panel title="Run history" subtitle="Select a run to inspect." icon="history" :padded="false">
         <div v-if="runs.length === 0" class="px-4 py-5 text-sm font-medium text-slate-500 dark:text-slate-400 sm:px-5">
           No runs have been recorded yet.
         </div>
 
-        <div v-else class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 lg:max-h-[42rem]">
+        <div v-else class="grid max-h-80 gap-2 overflow-y-auto overscroll-contain p-3 sm:max-h-96 sm:grid-cols-2 lg:grid-cols-3">
           <button
             v-for="run in runs"
             v-bind:key="run.id"
             type="button"
-            class="block w-full px-4 py-3 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10 sm:px-5"
-            :class="{ 'bg-blue-50 dark:bg-blue-500/10': run.id === selectedRunId }"
+            class="rounded-2xl border p-3 text-left transition hover:border-blue-100 hover:bg-blue-50 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10"
+            :class="run.id === selectedRunId ? 'border-blue-200 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10' : 'border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800'"
             @click="selectRun(run.id)"
           >
             <div class="flex items-start justify-between gap-3">
@@ -212,8 +206,7 @@
         </div>
       </Panel>
 
-      <div class="space-y-4">
-        <Panel title="Workflow run" subtitle="Stage state across the selected run." icon="account_tree" :padded="false">
+      <Panel title="Selected run" subtitle="Choose a stage, then a task to read its log." icon="account_tree" :padded="false">
           <template #actions>
             <button
               type="button"
@@ -270,37 +263,29 @@
               </dl>
             </div>
 
-            <div class="grid divide-y divide-slate-100 dark:divide-slate-800 lg:grid-cols-[17rem_minmax(0,1fr)] lg:divide-x lg:divide-y-0">
-              <div class="max-h-72 overflow-y-auto lg:max-h-[34rem]">
+            <div class="space-y-4 p-4 sm:p-5">
+              <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                 <button
                   v-for="stage in workflowStages"
                   v-bind:key="stage.key"
                   type="button"
-                  class="block w-full px-4 py-3 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10 sm:px-5"
-                  :class="{ 'bg-blue-50 dark:bg-blue-500/10': stage.key === selectedStageKey }"
+                  class="inline-flex min-h-10 max-w-72 shrink-0 items-center gap-2 rounded-xl border px-3 text-left text-xs font-extrabold transition"
+                  :class="stage.key === selectedStageKey ? 'border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
                   @click="selectStage(stage.key)"
                 >
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ stage.name }}</h3>
-                      <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {{ stageSummary(stage) }}
-                      </p>
-                    </div>
-                    <span :class="statusClass(stage.status, true)">
-                      {{ formatStatus(stage.status) }}
-                    </span>
-                  </div>
+                  <span :class="['h-2 w-2 rounded-full', statusDotClass(stage.status)]"></span>
+                  <span class="truncate">{{ stage.name }}</span>
+                  <span class="text-slate-400 dark:text-slate-500">{{ stage.tasks.length }}</span>
                 </button>
               </div>
 
-              <div class="min-w-0">
-                <div v-if="!selectedWorkflowStage" class="px-4 py-5 text-sm font-medium text-slate-500 dark:text-slate-400 sm:px-5">
-                  Select a workflow stage.
-                </div>
+              <div v-if="!selectedWorkflowStage" class="rounded-xl bg-slate-50 px-4 py-5 text-sm font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                Select a workflow stage.
+              </div>
 
-                <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <div class="px-4 py-4 sm:px-5">
+              <div v-else class="grid gap-4 lg:grid-cols-[minmax(18rem,0.38fr)_minmax(0,1fr)]">
+                <div class="overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-800">
+                  <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
                     <div class="flex flex-wrap items-center gap-2">
                       <h3 class="text-base font-extrabold text-slate-950 dark:text-slate-100">{{ selectedWorkflowStage.name }}</h3>
                       <span :class="statusClass(selectedWorkflowStage.status, true)">
@@ -310,44 +295,6 @@
                     <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
                       {{ stageSummary(selectedWorkflowStage) }}
                     </p>
-                  </div>
-
-                  <div class="hidden overflow-x-auto sm:block">
-                    <table class="min-w-full divide-y divide-slate-100 text-left dark:divide-slate-800">
-                      <thead class="bg-slate-50 text-xs font-extrabold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                        <tr>
-                          <th scope="col" class="px-4 py-3 sm:px-5">Task</th>
-                          <th scope="col" class="px-4 py-3">Status</th>
-                          <th scope="col" class="px-4 py-3">Job</th>
-                          <th scope="col" class="px-4 py-3">Error</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        <tr
-                          v-for="task in selectedStageTasks"
-                          v-bind:key="task.id"
-                          class="cursor-pointer transition hover:bg-blue-50 dark:hover:bg-blue-500/10"
-                          :class="{ 'bg-blue-50 dark:bg-blue-500/10': task.id === selectedTaskId }"
-                          @click="selectTask(task.id)"
-                        >
-                          <td class="min-w-56 px-4 py-3 sm:px-5">
-                            <div class="font-bold text-slate-900 dark:text-slate-100">{{ task.name }}</div>
-                            <div class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</div>
-                          </td>
-                          <td class="px-4 py-3">
-                            <span :class="statusClass(task.status, true)">
-                              {{ formatStatus(task.status) }}
-                            </span>
-                          </td>
-                          <td class="max-w-64 break-words px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300">
-                            {{ task.jobName || '-' }}
-                          </td>
-                          <td class="max-w-80 break-words px-4 py-3 text-sm font-medium text-red-600 dark:text-red-300">
-                            {{ task.error || '-' }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
                   </div>
 
                   <div class="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
@@ -381,56 +328,54 @@
                       </dl>
                     </button>
                   </div>
+
+                  <div class="hidden divide-y divide-slate-100 dark:divide-slate-800 sm:block">
+                    <button
+                      v-for="task in selectedStageTasks"
+                      v-bind:key="task.id"
+                      type="button"
+                      class="block w-full px-4 py-3 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10"
+                      :class="{ 'bg-blue-50 dark:bg-blue-500/10': task.id === selectedTaskId }"
+                      @click="selectTask(task.id)"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <h4 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
+                          <p class="mt-1 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
+                        </div>
+                        <span :class="statusClass(task.status, true)">
+                          {{ formatStatus(task.status) }}
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="overflow-hidden rounded-xl bg-slate-950">
+                  <div class="border-b border-slate-800 px-4 py-3">
+                    <h3 class="text-sm font-extrabold text-white">Log</h3>
+                    <p class="mt-0.5 truncate text-xs font-semibold text-slate-400">
+                      {{ selectedTask?.name || 'Select a task' }}
+                    </p>
+                  </div>
+
+                  <div v-if="loadingLog" class="flex items-center gap-3 px-4 py-5 text-sm font-bold text-slate-400 sm:px-5">
+                    <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                    Loading task log
+                  </div>
+
+                  <div v-else-if="logError" class="px-4 py-5 sm:px-5">
+                    <Notice type="error">
+                      {{ logError }}
+                    </Notice>
+                  </div>
+
+                  <pre v-else class="max-h-[60dvh] min-h-72 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:max-h-[32rem] sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
                 </div>
               </div>
             </div>
           </div>
-        </Panel>
-
-        <Panel
-          :title="selectedWorkflowStage ? `${selectedWorkflowStage.name} logs` : 'Stage logs'"
-          subtitle="Logs are separated by task within the selected workflow stage."
-          icon="article"
-          :padded="false"
-        >
-          <div v-if="!selectedWorkflowStage" class="px-4 py-5 text-sm font-medium text-slate-500 dark:text-slate-400 sm:px-5">
-            Select a workflow stage to view logs.
-          </div>
-
-          <div v-else-if="selectedStageTasks.length === 0" class="px-4 py-5 text-sm font-medium text-slate-500 dark:text-slate-400 sm:px-5">
-            This stage has no tasks.
-          </div>
-
-          <div v-else>
-            <div class="-mx-1 flex gap-2 overflow-x-auto border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-              <button
-                v-for="task in selectedStageTasks"
-                v-bind:key="task.id"
-                type="button"
-                class="inline-flex h-9 max-w-64 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-extrabold transition"
-                :class="task.id === selectedTaskId ? 'border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
-                @click="selectTask(task.id)"
-              >
-                <span :class="['h-2 w-2 rounded-full', statusDotClass(task.status)]"></span>
-                <span class="truncate">{{ task.name }}</span>
-              </button>
-            </div>
-
-            <div v-if="loadingLog" class="flex items-center gap-3 px-4 py-5 text-sm font-bold text-slate-500 dark:text-slate-400 sm:px-5">
-              <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-              Loading task log
-            </div>
-
-            <div v-else-if="logError" class="px-4 py-5 sm:px-5">
-              <Notice type="error">
-                {{ logError }}
-              </Notice>
-            </div>
-
-            <pre v-else class="max-h-[60dvh] min-h-72 overflow-auto whitespace-pre-wrap break-words bg-slate-950 px-4 py-4 text-xs leading-relaxed text-slate-100 sm:max-h-[32rem] sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
-          </div>
-        </Panel>
-      </div>
+      </Panel>
     </section>
   </div>
 </template>
@@ -453,7 +398,7 @@ function auth0Value(value) {
 }
 
 export default {
-  name: 'BatchRunnerHome',
+  name: 'AdminDataImporter',
   components: {
     LoadingState,
     Notice,
@@ -524,6 +469,9 @@ export default {
     },
     selectedStageTasks() {
       return this.selectedWorkflowStage?.tasks || []
+    },
+    selectedTask() {
+      return this.selectedStageTasks.find(task => task.id === this.selectedTaskId)
     },
     selectedWorkflowStage() {
       return this.workflowStages.find(stage => stage.key === this.selectedStageKey)
@@ -635,7 +583,7 @@ export default {
       } catch (error) {
         console.log(error)
         if (!preserveVisibleState) {
-          this.batchRunnerError = this.errorMessage(error, 'Batch runner could not be loaded.')
+          this.batchRunnerError = this.errorMessage(error, 'Data importer could not be loaded.')
         }
       } finally {
         this.loadingRunner = false
@@ -736,11 +684,11 @@ export default {
         this.selectedStageKey = ''
         this.selectedTaskId = ''
         this.activeScreen = 'runs'
-        this.showToast(`Batch run ${run.id} started.`, 'success')
+        this.showToast(`Import run ${run.id} started.`, 'success')
         await this.loadBatchRunner()
       } catch (error) {
         console.log(error)
-        this.showToast(this.errorMessage(error, 'Batch run could not be started.'), 'error')
+        this.showToast(this.errorMessage(error, 'Import run could not be started.'), 'error')
       } finally {
         this.startingRun = false
       }
@@ -755,11 +703,11 @@ export default {
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         await this.batchApiPost(`/api/runs/${encodeURIComponent(this.selectedRunId)}/cancel`, {}, auth0token)
-        this.showToast(`Batch run ${this.selectedRunId} cancelled.`, 'success')
+        this.showToast(`Import run ${this.selectedRunId} cancelled.`, 'success')
         await this.loadBatchRunner()
       } catch (error) {
         console.log(error)
-        this.showToast(this.errorMessage(error, 'Batch run could not be cancelled.'), 'error')
+        this.showToast(this.errorMessage(error, 'Import run could not be cancelled.'), 'error')
       } finally {
         this.cancellingRun = false
       }
@@ -805,12 +753,6 @@ export default {
     },
     changeScreen(screen) {
       this.activeScreen = screen
-    },
-    showCreateScreen() {
-      this.activeScreen = 'create'
-    },
-    showRunsScreen() {
-      this.activeScreen = 'runs'
     },
     initialisePlanTaskSelection() {
       if (this.planTaskSelectionInitialized) {
