@@ -52,7 +52,7 @@ export default {
   },
   duration(nanoseconds) {
     let seconds = nanoseconds/1000000000
-    let minutes = seconds/60
+    let minutes = Math.ceil(seconds/60)
 
     let hours = Math.floor(minutes/60)
     let hourMinutesRemaining = minutes%60
