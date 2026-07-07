@@ -103,6 +103,9 @@
 import SearchBar from '@/components/SearchBar.vue'
 import PageHeader from '@/components/PageHeader.vue'
 
+const DEFAULT_ORIGIN_STOP = 'tmr-stop-7152d2ec230f33e6d4d092d6adee'
+const DEFAULT_DESTINATION_STOP = 'tmr-stop-a499f2e2140c892d3bc61fce694f'
+
 export default {
   name: 'JourneyPlannerHome',
   components: {
@@ -112,11 +115,11 @@ export default {
   data(){
     return {
       originMode: 'stop',
-      originStop: '',
+      originStop: DEFAULT_ORIGIN_STOP,
       originLocation: undefined,
       originLocationError: '',
       locatingOrigin: false,
-      destinationStop: '',
+      destinationStop: DEFAULT_DESTINATION_STOP,
       originModeOptions: [
         { value: 'stop', label: 'Stop', icon: 'location_on' },
         { value: 'location', label: 'Current location', icon: 'my_location' }
