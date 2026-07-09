@@ -1,7 +1,7 @@
 <template>
   <div v-if="journey?.Service?.TransportType == 'Rail'">
-    <div v-if="journey.DetailedRailInformation?.ReplacementBus">
-      <div class="mb-3 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
+    <div v-if="railInfo.ReplacementBus">
+      <div class="mb-3 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200">
         This is a rail replacement bus
       </div>
     </div>
@@ -13,7 +13,7 @@
     />
   </div>
 
-  <TrainLayout :carriages="carriages" />
+  <TrainLayout :trains="trains" />
 
   <Modal
     v-model:open="facilityModalOpen"
@@ -23,7 +23,7 @@
     close-label="Close facility details"
     body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
   >
-            <div class="rounded-2xl bg-slate-50 px-3 py-3 text-sm leading-relaxed text-slate-700">
+            <div class="rounded-2xl bg-slate-50 px-3 py-3 text-sm leading-relaxed text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
               {{ selectedFacility?.description }}
             </div>
 
@@ -31,15 +31,18 @@
               <article
                 v-for="item in carriageToilets"
                 v-bind:key="`${item.carriage.ID}-${item.index}`"
-                class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm"
+                class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800/70"
               >
                 <div class="flex items-start gap-3">
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
                     <span class="material-symbols-outlined text-[20px]">wc</span>
                   </span>
                   <div class="min-w-0">
-                    <h3 class="text-sm font-extrabold text-slate-950">Toilet in {{ carriageLabel(item.carriage) }}</h3>
-                    <p class="mt-1 text-sm text-slate-600">{{ item.toilet.Type || 'Toilet available' }}</p>
+                    <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Toilet in {{ carriageLabel(item.carriage) }}</h3>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.toilet.Type || 'Toilet available' }}</p>
+                    <p v-if="item.toilet.Status" class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {{ item.toilet.Status }}
+                    </p>
                   </div>
                 </div>
               </article>
@@ -49,10 +52,10 @@
               <div
                 v-for="detail in selectedFacilityDetails"
                 v-bind:key="detail.label"
-                class="rounded-2xl bg-slate-50 p-3"
+                class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
               >
-                <dt class="font-semibold text-slate-500">{{ detail.label }}</dt>
-                <dd class="mt-1 font-bold text-slate-950">{{ detail.value }}</dd>
+                <dt class="font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
+                <dd class="mt-1 font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
               </div>
             </dl>
   </Modal>
@@ -75,7 +78,15 @@ export default {
   },
   computed: {
     railInfo() {
-      return this.journey?.DetailedRailInformation || {}
+      return this.journey?.RealtimeJourney?.DetailedRailInformation ||
+        this.journey?.DetailedRailInformation ||
+        {}
+    },
+    trains() {
+      return [...(this.railInfo.Trains || [])].sort((first, second) => {
+        return (first.Position || first.AllocationSequence || 0) -
+          (second.Position || second.AllocationSequence || 0)
+      })
     },
     facilityChips() {
       return this.facilitySections.filter(facility => facility.available)
@@ -86,7 +97,7 @@ export default {
           key: 'AirConditioning',
           label: 'Air conditioning',
           icon: 'ac_unit',
-          available: this.railInfo.AirConditioning,
+          available: this.hasTrainFacility('AirConditioning'),
           summary: 'Air conditioning is available.',
           description: 'This service is listed as having air conditioning onboard.'
         },
@@ -94,7 +105,7 @@ export default {
           key: 'WiFi',
           label: 'Wi-Fi',
           icon: 'wifi',
-          available: this.railInfo.WiFi,
+          available: this.hasTrainFacility('WiFi'),
           summary: 'Wi-Fi is available.',
           description: 'This service is listed as having onboard Wi-Fi.'
         },
@@ -102,7 +113,7 @@ export default {
           key: 'PowerPlugs',
           label: 'Power sockets',
           icon: 'power',
-          available: this.railInfo.PowerPlugs,
+          available: this.hasTrainFacility('PowerPlugs'),
           summary: 'Power sockets are available.',
           description: 'This service is listed as having onboard power sockets.'
         },
@@ -110,7 +121,7 @@ export default {
           key: 'USBPlugs',
           label: 'USB charging',
           icon: 'usb',
-          available: this.railInfo.USBPlugs,
+          available: this.hasTrainFacility('USBPlugs'),
           summary: 'USB charging is available.',
           description: 'This service is listed as having USB charging points.'
         },
@@ -118,8 +129,7 @@ export default {
           key: 'BicycleSpaces',
           label: 'Bike spaces',
           icon: 'pedal_bike',
-          available: this.railInfo.BicycleSpaces,
-          badge: this.facilityBadge(this.railInfo.BicycleSpaces),
+          available: this.hasTrainFacility('BicycleSpaces'),
           summary: 'Bike spaces are available.',
           description: this.railInfo.ReservationBikeRequired
             ? 'Bike spaces are available, but a reservation is listed as required.'
@@ -129,7 +139,7 @@ export default {
           key: 'DisabledAccess',
           label: 'Accessible access',
           icon: 'accessible',
-          available: this.railInfo.DisabledAccess,
+          available: this.hasTrainFacility('DisabledAccess'),
           summary: 'Accessible access is available.',
           description: 'This service is listed as having accessible access facilities.'
         },
@@ -137,7 +147,7 @@ export default {
           key: 'Toilets',
           label: 'Toilets',
           icon: 'wc',
-          available: this.railInfo.Toilets,
+          available: this.hasTrainFacility('Toilets') || this.carriageToilets.length > 0,
           badge: this.carriageToilets.length > 0 ? this.carriageToilets.length : '',
           summary: 'Toilets are available.',
           description: this.carriageToilets.length > 0
@@ -174,7 +184,7 @@ export default {
           },
           {
             label: 'Spaces',
-            value: this.facilityBadge(this.railInfo.BicycleSpaces) || 'Available'
+            value: 'Available'
           }
         ]
       }
@@ -198,15 +208,7 @@ export default {
       })))
     },
     carriages() {
-      if (this.journey?.RealtimeJourney?.DetailedRailInformation?.Carriages?.length > 0) {
-        return this.journey?.RealtimeJourney?.DetailedRailInformation?.Carriages
-      }
-      
-      if (this.journey?.DetailedRailInformation?.Carriages?.length > 0) {
-        return this.journey?.DetailedRailInformation?.Carriages
-      }
-
-      return []
+      return this.trains.flatMap(train => train.Carriages || [])
     }
   },
   data() {
@@ -216,8 +218,8 @@ export default {
     }
   },
   methods: {
-    facilityBadge(value) {
-      return typeof value === 'number' && value > 1 ? value : ''
+    hasTrainFacility(key) {
+      return this.trains.some(train => Boolean(train[key]))
     },
     openFacilityModal(key) {
       this.selectedFacilityKey = key

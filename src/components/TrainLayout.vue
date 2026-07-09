@@ -21,6 +21,7 @@
             v-for="carriage in normalisedCarriages"
             v-bind:key="carriage.key"
             class="w-[5.75rem] shrink-0"
+            :class="{ 'ml-2 border-l-2 border-slate-200 pl-2 dark:border-slate-700': carriage.startsTrain && carriage.trainIndex > 0 }"
           >
             <button
               type="button"
@@ -54,7 +55,8 @@
                   class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white/80 text-slate-700 shadow-sm dark:bg-slate-950/80 dark:text-slate-200"
                   :title="feature.label"
                 >
-                  <span class="material-symbols-outlined text-[14px] leading-none">{{ feature.icon }}</span>
+                  <span v-if="feature.text" class="text-[9px] font-black leading-none">{{ feature.text }}</span>
+                  <span v-else class="material-symbols-outlined text-[14px] leading-none">{{ feature.icon }}</span>
                 </span>
               </div>
             </button>
@@ -90,11 +92,26 @@
             class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
           >
             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
-              <span class="material-symbols-outlined text-[20px]">{{ feature.icon }}</span>
+              <span v-if="feature.text" class="text-xs font-black leading-none">{{ feature.text }}</span>
+              <span v-else class="material-symbols-outlined text-[20px]">{{ feature.icon }}</span>
             </span>
             <span class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ feature.label }}</span>
           </article>
         </div>
+      </section>
+
+      <section v-if="selectedTrainDetails.length > 0" class="space-y-2">
+        <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Train</h3>
+        <dl class="grid gap-2 text-sm sm:grid-cols-2">
+          <div
+            v-for="detail in selectedTrainDetails"
+            v-bind:key="detail.label"
+            class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
+          >
+            <dt class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
+            <dd class="mt-1 break-words font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
+          </div>
+        </dl>
       </section>
 
       <section v-if="selectedCarriageToilets.length > 0" class="space-y-2">
@@ -140,6 +157,10 @@ export default {
     carriages: {
       type: Array,
       default: () => []
+    },
+    trains: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -150,36 +171,79 @@ export default {
     }
   },
   computed: {
-    normalisedCarriages() {
-      return this.carriages.map((carriage, index) => {
-        const occupancy = this.normaliseOccupancy(carriage.Occupancy)
+    orderedTrains() {
+      if (this.trains.length === 0) {
+        return this.carriages.length > 0
+          ? [{ ID: '', Position: 1, Carriages: this.carriages }]
+          : []
+      }
 
-        return {
-          raw: carriage,
-          key: carriage.ID || carriage.Id || carriage.Identifier || index,
-          id: carriage.ID || carriage.Id || carriage.Identifier || '',
-          index,
-          label: this.coachLabel(carriage, index),
-          features: this.carriageFeatures(carriage),
-          occupancy,
-          hasOccupancy: occupancy >= 0,
-          occupancyLabel: this.occupancyLabel(occupancy),
-          occupancyClasses: this.occupancyClasses(occupancy),
-          occupancyTextClass: this.occupancyTextClass(occupancy)
-        }
+      return [...this.trains]
+        .sort((first, second) => {
+          return (first.Position || first.AllocationSequence || 0) -
+            (second.Position || second.AllocationSequence || 0)
+        })
+        .map(train => {
+          const carriages = [...(train.Carriages || [])].sort((first, second) => {
+            return (first.VehiclePosition || 0) - (second.VehiclePosition || 0)
+          })
+
+          return {
+            ...train,
+            Carriages: train.Reversed ? carriages.reverse() : carriages
+          }
+        })
+    },
+    normalisedCarriages() {
+      let index = 0
+
+      return this.orderedTrains.flatMap((train, trainIndex) => {
+        return (train.Carriages || []).map((carriage, carriageIndex) => {
+          const occupancy = this.normaliseOccupancy(carriage.Occupancy)
+          const normalised = {
+            raw: carriage,
+            train,
+            trainIndex,
+            startsTrain: carriageIndex === 0,
+            key: `${train.ID || trainIndex}-${carriage.ID || carriage.Id || carriage.Identifier || carriageIndex}`,
+            id: carriage.ID || carriage.Id || carriage.Identifier || '',
+            index,
+            label: this.coachLabel(carriage, index),
+            features: this.carriageFeatures(carriage),
+            occupancy,
+            hasOccupancy: occupancy >= 0,
+            occupancyLabel: this.occupancyLabel(occupancy),
+            occupancyClasses: this.occupancyClasses(occupancy),
+            occupancyTextClass: this.occupancyTextClass(occupancy)
+          }
+
+          index += 1
+          return normalised
+        })
       })
     },
     layoutSummary() {
       const coachCount = `${this.normalisedCarriages.length} coach${this.normalisedCarriages.length === 1 ? '' : 'es'}`
+      const unitCount = this.orderedTrains.length > 1 ? `${this.orderedTrains.length} units · ` : ''
+      const seatingClasses = [...new Set(this.normalisedCarriages
+        .flatMap(carriage => this.normaliseCarriageClasses(carriage.raw.SeatingClasses))
+        .filter(seatingClass => seatingClass !== 'unknown'))]
+        .map(seatingClass => `${seatingClass.charAt(0).toUpperCase()}${seatingClass.slice(1)} class`)
       const toiletLabels = this.normalisedCarriages
         .filter(carriage => carriage.features.some(feature => feature.key === 'toilet' || feature.key === 'accessible-toilet'))
         .map(carriage => carriage.label)
 
-      if (toiletLabels.length === 0) {
-        return coachCount
+      const summaryParts = [`${unitCount}${coachCount}`]
+
+      if (seatingClasses.length > 0) {
+        summaryParts.push(seatingClasses.join(' & '))
       }
 
-      return `${coachCount} · Toilets in ${toiletLabels.join(', ')}`
+      if (toiletLabels.length > 0) {
+        summaryParts.push(`Toilets in ${toiletLabels.join(', ')}`)
+      }
+
+      return summaryParts.join(' · ')
     },
     layoutStatus() {
       const knownOccupancies = this.normalisedCarriages
@@ -198,11 +262,11 @@ export default {
       }
     },
     selectedCarriageSubtitle() {
-      if (!this.selectedCarriage?.id) {
-        return ''
-      }
-
-      return `Carriage ID: ${this.selectedCarriage.id}`
+      return [
+        this.selectedCarriage?.train?.VehicleTypeName,
+        this.selectedCarriage?.train?.ID ? `Unit ${this.selectedCarriage.train.ID}` : '',
+        this.selectedCarriage?.id ? `Carriage ${this.selectedCarriage.id}` : ''
+      ].filter(Boolean).join(' · ')
     },
     selectedCarriageToilets() {
       return this.selectedCarriage?.raw?.Toilets || []
@@ -212,36 +276,39 @@ export default {
         return []
       }
 
-      const excludedKeys = new Set([
-        'ID',
-        'Id',
-        'Identifier',
-        'Label',
-        'Name',
-        'Occupancy',
-        'Toilets',
-        'BicycleSpaces',
-        'BikeSpaces',
-        'Bikes',
-        'BikeStorage',
-        'WheelchairSpaces',
-        'WheelchairSpace',
-        'Wheelchair',
-        'FirstClass',
-        'FirstClassAvailable',
-        'FirstClassAccommodation',
-        'FirstClassSeats',
-        'FirstClassSeating',
-        'FirstClassCoach',
-        'FirstClassZone'
-      ])
+      const carriage = this.selectedCarriage.raw
 
-      return Object.entries(this.selectedCarriage.raw)
-        .filter(([key, value]) => !excludedKeys.has(key) && this.isRenderableDetail(value))
-        .map(([key, value]) => ({
-          label: this.formatDetailLabel(key),
-          value: this.formatDetailValue(value)
-        }))
+      return [
+        this.detail('Seating classes', this.displaySeatingClasses(carriage.SeatingClasses)),
+        this.detail('Seats', carriage.SeatCount > 0 ? carriage.SeatCount : ''),
+        this.detail('Carriage type', carriage.CarriageType),
+        this.detail('Specific type', carriage.SpecificType, carriage.SpecificType !== carriage.CarriageType),
+        this.detail('Vehicle ID', carriage.VehicleID),
+        this.detail('Position in unit', carriage.VehiclePosition > 0 ? carriage.VehiclePosition : ''),
+        this.detail('Length', carriage.LengthMM > 0 ? `${(carriage.LengthMM / 1000).toFixed(1)} m` : ''),
+        this.detail('Weight', carriage.WeightKG > 0 ? `${carriage.WeightKG} kg` : ''),
+        this.detail('Livery', carriage.Livery),
+        this.detail('Special characteristics', carriage.SpecialCharacteristics),
+        this.detail('Vehicle status', carriage.VehicleStatus),
+        this.detail('Registered status', carriage.RegisteredStatus)
+      ].filter(Boolean)
+    },
+    selectedTrainDetails() {
+      const train = this.selectedCarriage?.train
+
+      if (!train) {
+        return []
+      }
+
+      return [
+        this.detail('Vehicle', train.VehicleTypeName || train.VehicleType),
+        this.detail('Unit ID', train.ID),
+        this.detail('Fleet', train.FleetID),
+        this.detail('Power', train.PowerType),
+        this.detail('Top speed', train.SpeedKMH > 0 ? `${train.SpeedKMH} km/h` : ''),
+        this.detail('Formation', train.TrainLength > 0 ? `${train.TrainLength} coaches` : ''),
+        this.detail('Direction', train.Reversed ? 'Reversed formation' : '')
+      ].filter(Boolean)
     }
   },
   methods: {
@@ -251,6 +318,25 @@ export default {
     },
     coachLabel(carriage, index) {
       return carriage.Label || carriage.Name || `Coach ${index + 1}`
+    },
+    detail(label, value, include = true) {
+      if (!include || value === '' || value === null || value === undefined) {
+        return null
+      }
+
+      return { label, value }
+    },
+    displaySeatingClasses(values) {
+      const seatingClasses = this.normaliseCarriageClasses(values)
+        .filter(seatingClass => seatingClass !== 'unknown')
+
+      if (seatingClasses.length === 0) {
+        return ''
+      }
+
+      return seatingClasses
+        .map(seatingClass => `${seatingClass.charAt(0).toUpperCase()}${seatingClass.slice(1)}`)
+        .join(' and ')
     },
     normaliseOccupancy(occupancy) {
       if (typeof occupancy !== 'number') {
@@ -368,17 +454,17 @@ export default {
         features.push({
           key: 'first-class',
           label: 'First class',
-          icon: 'workspace_premium'
+          text: '1st'
         })
       }
 
       return features
     },
     hasFirstClass(carriage) {
-      const carriageClass = this.normaliseCarriageClass(carriage.Class)
+      const carriageClasses = this.normaliseCarriageClasses(carriage.SeatingClasses)
 
-      if (carriageClass) {
-        return carriageClass === 'first'
+      if (carriageClasses.length > 0) {
+        return carriageClasses.includes('first')
       }
 
       const directFirstClassKeys = [
@@ -399,7 +485,7 @@ export default {
         'CoachClass',
         'TravelClass',
         'AccommodationClass',
-        'SeatingClass',
+        'SeatingClasses',
         'Accommodation'
       ].some(key => {
         const value = carriage[key]
@@ -426,6 +512,13 @@ export default {
 
       return ''
     },
+    normaliseCarriageClasses(values) {
+      const classes = Array.isArray(values) ? values : [values]
+
+      return [...new Set(classes
+        .map(value => this.normaliseCarriageClass(value))
+        .filter(Boolean))]
+    },
     hasFeature(carriage, keys) {
       return keys.some(key => this.hasFeatureValue(carriage[key]))
     },
@@ -450,26 +543,6 @@ export default {
 
       return String(value || '')
     },
-    isRenderableDetail(value) {
-      return ['string', 'number', 'boolean'].includes(typeof value) ||
-        (Array.isArray(value) && value.length > 0)
-    },
-    formatDetailLabel(key) {
-      return key
-        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-        .replace(/[_-]+/g, ' ')
-    },
-    formatDetailValue(value) {
-      if (typeof value === 'boolean') {
-        return value ? 'Yes' : 'No'
-      }
-
-      if (Array.isArray(value)) {
-        return `${value.length} item${value.length === 1 ? '' : 's'}`
-      }
-
-      return value
-    }
   }
 }
 </script>

@@ -54,7 +54,7 @@
         {{ journey.RealtimeJourney.VehicleLocationDescription }}
       </p>
 
-      <div v-if="showDetailedInformationRail" class="rounded-2xl bg-white/75 p-3">
+      <div v-if="showDetailedInformationRail" class="rounded-2xl bg-white/75 p-3 dark:bg-slate-900/75">
         <DetailedInformationRail :journey="journey"/>
       </div>
     </PageHeader>
@@ -185,40 +185,56 @@
           </div>
         </section>
 
-        <section
-          v-if="journey?.DetailedRailInformation"
-          class="rounded-2xl border border-slate-100 bg-slate-50 p-4"
-        >
-          <h2 class="text-sm font-extrabold text-slate-950">Vehicle details</h2>
-          <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-            <div class="rounded-xl bg-white p-3">
-              <dt class="font-semibold text-slate-500">Vehicle</dt>
-              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.VehicleTypeName || journey.DetailedRailInformation.VehicleType }}</dd>
+        <section v-if="hasDetailedRailDetails" class="space-y-3">
+          <article
+            v-for="(train, index) in detailedRailTrains"
+            v-bind:key="train.ID || index"
+            class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  {{ detailedRailTrains.length > 1 ? `Train ${index + 1}` : 'Train' }}
+                </p>
+                <h2 class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">
+                  {{ train.VehicleTypeName || train.VehicleType || 'Vehicle details' }}
+                </h2>
+              </div>
+              <span v-if="train.ID" class="shrink-0 rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+                {{ train.ID }}
+              </span>
             </div>
-            <div class="rounded-xl bg-white p-3">
-              <dt class="font-semibold text-slate-500">Speed</dt>
-              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.SpeedKMH }} km/h</dd>
-            </div>
-            <div class="rounded-xl bg-white p-3">
-              <dt class="font-semibold text-slate-500">Fuel</dt>
-              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.PowerType }}</dd>
-            </div>
-            <div class="rounded-xl bg-white p-3">
-              <dt class="font-semibold text-slate-500">Seating</dt>
-              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.Seating }}</dd>
-            </div>
-            <div class="rounded-xl bg-white p-3" v-if="journey.DetailedRailInformation.CateringAvailable">
-              <dt class="font-semibold text-slate-500">Catering</dt>
-              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.CateringDescription }}</dd>
-            </div>
-            <div class="rounded-xl bg-white p-3">
-              <dt class="font-semibold text-slate-500">Bike reservation</dt>
-              <dd class="mt-1 font-bold text-slate-950">{{ journey.DetailedRailInformation.ReservationBikeRequired ? 'Required' : 'Not required' }}</dd>
-            </div>
-          </dl>
+            <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+              <div
+                v-for="detail in trainDetailItems(train)"
+                v-bind:key="detail.label"
+                class="rounded-xl bg-white p-3 dark:bg-slate-900"
+              >
+                <dt class="font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
+                <dd class="mt-1 font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article
+            v-if="railServiceDetailItems.length > 0"
+            class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+          >
+            <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Onboard service</h2>
+            <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+              <div
+                v-for="detail in railServiceDetailItems"
+                v-bind:key="detail.label"
+                class="rounded-xl bg-white p-3 dark:bg-slate-900"
+              >
+                <dt class="font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
+                <dd class="mt-1 font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
+              </div>
+            </dl>
+          </article>
         </section>
 
-        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !journey?.DetailedRailInformation" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           No extra journey details are available.
         </section>
       </div>
@@ -385,30 +401,78 @@ export default {
       }
     },
     detailedRailInfo() {
-      return this.journey?.DetailedRailInformation || {}
+      return this.journey?.RealtimeJourney?.DetailedRailInformation ||
+        this.journey?.DetailedRailInformation ||
+        {}
+    },
+    detailedRailTrains() {
+      return [...(this.detailedRailInfo.Trains || [])].sort((first, second) => {
+        return (first.Position || first.AllocationSequence || 0) -
+          (second.Position || second.AllocationSequence || 0)
+      })
     },
     detailedRailCarriages() {
-      if (this.journey?.RealtimeJourney?.DetailedRailInformation?.Carriages?.length > 0) {
-        return this.journey.RealtimeJourney.DetailedRailInformation.Carriages
-      }
-
-      if (this.journey?.DetailedRailInformation?.Carriages?.length > 0) {
-        return this.journey.DetailedRailInformation.Carriages
-      }
-
-      return []
+      return this.detailedRailTrains.flatMap(train => train.Carriages || [])
     },
     hasDetailedRailFacilityPills() {
-      return [
-        this.detailedRailInfo.AirConditioning,
-        this.detailedRailInfo.WiFi,
-        this.detailedRailInfo.PowerPlugs,
-        this.detailedRailInfo.USBPlugs,
-        this.detailedRailInfo.BicycleSpaces,
-        this.detailedRailInfo.DisabledAccess,
-        this.detailedRailInfo.Toilets,
-        this.detailedRailInfo.CateringAvailable
-      ].some(Boolean)
+      const trainFacilityKeys = [
+        'AirConditioning',
+        'WiFi',
+        'PowerPlugs',
+        'USBPlugs',
+        'BicycleSpaces',
+        'DisabledAccess',
+        'Toilets'
+      ]
+
+      return this.detailedRailInfo.CateringAvailable ||
+        this.detailedRailTrains.some(train => trainFacilityKeys.some(key => Boolean(train[key])))
+    },
+    railSeatingClasses() {
+      const classes = [
+        ...(this.detailedRailInfo.Seating || []),
+        ...this.detailedRailCarriages.flatMap(carriage => carriage.SeatingClasses || [])
+      ]
+
+      return [...new Set(classes.filter(value => value && value.toLowerCase() !== 'unknown'))]
+    },
+    railServiceDetailItems() {
+      const details = []
+
+      if (this.railSeatingClasses.length > 0) {
+        details.push({ label: 'Seating', value: this.railSeatingClasses.join(' and ') })
+      }
+
+      if (this.detailedRailInfo.SleeperAvailable) {
+        const sleeperClasses = (this.detailedRailInfo.Sleepers || []).filter(value => value && value !== 'Unknown')
+        details.push({
+          label: 'Sleeper',
+          value: sleeperClasses.length > 0 ? sleeperClasses.join(' and ') : 'Available'
+        })
+      }
+
+      if (this.detailedRailInfo.CateringAvailable) {
+        details.push({
+          label: 'Catering',
+          value: this.detailedRailInfo.CateringDescription || 'Available'
+        })
+      }
+
+      if (this.detailedRailInfo.ReservationRequired || this.detailedRailInfo.ReservationRecommended) {
+        details.push({
+          label: 'Seat reservation',
+          value: this.detailedRailInfo.ReservationRequired ? 'Required' : 'Recommended'
+        })
+      }
+
+      if (this.detailedRailInfo.ReservationBikeRequired) {
+        details.push({ label: 'Bike reservation', value: 'Required' })
+      }
+
+      return details
+    },
+    hasDetailedRailDetails() {
+      return this.detailedRailTrains.length > 0 || this.railServiceDetailItems.length > 0
     },
     showDetailedInformationRail() {
       if (this.journey?.RealtimeJourney?.Cancelled) {
@@ -417,6 +481,7 @@ export default {
 
       return Boolean(
         this.detailedRailInfo.ReplacementBus ||
+        this.detailedRailTrains.length > 0 ||
         this.hasDetailedRailFacilityPills ||
         this.detailedRailCarriages.length > 0
       )
@@ -501,6 +566,39 @@ export default {
     }
   },
   methods: {
+    trainDetailItems(train) {
+      const details = []
+      const carriageCount = train.Carriages?.length || train.TrainLength || 0
+
+      if (carriageCount > 0) {
+        details.push({
+          label: 'Formation',
+          value: `${carriageCount} coach${carriageCount === 1 ? '' : 'es'}`
+        })
+      }
+
+      if (train.PowerType) {
+        details.push({ label: 'Power', value: train.PowerType })
+      }
+
+      if (train.SpeedKMH > 0) {
+        details.push({ label: 'Top speed', value: `${train.SpeedKMH} km/h` })
+      }
+
+      if (train.FleetID) {
+        details.push({ label: 'Fleet', value: train.FleetID })
+      }
+
+      if (train.ResourceGroupType) {
+        details.push({ label: 'Resource group', value: train.ResourceGroupType })
+      }
+
+      if (train.ResourceGroupStatus) {
+        details.push({ label: 'Resource status', value: train.ResourceGroupStatus })
+      }
+
+      return details
+    },
     pointCancelled(point) {
       return point.realtime && point.realtime.Cancelled
     },
