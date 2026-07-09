@@ -22,8 +22,17 @@
       <DeparturesList v-else :stop="stop" :departures="departures || []" variant="compact"/>
     </div>
 
-    <div v-else-if="activeTab === 'arrivals'" class="px-4 py-6 text-sm leading-relaxed text-slate-600">
-      Arrivals are not available yet.
+    <div v-else-if="activeTab === 'arrivals'">
+      <LoadingState
+        v-if="loadingArrivals"
+        title="Loading arrivals"
+        subtitle="Fetching the latest arrival board."
+        compact
+        bare
+        :rows="4"
+        :show-tabs="false"
+      />
+      <DeparturesList v-else :stop="stop" :departures="arrivals || []" board-type="arrivals" variant="compact" />
     </div>
 
     <div v-else>
@@ -50,6 +59,13 @@ export default {
       default: null
     },
     loadingDepartures: {
+      type: Boolean,
+      default: false
+    },
+    arrivals: {
+      default: null
+    },
+    loadingArrivals: {
       type: Boolean,
       default: false
     },

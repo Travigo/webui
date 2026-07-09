@@ -3,7 +3,7 @@
     No services run at this stop
   </Notice>
   <Notice v-else-if="this.departures.length == 0" type="warning" class="m-3">
-    No upcoming departures at this stop
+    No upcoming {{ boardType }} at this stop
   </Notice>
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
     <div v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
@@ -168,6 +168,10 @@ export default {
     variant: {
       type: String,
       default: 'default'
+    },
+    boardType: {
+      type: String,
+      default: 'departures'
     }
   },
   components: {

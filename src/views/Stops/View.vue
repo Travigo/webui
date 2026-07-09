@@ -59,6 +59,8 @@
       :stop="stop"
       :departures="departures"
       :loading-departures="loadingDepartures && departures === null"
+      :arrivals="arrivals"
+      :loading-arrivals="loadingArrivals && arrivals === null"
       v-model="currentTab"
       @tab-change="refreshView"
     >
@@ -108,10 +110,10 @@
         <button
           type="button"
           class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 disabled:opacity-75 sm:min-h-11 sm:rounded-2xl"
-          :disabled="loadingDepartures"
+          :disabled="boardLoading"
           @click="refreshView()"
         >
-          <span class="material-symbols-outlined text-[24px]" :class="{'animate-spin': loadingDepartures}">refresh</span>
+          <span class="material-symbols-outlined text-[24px]" :class="{'animate-spin': boardLoading}">refresh</span>
           <span class="leading-tight">
             Refresh now
             <span class="block text-[10px] font-semibold text-blue-100">{{ lastUpdatedLabel }}</span>
@@ -449,6 +451,9 @@ export default {
 
       const minutesAgo = Math.round(secondsAgo / 60)
       return `Updated ${minutesAgo} min ago`
+    },
+    boardLoading() {
+      return this.currentTab === 'arrivals' ? this.loadingArrivals : this.loadingDepartures
     }
   },
   methods: {
@@ -575,10 +580,10 @@ export default {
 
       return details.Details || details.StopDetails || details
     },
-    refreshView() {
-      if (this.currentTab == "departures") {
+    refreshView(tab = this.currentTab) {
+      if (tab === 'departures') {
         this.getDepartures()
-      } else if (this.currentTab == "arrivals") {
+      } else if (tab === 'arrivals') {
         this.getArrivals()
       }
     },
@@ -622,7 +627,26 @@ export default {
         .finally(() => this.loadingDepartures = false)
     },
     getArrivals() {
-      console.log("TODO implement get arrivals")
+      if (this.loadingArrivals && this.arrivals !== null) {
+        return
+      }
+
+      this.loadingArrivals = true
+      axios
+        .get(`${API.URL}/core/stops/${this.$route.params.id}/arrivals`, {
+          params: {
+            'count': 25,
+            'datetime': this.$route.query.datetime
+          }
+        })
+        .then(response => {
+          this.arrivals = response.data
+          this.lastUpdatedAt = new Date()
+        })
+        .catch(error => {
+          console.log(error)
+        })
+        .finally(() => this.loadingArrivals = false)
     },
     getServiceAlerts() {
       axios
@@ -685,14 +709,14 @@ export default {
     },
     getData() {
       this.getStop()
-      this.getDepartures()
+      this.refreshView()
       this.getServiceAlerts()
       this.getStopDetails()
     }
   },
   mounted () {
     this.getData()
-    this.refreshTimer = setInterval(this.getDepartures, 30000)
+    this.refreshTimer = setInterval(this.refreshView, 30000)
     this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
   },
   beforeRouteLeave() {  
