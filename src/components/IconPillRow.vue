@@ -4,7 +4,7 @@
       v-if="loading"
       class="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
     >
-      <span class="material-symbols-outlined text-[18px]">progress_activity</span>
+      <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
       {{ loadingLabel }}
     </span>
 
