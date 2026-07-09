@@ -70,7 +70,7 @@
       </div>
     </section> -->
 
-    <div class="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] xl:items-start xl:gap-6">
+    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.9fr)] xl:items-start xl:gap-6">
     <section>
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 sm:rounded-3xl">
         <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
@@ -121,11 +121,11 @@
         <p v-if="statsUpdatedAt" class="mt-1 text-xs font-medium text-slate-400">Updated {{ statsUpdatedAt }}</p>
       </div>
 
-      <div v-if="statsLoading" class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4" aria-label="Loading network summary">
+      <div v-if="statsLoading" class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4 xl:grid-cols-2" aria-label="Loading network summary">
         <div v-for="index in 4" :key="index" class="h-32 animate-pulse rounded-xl bg-slate-100 sm:h-36 sm:rounded-2xl dark:bg-slate-800"></div>
       </div>
 
-      <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4">
+      <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4 xl:grid-cols-2">
         <button
           v-for="summary in networkSummary"
           v-bind:key="summary.label"
