@@ -3,24 +3,25 @@
   <LoadingState
     v-if="loadingJourney"
     title="Loading journey"
-    subtitle="Fetching live journey status, stops, alerts, and train details."
+    subtitle="Fetching live journey status, stops, and alerts."
   />
 
   <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
     <PageHeader
-      :title="journeyTitle"
-      :subtitle="journeySubtitle"
+      :title="journeyHeaderTitle"
+      variant="tinted"
+      compact
     >
       <template #meta>
-        <div class="mb-2 flex flex-wrap items-center gap-2">
+        <div class="mb-1 flex flex-wrap items-center gap-2">
           <ServiceIcon
             v-if="journey.Service!==undefined"
-            class="h-7 rounded-md px-2 text-sm font-bold shadow-sm"
-            style="line-height: 28px"
+            class="h-6 rounded-md px-2 text-xs font-bold shadow-sm"
+            style="line-height: 24px"
             :service="journey.Service"
           />
           <span
-            class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
+            class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold"
             :class="journeyStatus.classes"
           >
             <DepartureTypeIcon :journey="journey"/>
@@ -48,24 +49,20 @@
       </template>
 
       <p
-        class="rounded-2xl bg-white/80 px-3 py-2 text-sm font-medium text-slate-600"
+        class="truncate text-xs font-medium text-slate-500 dark:text-slate-400"
         v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked && journey.RealtimeJourney.VehicleLocationDescription"
       >
         {{ journey.RealtimeJourney.VehicleLocationDescription }}
       </p>
 
-      <div v-if="railOverviewItems.length > 0" class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/75 p-2.5 dark:bg-slate-900/75">
-        <span
-          v-for="item in railOverviewItems"
-          v-bind:key="item.label"
-          class="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-        >
-          <span class="material-symbols-outlined text-[17px] text-blue-600 dark:text-blue-300">{{ item.icon }}</span>
-          {{ item.label }}
+      <div v-if="headerRailOverviewItem" class="flex items-center gap-2 border-t border-slate-100 pt-2 dark:border-slate-800">
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+          <span class="material-symbols-outlined text-[17px] text-blue-600 dark:text-blue-300">{{ headerRailOverviewItem.icon }}</span>
+          {{ headerRailOverviewItem.label }}
         </span>
         <button
           type="button"
-          class="ml-auto inline-flex min-h-8 items-center gap-1 rounded-xl px-2 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10"
+          class="ml-auto inline-flex min-h-8 items-center gap-1 rounded-xl px-1 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10"
           @click="changeTab('details')"
         >
           Onboard details
@@ -436,6 +433,12 @@ export default {
 
       return this.journeyPoints?.[this.journeyPoints.length - 1]?.stop?.PrimaryName || 'Journey'
     },
+    journeyHeaderTitle() {
+      const origin = this.journeyPoints?.[0]?.stop?.PrimaryName
+      const destination = this.journeyTitle
+
+      return origin && destination ? `${origin} → ${destination}` : destination
+    },
     journeySubtitle() {
       const origin = this.journeyPoints?.[0]?.stop?.PrimaryName
       const destination = this.journeyPoints?.[this.journeyPoints.length - 1]?.stop?.PrimaryName
@@ -583,6 +586,9 @@ export default {
       }
 
       return items.slice(0, 3)
+    },
+    headerRailOverviewItem() {
+      return this.railOverviewItems.find(item => item.icon === 'train') || this.railOverviewItems[0] || null
     },
     nextJourneyPoint() {
       return (this.journeyPoints || []).find(point => point.active) || this.journeyPoints?.[0]

@@ -13,7 +13,7 @@
             {{ eyebrow }}
           </p>
 
-          <h1 class="mt-1 text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-3xl">
+          <h1 :class="titleClass">
             <slot name="title">{{ title }}</slot>
           </h1>
 
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div v-if="$slots.default" class="mt-3 space-y-3">
+    <div v-if="$slots.default" :class="contentClass">
       <slot></slot>
     </div>
   </section>
@@ -57,7 +57,11 @@ export default {
     variant: {
       type: String,
       default: 'tinted',
-      validator: value => ['tinted', 'panel'].includes(value)
+      validator: value => ['tinted', 'panel', 'plain'].includes(value)
+    },
+    compact: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -66,7 +70,21 @@ export default {
         return 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5'
       }
 
-      return 'rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10'
+      if (this.variant === 'plain') {
+        return 'border-b border-slate-200 pb-3 dark:border-slate-800'
+      }
+
+      return this.compact
+        ? 'rounded-2xl bg-blue-50 p-3 dark:bg-blue-500/10 sm:p-4'
+        : 'rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10'
+    },
+    titleClass() {
+      return this.compact
+        ? 'mt-1 text-xl font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-2xl'
+        : 'mt-1 text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-3xl'
+    },
+    contentClass() {
+      return this.compact ? 'mt-2 space-y-2' : 'mt-3 space-y-3'
     },
     iconClass() {
       if (this.variant === 'panel') {
