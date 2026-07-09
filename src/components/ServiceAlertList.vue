@@ -1,5 +1,48 @@
 <template>
-  <section class="space-y-2.5" v-if="alertCards.length > 0">
+  <section v-if="compact && compactAlertCard" class="overflow-hidden rounded-2xl border shadow-sm" :class="compactAlertCard.classes">
+    <button
+      type="button"
+      class="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/45 dark:hover:bg-slate-900/20"
+      @click="openAlertsModal"
+    >
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" :class="compactAlertCard.iconClasses">
+        <span class="material-symbols-outlined text-[20px] leading-none">{{ compactAlertCard.icon }}</span>
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-100">
+          {{ compactAlertCard.title }}
+        </span>
+        <span class="block truncate text-xs font-medium text-slate-600 dark:text-slate-300">
+          {{ compactAlertCard.body }}
+        </span>
+      </span>
+      <span class="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-slate-700 dark:text-slate-200">
+        {{ alertCards.length > 1 ? `${alertCards.length} updates` : 'View' }}
+        <span class="material-symbols-outlined text-[17px]">chevron_right</span>
+      </span>
+    </button>
+
+    <Modal
+      v-model:open="alertsModalOpen"
+      title="Service updates"
+      :subtitle="modalDescription"
+      icon="campaign"
+      size="lg"
+      close-label="Close service updates"
+      body-class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5"
+    >
+      <article
+        v-for="card in modalAlertCards"
+        v-bind:key="`modal-${card.key}`"
+        class="rounded-2xl border"
+        :class="card.classes"
+      >
+        <ServiceAlertCard :card="card" />
+      </article>
+    </Modal>
+  </section>
+
+  <section v-else-if="alertCards.length > 0" class="space-y-2.5">
     <article
       v-for="(card, index) in visibleAlertCards"
       v-bind:key="card.key"
@@ -41,7 +84,7 @@
       body-class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5"
     >
               <article
-                v-for="card in hiddenAlertCards"
+                v-for="card in modalAlertCards"
                 v-bind:key="`modal-${card.key}`"
                 class="rounded-2xl border"
                 :class="card.classes"
@@ -91,6 +134,10 @@ export default {
       type: Boolean,
       default: false
     },
+    compact: {
+      type: Boolean,
+      default: false
+    },
     contextName: {
       type: String,
       default: ''
@@ -135,6 +182,12 @@ export default {
       }
 
       return this.alertCards.slice(this.maxVisible)
+    },
+    compactAlertCard() {
+      return this.alertCards[0] || null
+    },
+    modalAlertCards() {
+      return this.compact ? this.alertCards : this.hiddenAlertCards
     },
     modalDescription() {
       if (this.contextName) {

@@ -1,11 +1,13 @@
 <template>
   <button
     @click="open"
-    class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-100 bg-white/80 px-2.5 py-1.5 text-sm font-medium text-slate-900 shadow-sm shadow-slate-200/60 sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-2 sm:text-lg"
+    class="-my-1 inline-flex min-h-11 items-center"
   >
-    <span class="material-symbols-outlined text-lg text-slate-900 sm:text-2xl">location_on</span>
-    {{ location }}
-    <span class="material-symbols-outlined text-base text-blue-600 sm:text-xl">keyboard_arrow_down</span>
+    <span class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-100 bg-white/80 px-2.5 py-1.5 text-sm font-medium text-slate-900 shadow-sm shadow-slate-200/60 sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-2 sm:text-lg">
+      <span class="material-symbols-outlined text-lg text-slate-900 sm:text-2xl">location_on</span>
+      {{ location }}
+      <span class="material-symbols-outlined text-base text-blue-600 sm:text-xl">keyboard_arrow_down</span>
+    </span>
   </button>
 
   <Modal

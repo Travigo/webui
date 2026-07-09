@@ -3,8 +3,10 @@
     <LocationPicker />
 
     <SearchBar
+      input-id="home-stop-search"
+      label="Search stops, stations or routes"
       placeholder="Search stops, stations or routes"
-      searchClasses="h-14 rounded-2xl border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-md shadow-slate-200/70 placeholder:text-slate-400 sm:h-20 sm:rounded-3xl sm:px-5 sm:text-xl"
+      searchClasses="h-14 rounded-2xl border-slate-200 bg-white px-4 text-base text-slate-900 shadow-md shadow-slate-200/70 placeholder:text-slate-400 sm:h-[4.25rem] sm:rounded-3xl sm:px-5 sm:text-lg lg:h-20 lg:text-xl"
       :showIcons="true"
     />
 
@@ -68,6 +70,7 @@
       </div>
     </section> -->
 
+    <div class="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] xl:items-start xl:gap-6">
     <section>
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 sm:rounded-3xl">
         <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
@@ -78,12 +81,14 @@
             </div>
             <button
               type="button"
-              class="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-70 sm:rounded-2xl"
+              class="-my-1 inline-flex min-h-11 shrink-0 items-center disabled:opacity-70"
               :disabled="loadingNearbyStops"
               @click="requestNearbyStops"
             >
-              <span class="material-symbols-outlined text-[19px]" :class="{'animate-spin': loadingNearbyStops}">{{ loadingNearbyStops ? 'progress_activity' : 'near_me' }}</span>
-              <span>{{ nearbyStopsButtonLabel }}</span>
+              <span class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 sm:rounded-2xl">
+                <span class="material-symbols-outlined text-[19px]" :class="{'animate-spin': loadingNearbyStops}">{{ loadingNearbyStops ? 'progress_activity' : 'near_me' }}</span>
+                <span>{{ nearbyStopsButtonLabel }}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -113,15 +118,21 @@
       <div class="mb-3 sm:mb-4">
         <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Network summary</h2>
         <p class="text-sm text-slate-500 sm:text-base">Data currently ingested in Travigo</p>
+        <p v-if="statsUpdatedAt" class="mt-1 text-xs font-medium text-slate-400">Updated {{ statsUpdatedAt }}</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div v-if="statsLoading" class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4" aria-label="Loading network summary">
+        <div v-for="index in 4" :key="index" class="h-32 animate-pulse rounded-xl bg-slate-100 sm:h-36 sm:rounded-2xl dark:bg-slate-800"></div>
+      </div>
+
+      <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4">
         <button
           v-for="summary in networkSummary"
           v-bind:key="summary.label"
           @click="openStatsModal(summary.view)"
           :class="summary.bg"
-          class="rounded-xl p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md sm:rounded-2xl sm:p-4"
+          class="rounded-xl p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:rounded-2xl sm:p-4"
+          :disabled="!stats"
         >
           <div class="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
             <span :class="summary.iconColor" class="material-symbols-outlined text-xl sm:text-3xl">{{ summary.icon }}</span>
@@ -131,6 +142,13 @@
           <span :class="summary.pillClass" class="mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium sm:mt-3 sm:px-3 sm:py-1 sm:text-sm">
             {{ summary.pill }}
           </span>
+        </button>
+      </div>
+
+      <div v-if="statsError" class="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
+        <span>{{ statsError }}</span>
+        <button type="button" class="shrink-0 rounded-xl bg-white px-3 py-2 text-sm font-bold text-amber-800 shadow-sm dark:bg-slate-900 dark:text-amber-100" @click="getStats">
+          Retry
         </button>
       </div>
 
@@ -150,6 +168,7 @@
         <span class="material-symbols-outlined shrink-0 text-xl text-slate-400">chevron_right</span>
       </router-link>
     </section>
+    </div>
 
     <Modal
       v-model:open="statsModalOpen"
@@ -217,6 +236,9 @@ export default {
   data () {
     return {
       stats: undefined,
+      statsLoading: true,
+      statsError: '',
+      statsUpdatedAt: '',
       selectedStatsView: undefined,
       statsModalOpen: false,
       refreshTimer: undefined,
@@ -531,15 +553,27 @@ export default {
       return earthRadiusMetres * c
     },
     getStats() {
+      this.statsLoading = this.stats === undefined
+      this.statsError = ''
+
       axios
         .get(`${API.URL}/stats/calculated`)
         .then(response => {
+          if (!response.data || typeof response.data !== 'object' || Array.isArray(response.data)) {
+            throw new Error('Unexpected stats response')
+          }
+
           this.stats = response.data
+          this.statsUpdatedAt = new Intl.DateTimeFormat('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit'
+          }).format(new Date())
         })
         .catch(error => {
           console.log(error)
-          this.error = error
+          this.statsError = 'Network summary could not be refreshed.'
         })
+        .finally(() => this.statsLoading = false)
     }
   },
   mounted () {

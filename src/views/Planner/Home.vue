@@ -1,12 +1,13 @@
 <template>
   <div class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <PageHeader
-      title="Journey planner"
-      subtitle="Find public transport journeys between stops or from your current location."
-      icon="route"
-    />
+    <div class="mx-auto max-w-3xl space-y-4">
+      <PageHeader
+        title="Journey planner"
+        subtitle="Find public transport journeys between stops or from your current location."
+        icon="route"
+      />
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
         <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Plan a journey</h2>
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Journeys may include transfers where needed.</p>
@@ -34,6 +35,8 @@
           <SearchBar
             v-if="originMode === 'stop'"
             mode="store"
+            input-id="planner-origin-stop"
+            label="Origin stop"
             placeholder="Choose origin stop"
             searchClasses="h-12 rounded-2xl border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
             :flush="true"
@@ -79,6 +82,8 @@
           <label class="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">To</label>
           <SearchBar
             mode="store"
+            input-id="planner-destination-stop"
+            label="Destination stop"
             placeholder="Choose destination stop"
             searchClasses="h-12 rounded-2xl border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
             :flush="true"
@@ -95,7 +100,8 @@
           Find journeys
         </button>
       </form>
-    </section>
+      </section>
+    </div>
   </div>
 </template>
 

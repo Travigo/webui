@@ -1,5 +1,6 @@
 <template>
   <div :class="wrapperClass">
+    <label v-if="label" :for="searchInputId" class="sr-only">{{ label }}</label>
     <span
       v-if="showIcons"
       class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xl text-slate-400 sm:left-5 sm:text-4xl"
@@ -7,19 +8,27 @@
       search
     </span>
     <input
-      type="text" id="searchTerm"
+      type="text"
+      :id="searchInputId"
       ref="searchInput"
       :class="inputClass"
       :placeholder="placeholder"
       :required="mode !== 'store'"
       autocomplete="off"
+      role="combobox"
+      aria-autocomplete="list"
+      :aria-label="label || placeholder"
+      :aria-expanded="searchResults.length > 0"
+      :aria-controls="resultsListId"
+      :aria-activedescendant="activeResultIndex >= 0 ? resultId(activeResultIndex) : undefined"
       v-model="searchTerm"
       v-on:input="searchStops"
+      @keydown="handleSearchKeydown"
     >
     <button
-      v-if="showIcons"
+      v-if="showIcons && showFilters"
       type="button"
-      class="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 sm:right-5 sm:h-12 sm:w-12"
+      class="absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 sm:right-5 sm:h-12 sm:w-12"
       aria-label="Open search filters"
       @click="openFilters"
     >
@@ -32,10 +41,12 @@
       </span>
     </button>
 
-    <div 
+    <button
+      type="button"
       :class="selectedResultClass"
       v-if="selectedResult !== undefined"
       @click="clearSelectedResult()"
+      :aria-label="`Change selected stop: ${stopName(selectedResult) || 'selected stop'}`"
     >
       <div class="flex h-full items-center">
         <div class="shrink-0">
@@ -51,14 +62,19 @@
           </div>
         </div>
       </div>
-    </div>
+    </button>
   </div>
-  <ul class="relative z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70" v-if="searchResults.length > 0">
+  <ul :id="resultsListId" role="listbox" class="relative z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70" v-if="searchResults.length > 0">
     <li v-for="(result, index) in searchResults" v-bind:key="stopIdentifier(result) || index">
       <button
         type="button"
-        class="block w-full cursor-pointer px-3 py-2 text-left transition hover:bg-slate-50"
+        role="option"
+        :id="resultId(index)"
+        :aria-selected="index === activeResultIndex"
+        class="block w-full cursor-pointer px-3 py-2 text-left transition hover:bg-slate-50 focus:bg-blue-50 focus:outline-none"
+        :class="{ 'bg-blue-50': index === activeResultIndex }"
         @click="handleResultClick(result)"
+        @mouseenter="activeResultIndex = index"
       >
         <div class="flex">
           <div class="mt-0.5">
@@ -79,6 +95,7 @@
   </ul>
 
   <Modal
+    v-if="showIcons && showFilters"
     v-model:open="filtersOpen"
     title="Search filters"
     subtitle="Refine which stops and stations appear."
@@ -168,11 +185,23 @@ export default {
     placeholder: {
       default: ''
     },
+    label: {
+      type: String,
+      default: ''
+    },
+    inputId: {
+      type: String,
+      default: ''
+    },
     searchClasses: {
       default: ''
     },
     showIcons: {
       default: false
+    },
+    showFilters: {
+      type: Boolean,
+      default: true
     },
     flush: {
       default: false
@@ -194,13 +223,23 @@ export default {
       let classes = this.searchClasses + ' shadow-md border rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500'
 
       if (this.showIcons) {
-        classes += ' pl-10 pr-10 sm:pl-20 sm:pr-20'
+        classes += ' pl-10 sm:pl-20'
+      }
+
+      if (this.showIcons && this.showFilters) {
+        classes += ' pr-12 sm:pr-20'
       }
 
       return classes
     },
     selectedResultClass() {
       return `${this.searchClasses} absolute top-0 left-0 z-20 cursor-pointer border rounded-2xl block w-full bg-white text-slate-950`
+    },
+    searchInputId() {
+      return this.inputId || `travigo-search-${this.$.uid}`
+    },
+    resultsListId() {
+      return `${this.searchInputId}-results`
     },
     searchResults() {
       const resultSet = [
@@ -235,6 +274,7 @@ export default {
       loadingResults: false,
       results: {},
       selectedResult: undefined,
+      activeResultIndex: -1,
       filtersOpen: false,
       selectedFilters: {
         transportType: []
@@ -260,6 +300,13 @@ export default {
   watch: {
     modelValue(newValue) {
       this.loadSelectedResult(newValue)
+    },
+    searchResults(results) {
+      if (results.length === 0) {
+        this.activeResultIndex = -1
+      } else if (this.activeResultIndex >= results.length) {
+        this.activeResultIndex = 0
+      }
     }
   },
   mounted: function() {
@@ -335,6 +382,7 @@ export default {
       this.selectedResult = undefined
       this.searchTerm = ''
       this.results = {}
+      this.activeResultIndex = -1
 
       if (this.mode == 'store') {
         this.$emit('update:modelValue', '')
@@ -355,6 +403,35 @@ export default {
         this.$emit('update:modelValue', identifier)
       }
     },
+    resultId(index) {
+      return `${this.resultsListId}-option-${index}`
+    },
+    handleSearchKeydown(event) {
+      if (event.key === 'ArrowDown' && this.searchResults.length > 0) {
+        event.preventDefault()
+        this.activeResultIndex = (this.activeResultIndex + 1) % this.searchResults.length
+        return
+      }
+
+      if (event.key === 'ArrowUp' && this.searchResults.length > 0) {
+        event.preventDefault()
+        this.activeResultIndex = this.activeResultIndex <= 0
+          ? this.searchResults.length - 1
+          : this.activeResultIndex - 1
+        return
+      }
+
+      if (event.key === 'Enter' && this.activeResultIndex >= 0) {
+        event.preventDefault()
+        this.handleResultClick(this.searchResults[this.activeResultIndex])
+        return
+      }
+
+      if (event.key === 'Escape') {
+        this.results = {}
+        this.activeResultIndex = -1
+      }
+    },
     searchStops() {
       if (this.selectedResult !== undefined && this.searchTerm !== this.stopName(this.selectedResult)) {
         this.selectedResult = undefined
@@ -366,6 +443,7 @@ export default {
 
       if (this.searchTerm === '') {
         this.results = {}
+        this.activeResultIndex = -1
         return
       }
       this.loadingResults = true
@@ -374,6 +452,7 @@ export default {
           .get(`${API.URL}/core/stops/search?name=`+this.searchTerm)
           .then(response => {
             this.results = response.data
+            this.activeResultIndex = this.searchResults.length > 0 ? 0 : -1
           })
           .catch(error => {
             console.log(error)

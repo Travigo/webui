@@ -54,28 +54,65 @@
         {{ journey.RealtimeJourney.VehicleLocationDescription }}
       </p>
 
-      <div v-if="showDetailedInformationRail" class="rounded-2xl bg-white/75 p-3 dark:bg-slate-900/75">
-        <DetailedInformationRail :journey="journey"/>
+      <div v-if="railOverviewItems.length > 0" class="flex flex-wrap items-center gap-2 rounded-2xl bg-white/75 p-2.5 dark:bg-slate-900/75">
+        <span
+          v-for="item in railOverviewItems"
+          v-bind:key="item.label"
+          class="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+        >
+          <span class="material-symbols-outlined text-[17px] text-blue-600 dark:text-blue-300">{{ item.icon }}</span>
+          {{ item.label }}
+        </span>
+        <button
+          type="button"
+          class="ml-auto inline-flex min-h-8 items-center gap-1 rounded-xl px-2 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10"
+          @click="changeTab('details')"
+        >
+          Onboard details
+          <span class="material-symbols-outlined text-[17px]">chevron_right</span>
+        </button>
       </div>
     </PageHeader>
 
-    <ServiceAlertList :alerts="serviceAlerts" collapsible />
+    <ServiceAlertList
+      :alerts="serviceAlerts"
+      :max-visible="1"
+      :context-name="journeyTitle"
+      compact
+    />
 
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
 
-      <div v-if="currentTab === 'timeline'" class="p-4 sm:p-5">
-        <button
-          v-if="!expandInactiveStops && hasHiddenStops"
-          @click="showAllStops()"
-          type="button"
-          class="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
-        >
-          <span class="material-symbols-outlined text-[19px]">history</span>
-          Show previous stops
-        </button>
+      <div v-if="currentTab === 'timeline'" class="xl:grid xl:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside class="hidden border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/70 xl:block">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Journey overview</p>
+          <div class="mt-3 rounded-2xl bg-white p-3 shadow-sm dark:bg-slate-950">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</p>
+            <p class="mt-1 text-sm font-extrabold" :class="journeyStatus.classes">{{ journeyStatus.label }}</p>
+          </div>
+          <div v-if="nextJourneyPoint" class="mt-3 rounded-2xl bg-white p-3 shadow-sm dark:bg-slate-950">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Next stop</p>
+            <p class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ nextJourneyPoint.stop.PrimaryName }}</p>
+            <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {{ pretty.time(nextJourneyPoint.realtime?.DepartureTime || nextJourneyPoint.departureTime, journey.DepartureTimezone) }}
+              <template v-if="nextJourneyPoint.platform"> · Platform {{ nextJourneyPoint.platform }}</template>
+            </p>
+          </div>
+        </aside>
 
-        <ol class="relative space-y-0">
+        <div class="p-4 sm:p-5">
+          <button
+            v-if="!expandInactiveStops && hasHiddenStops"
+            @click="showAllStops()"
+            type="button"
+            class="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+          >
+            <span class="material-symbols-outlined text-[19px]">history</span>
+            Show previous stops
+          </button>
+
+          <ol class="relative space-y-0">
           <li
             v-for="(point, index) in journeyPoints"
             v-bind:key="index"
@@ -160,10 +197,39 @@
               </div>
             </div>
           </li>
-        </ol>
+          </ol>
+        </div>
       </div>
 
       <div v-else-if="currentTab === 'details'" class="space-y-4 p-4 sm:p-5">
+        <section
+          v-if="hasRailFacilities"
+          class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+        >
+          <div class="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Facilities</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Onboard amenities and accessibility information.</p>
+            </div>
+            <span class="material-symbols-outlined text-[22px] text-blue-600 dark:text-blue-300">chair</span>
+          </div>
+          <DetailedInformationRail :journey="journey" :show-train-layout="false" />
+        </section>
+
+        <section
+          v-if="hasTrainFormation"
+          class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+        >
+          <div class="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Train formation</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Coach layout, facilities by carriage, and occupancy.</p>
+            </div>
+            <span class="material-symbols-outlined text-[22px] text-blue-600 dark:text-blue-300">train</span>
+          </div>
+          <DetailedInformationRail :journey="journey" :show-facilities="false" />
+        </section>
+
         <section
           v-if="journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable"
           class="rounded-2xl border border-slate-100 bg-slate-50 p-4"
@@ -473,6 +539,53 @@ export default {
     },
     hasDetailedRailDetails() {
       return this.detailedRailTrains.length > 0 || this.railServiceDetailItems.length > 0
+    },
+    hasRailFacilities() {
+      return Boolean(this.detailedRailInfo.ReplacementBus || this.hasDetailedRailFacilityPills)
+    },
+    hasTrainFormation() {
+      return this.detailedRailTrains.length > 0 || this.detailedRailCarriages.length > 0
+    },
+    railOverviewItems() {
+      const items = []
+      const facilityKeys = [
+        'AirConditioning',
+        'WiFi',
+        'PowerPlugs',
+        'USBPlugs',
+        'BicycleSpaces',
+        'DisabledAccess',
+        'Toilets'
+      ]
+      const facilityCount = facilityKeys.filter(key => this.detailedRailTrains.some(train => Boolean(train[key]))).length +
+        (this.detailedRailInfo.CateringAvailable ? 1 : 0)
+
+      if (this.detailedRailInfo.ReplacementBus) {
+        items.push({ icon: 'directions_bus', label: 'Rail replacement bus' })
+      }
+
+      if (this.detailedRailCarriages.length > 0) {
+        items.push({
+          icon: 'train',
+          label: `${this.detailedRailCarriages.length} coach${this.detailedRailCarriages.length === 1 ? '' : 'es'}`
+        })
+      }
+
+      if (facilityCount > 0) {
+        items.push({ icon: 'verified', label: `${facilityCount} onboard amenit${facilityCount === 1 ? 'y' : 'ies'}` })
+      }
+
+      if (this.detailedRailInfo.ReservationRequired || this.detailedRailInfo.ReservationRecommended) {
+        items.push({
+          icon: 'event_seat',
+          label: this.detailedRailInfo.ReservationRequired ? 'Seat reservation required' : 'Seat reservation recommended'
+        })
+      }
+
+      return items.slice(0, 3)
+    },
+    nextJourneyPoint() {
+      return (this.journeyPoints || []).find(point => point.active) || this.journeyPoints?.[0]
     },
     showDetailedInformationRail() {
       if (this.journey?.RealtimeJourney?.Cancelled) {

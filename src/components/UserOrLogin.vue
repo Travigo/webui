@@ -1,20 +1,22 @@
 <template>
-  <div class="relative flex h-8 w-8 items-center justify-center sm:h-10 sm:w-10" @click.stop>
+  <div class="relative" @click.stop>
     <button
       type="button"
       @click="toggleMenu"
-      class="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 dark:bg-indigo-400/20 dark:text-indigo-100 dark:hover:bg-indigo-400/30"
+      class="-m-1.5 flex h-11 w-11 items-center justify-center sm:-m-0.5"
       :title="isAuthenticated ? 'Account controls' : 'Log in or register'"
       :aria-label="isAuthenticated ? 'Account controls' : 'Log in or register'"
       :aria-expanded="menuOpen"
     >
-      <img
-        v-if="isAuthenticated && user?.picture"
-        :src="user.picture"
-        :alt="displayName"
-        class="block h-full w-full object-cover"
-      >
-      <span v-else class="material-symbols-outlined text-[22px] sm:text-[24px]">person</span>
+      <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-slate-950 shadow-sm transition hover:bg-indigo-200 dark:bg-indigo-400/20 dark:text-indigo-100 dark:hover:bg-indigo-400/30 sm:h-10 sm:w-10">
+        <img
+          v-if="isAuthenticated && user?.picture"
+          :src="user.picture"
+          :alt="displayName"
+          class="block h-full w-full object-cover"
+        >
+        <span v-else class="material-symbols-outlined text-[22px] sm:text-[24px]">person</span>
+      </span>
     </button>
 
     <Transition name="account-menu">

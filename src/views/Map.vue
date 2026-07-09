@@ -242,7 +242,7 @@
 
 .map-filter-button {
   position: absolute;
-  bottom: 6.25rem;
+  bottom: calc(6.25rem + env(safe-area-inset-bottom));
   right: 1rem;
   z-index: 40;
   display: inline-flex;
@@ -282,7 +282,7 @@
 }
 
 :deep(.mapboxgl-ctrl-bottom-right) {
-  bottom: 9.75rem;
+  bottom: calc(9.75rem + env(safe-area-inset-bottom));
   right: 0.7rem;
 }
 
@@ -385,12 +385,12 @@
   }
 
   .map-filter-button {
-    bottom: 7.25rem;
+    bottom: calc(7.25rem + env(safe-area-inset-bottom));
     right: 2rem;
   }
 
   :deep(.mapboxgl-ctrl-bottom-right) {
-    bottom: 11rem;
+    bottom: calc(11rem + env(safe-area-inset-bottom));
     right: 1.7rem;
   }
 }

@@ -52,7 +52,7 @@
       :alerts="serviceAlerts"
       :max-visible="1"
       :context-name="stop?.PrimaryName"
-      collapsible
+      compact
     />
 
     <StopDeparturesTable

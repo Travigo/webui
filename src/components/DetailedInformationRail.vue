@@ -1,5 +1,5 @@
 <template>
-  <div v-if="journey?.Service?.TransportType == 'Rail'">
+  <div v-if="showFacilities && journey?.Service?.TransportType == 'Rail'">
     <div v-if="railInfo.ReplacementBus">
       <div class="mb-3 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200">
         This is a rail replacement bus
@@ -13,7 +13,7 @@
     />
   </div>
 
-  <TrainLayout :trains="trains" />
+  <TrainLayout v-if="showTrainLayout" :trains="trains" />
 
   <Modal
     v-model:open="facilityModalOpen"
@@ -75,6 +75,14 @@ export default {
   },
   props: {
     journey: {},
+    showFacilities: {
+      type: Boolean,
+      default: true
+    },
+    showTrainLayout: {
+      type: Boolean,
+      default: true
+    }
   },
   computed: {
     railInfo() {

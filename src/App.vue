@@ -168,12 +168,12 @@ export default {
   <div class="min-h-screen bg-[#f8fafc] text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100">
     <nav
       v-if="this.showChrome"
-      class="relative z-50 mx-auto max-w-5xl px-4 pt-5 sm:px-8 sm:pt-8 lg:px-10"
+      class="relative z-50 mx-auto max-w-5xl px-4 pt-5 sm:px-8 sm:pt-8 lg:max-w-6xl lg:px-10"
     >
       <div class="flex items-start justify-between gap-3 sm:gap-4">
         <div>
           <router-link :to="{ path: '/' }" class="inline-flex items-center gap-2 sm:gap-3">
-            <span class="bg-gradient-to-r from-pink-500 via-fuchsia-400 to-indigo-600 bg-clip-text text-2xl font-semibold tracking-normal text-transparent sm:text-5xl">
+            <span class="bg-gradient-to-r from-pink-500 via-fuchsia-400 to-indigo-600 bg-clip-text text-[clamp(1.5rem,3vw,3rem)] font-semibold tracking-normal text-transparent">
               Travigo
             </span>
             <span
@@ -195,10 +195,12 @@ export default {
         <div class="flex items-center gap-2 sm:hidden">
           <button
             @click="toggleTheme"
-            class="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            class="-m-1.5 inline-flex h-11 w-11 items-center justify-center"
             :aria-label="themeLabel"
           >
-            <span class="material-symbols-outlined text-xl">{{ themeIcon }}</span>
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
+              <span class="material-symbols-outlined text-xl">{{ themeIcon }}</span>
+            </span>
           </button>
 
           <UserOrLogin />
@@ -207,20 +209,22 @@ export default {
         <div class="hidden sm:flex sm:items-center sm:gap-2">
           <button
             @click="toggleTheme"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-blue-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-blue-300"
+            class="-m-0.5 inline-flex h-11 w-11 items-center justify-center"
             :aria-label="themeLabel"
           >
-            <span class="material-symbols-outlined text-[22px]">{{ themeIcon }}</span>
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-blue-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-blue-300">
+              <span class="material-symbols-outlined text-[22px]">{{ themeIcon }}</span>
+            </span>
           </button>
 
           <UserOrLogin />
         </div>
       </div>
     </nav>
-    <main class="h-full" v-bind:class="{ 'pb-20 sm:pb-28': this.showChrome && !this.isFullscreen }">
+    <main class="h-full" v-bind:class="{ 'pb-24 sm:pb-28 xl:pb-10': this.showChrome && !this.isFullscreen }">
       <div 
         class="h-full"
-        v-bind:class="{'max-w-5xl mx-auto px-4 sm:px-8 lg:px-10': !this.isFullscreen}"
+        v-bind:class="{'max-w-5xl mx-auto px-4 sm:px-8 lg:max-w-6xl lg:px-10 xl:pl-36': !this.isFullscreen}"
       >
         <router-view />
       </div>
@@ -228,7 +232,7 @@ export default {
 
     <nav
       v-if="this.showChrome"
-      class="fixed inset-x-0 bottom-3 z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-xl shadow-slate-300/60 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:rounded-3xl sm:px-4 sm:py-3 sm:shadow-2xl dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40"
+      class="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-xl shadow-slate-300/60 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:rounded-3xl sm:px-4 sm:py-3 sm:shadow-2xl xl:hidden dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40"
       aria-label="Primary"
     >
       <div
@@ -256,6 +260,26 @@ export default {
           <span class="truncate">{{ item.name }}</span>
         </router-link>
       </div>
+    </nav>
+
+    <nav
+      v-if="this.showChrome"
+      class="fixed left-6 top-1/2 z-50 hidden w-24 -translate-y-1/2 rounded-3xl border border-slate-200 bg-white/95 p-2 shadow-2xl shadow-slate-300/60 backdrop-blur xl:flex xl:flex-col xl:gap-1 dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40"
+      aria-label="Primary"
+    >
+      <router-link
+        v-for="item in bottomNavItems"
+        v-bind:key="item.name"
+        v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
+        :to="item.route"
+        class="group flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-xs font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+        active-class="desktop-nav-active"
+      >
+        <span class="flex h-10 w-10 items-center justify-center rounded-2xl transition group-hover:bg-white dark:group-hover:bg-slate-800">
+          <span class="material-symbols-outlined text-[24px]">{{ item.icon }}</span>
+        </span>
+        <span class="truncate">{{ item.name }}</span>
+      </router-link>
     </nav>
 
     <div class="pointer-events-none fixed inset-x-0 top-4 z-[1100] mx-auto flex w-full max-w-sm flex-col gap-2 px-4 sm:left-auto sm:right-4 sm:mx-0 sm:w-96 sm:max-w-none sm:px-0">
@@ -306,6 +330,16 @@ export default {
 .bottom-nav-active > span:first-child {
   background: #dbeafe;
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.16);
+}
+
+.desktop-nav-active {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+:global(.dark) .desktop-nav-active {
+  background: rgba(37, 99, 235, 0.16);
+  color: #bfdbfe;
 }
 
 :global(.dark) .bottom-nav-active > span:first-child {
