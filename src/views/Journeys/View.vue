@@ -151,6 +151,22 @@
                   <span v-if="point.activity?.length == 1">
                     {{ point.activity[0] }} only
                   </span>
+                  <span
+                    v-if="doorSideLoading[point.stop.PrimaryIdentifier]"
+                    class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                    title="Fetching door side"
+                  >
+                    <span class="h-2.5 w-2.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500"></span>
+                    Door side
+                  </span>
+                  <span
+                    v-else-if="doorSideByStop[point.stop.PrimaryIdentifier]"
+                    class="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+                    :title="`Doors open on the ${doorSideByStop[point.stop.PrimaryIdentifier].toLowerCase()} side`"
+                  >
+                    <span class="material-symbols-outlined text-[14px]">door_open</span>
+                    Doors {{ doorSideByStop[point.stop.PrimaryIdentifier] }}
+                  </span>
                 </div>
               </div>
 
@@ -371,6 +387,8 @@ export default {
       serviceAlerts: [],
 
       stopServiceAlerts: {},
+      doorSideByStop: {},
+      doorSideLoading: {},
 
       loadingJourney: true,
       errorJourney: undefined,
@@ -809,6 +827,7 @@ export default {
           this.setBounds()
 
           this.getStopAlerts()
+          this.getDoorSides()
         })
         .catch((error) => {
           console.log(error)
@@ -839,6 +858,48 @@ export default {
           })
           .catch(error => {
             console.log(error)
+          })
+      }
+    },
+    getDoorSides() {
+      if (this.journey == null) {
+        return
+      }
+
+      this.doorSideByStop = {}
+      this.doorSideLoading = {}
+
+      const requestedStops = new Set()
+
+      for (const [index, journeyPoint] of (this.journeyPoints || []).entries()) {
+        const stopIdentifier = journeyPoint.stop?.PrimaryIdentifier
+
+        // Doors do not open at the initial origin stop. Past and cancelled stops are also skipped.
+        if (index === 0 || !journeyPoint.active || this.pointCancelled(journeyPoint) || !stopIdentifier || requestedStops.has(stopIdentifier)) {
+          continue
+        }
+
+        requestedStops.add(stopIdentifier)
+        this.doorSideLoading[stopIdentifier] = true
+
+        axios
+          .get(`${API.URL}/core/journeys/${this.$route.params.id}/stops/${stopIdentifier}/door-side`)
+          .then(response => {
+            const data = response.data
+            const doorSide = typeof data === 'string'
+              ? data
+              : data?.DoorSide || data?.doorSide || data?.Side || data?.side || data?.door_side
+
+            if (doorSide && String(doorSide).trim().toLowerCase() !== 'unknown') {
+              this.doorSideByStop[stopIdentifier] = String(doorSide).trim()
+            }
+          })
+          .catch(error => {
+            // Door-side information is optional; an individual failure should not affect other stops.
+            console.log(error)
+          })
+          .finally(() => {
+            this.doorSideLoading[stopIdentifier] = false
           })
       }
     },
