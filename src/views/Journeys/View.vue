@@ -950,13 +950,31 @@ export default {
         ],
       }
     },
-    getRealtimeForStop(realtimeUpdates, stop) {
+    getRealtimeForStop(realtimeUpdates, stop, journeyStopIndex, journey) {
       if(realtimeUpdates === undefined || realtimeUpdates === null) {
         return undefined
       }
-      
+
+      const stopIdentifiers = new Set([
+        stop?.PrimaryIdentifier,
+        ...(stop?.OtherIdentifiers || []),
+      ].filter(Boolean))
+
+      const journeyStopRefs = journey?.Path?.length
+        ? [journey.Path[0].OriginStopRef, ...journey.Path.map((path) => path.DestinationStopRef)]
+        : []
+      const matchingJourneyStopIndexes = journeyStopRefs
+        .map((stopRef, index) => stopIdentifiers.has(stopRef) ? index : -1)
+        .filter((index) => index !== -1)
+      const legacyOccurrenceMatches = matchingJourneyStopIndexes.length <= 1 || matchingJourneyStopIndexes[0] === journeyStopIndex
+
       for (const [key, value] of Object.entries(realtimeUpdates)) {
-        if(stop.PrimaryIdentifier == key || stop.OtherIdentifiers.includes(key)) {
+        const stopRef = value?.StopRef || key
+        const occurrenceMatches = value?.JourneyStopIndex === undefined
+          ? legacyOccurrenceMatches
+          : value.JourneyStopIndex === journeyStopIndex
+
+        if (occurrenceMatches && (stopIdentifiers.has(stopRef) || stopIdentifiers.has(key))) {
           return value
         }
       }
@@ -974,7 +992,7 @@ export default {
         let platform = element.OriginPlatform
         let platformType = 'ESTIMATED'
 
-        let realtimeStop = this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.OriginStop)
+        let realtimeStop = this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.OriginStop, index, journey)
 
         if (realtimeStop?.Platform !== "" && realtimeStop?.Platform !== undefined) {
           platform = realtimeStop?.Platform
@@ -1022,21 +1040,16 @@ export default {
           let platform = element.DestinationPlatform
           let platformType = 'ESTIMATED'
 
-          let realtimeStop = this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.DestinationStop)
+          const destinationStopIndex = journey.Path.length
+          let realtimeStop = this.getRealtimeForStop(journey.RealtimeJourney?.Stops, element.DestinationStop, destinationStopIndex, journey)
 
           if (realtimeStop?.Platform !== "") {
             platform = realtimeStop?.Platform
             platformType = 'ACTUAL'
           }
-          // TODO this is a little hack?
-          if (journey.RealtimeJourney !== undefined && journey.RealtimeJourney?.Stops !== null && journey.RealtimeJourney?.Stops !== undefined
-              && journey.RealtimeJourney.Stops[element.DestinationStopRef] !== undefined) {
-            journey.RealtimeJourney.Stops[element.DestinationStopRef].DepartureTime = journey.RealtimeJourney.Stops[element.DestinationStopRef].ArrivalTime
-          }
-
           let destinationArrivalTime = element.DestinationArrivalTime
-          if (destinationArrivalTime == "0001-01-01T00:00:00Z" && journey.RealtimeJourney?.Stops?.[element.DestinationStopRef] !== undefined) {
-            destinationArrivalTime = journey.RealtimeJourney?.Stops?.[element.DestinationStopRef]?.DepartureTime
+          if (destinationArrivalTime == "0001-01-01T00:00:00Z" && realtimeStop !== undefined) {
+            destinationArrivalTime = realtimeStop.ArrivalTime || realtimeStop.DepartureTime
           }
 
           journeyPoints.push({
@@ -1057,6 +1070,17 @@ export default {
 
       let activeStop = journey.RealtimeJourney == undefined || journey.RealtimeJourney?.NextStopRef == ""
 
+      let activeStopIndex = -1
+      if (!activeStop) {
+        activeStopIndex = journeyPoints.findIndex((point) => (
+          point.realtime?.TimeType === 'EstimatedFuture' &&
+          (
+            journey.RealtimeJourney.NextStopRef === point.stop.PrimaryIdentifier ||
+            point.stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
+          )
+        ))
+      }
+
       if (!activeStop) {
         this.hasHiddenStops = true
       }
@@ -1065,10 +1089,11 @@ export default {
         if (
           !activeStop &&
           journey.RealtimeJourney != undefined &&
+          (index === activeStopIndex || (activeStopIndex === -1 &&
           (
             journey.RealtimeJourney.NextStopRef === journeyPoints[index].stop.PrimaryIdentifier
             || journeyPoints[index].stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
-          )
+          )))
         ) {
           activeStop = true
         }
