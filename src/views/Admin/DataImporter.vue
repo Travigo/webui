@@ -432,10 +432,12 @@ export default {
       loadingLog: false,
       loadingRunner: false,
       logError: '',
+      logRequestId: 0,
       maxActiveTasks: 1,
       plan: undefined,
       planTaskSelectionInitialized: false,
       refreshingRunner: false,
+      runRequestId: 0,
       runDetailError: '',
       runs: [],
       selectedLog: '',
@@ -570,7 +572,6 @@ export default {
 
       const silent = options.silent === true
       const preserveVisibleState = silent || Boolean(this.plan)
-      const scrollY = preserveVisibleState ? window.scrollY : 0
       if (silent && (this.loadingRunner || this.refreshingRunner)) {
         return
       }
@@ -589,8 +590,13 @@ export default {
           this.batchApiGet('/runs', auth0token)
         ])
 
-        this.plan = plan
-        this.runs = this.normaliseRuns(runs)
+        const normalisedRuns = this.normaliseRuns(runs)
+        if (!this.payloadsMatch(this.plan, plan)) {
+          this.plan = plan
+        }
+        if (!this.payloadsMatch(this.runs, normalisedRuns)) {
+          this.runs = normalisedRuns
+        }
         this.initialisePlanTaskSelection()
         this.reconcileSelectedRun()
         await this.loadSelectedRun(auth0token, { silent: preserveVisibleState })
@@ -602,19 +608,19 @@ export default {
       } finally {
         this.loadingRunner = false
         this.refreshingRunner = false
-        if (preserveVisibleState) {
-          this.restoreScrollPosition(scrollY)
-        }
       }
     },
     async loadSelectedRun(auth0token, options = {}) {
       const silent = options.silent === true
+      const runId = this.selectedRunId
+      const requestId = ++this.runRequestId
 
       if (!silent) {
         this.runDetailError = ''
       }
 
-      if (!this.selectedRunId) {
+      if (!runId) {
+        this.logRequestId += 1
         this.selectedRun = undefined
         this.selectedStageKey = ''
         this.selectedTaskId = ''
@@ -628,32 +634,41 @@ export default {
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
-        const run = await this.batchApiGet(`/runs/${encodeURIComponent(this.selectedRunId)}`, token)
-        this.selectedRun = run
+        const run = await this.batchApiGet(`/runs/${encodeURIComponent(runId)}`, token)
+        if (requestId !== this.runRequestId || runId !== this.selectedRunId) {
+          return
+        }
+
+        if (!this.payloadsMatch(this.selectedRun, run)) {
+          this.selectedRun = run
+        }
         this.reconcileSelectedStage()
         this.reconcileSelectedTask()
         await this.loadSelectedTaskLog(token, { silent })
       } catch (error) {
         console.log(error)
-        if (!silent) {
+        if (!silent && requestId === this.runRequestId && runId === this.selectedRunId) {
           this.selectedRun = undefined
           this.selectedLog = ''
           this.runDetailError = this.errorMessage(error, 'Run details could not be loaded.')
         }
       } finally {
-        if (!silent) {
+        if (!silent && requestId === this.runRequestId) {
           this.loadingDetail = false
         }
       }
     },
     async loadSelectedTaskLog(auth0token, options = {}) {
       const silent = options.silent === true
+      const runId = this.selectedRunId
+      const taskId = this.selectedTaskId
+      const requestId = ++this.logRequestId
 
       if (!silent) {
         this.logError = ''
       }
 
-      if (!this.selectedRunId || !this.selectedTaskId) {
+      if (!runId || !taskId) {
         this.selectedLog = ''
         return
       }
@@ -664,15 +679,20 @@ export default {
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
-        this.selectedLog = await this.batchApiText(`/runs/${encodeURIComponent(this.selectedRunId)}/tasks/${encodeURIComponent(this.selectedTaskId)}/log`, token)
+        const log = await this.batchApiText(`/runs/${encodeURIComponent(runId)}/tasks/${encodeURIComponent(taskId)}/log`, token)
+        if (requestId !== this.logRequestId || runId !== this.selectedRunId || taskId !== this.selectedTaskId) {
+          return
+        }
+
+        this.selectedLog = log
       } catch (error) {
         console.log(error)
-        if (!silent) {
+        if (!silent && requestId === this.logRequestId && runId === this.selectedRunId && taskId === this.selectedTaskId) {
           this.selectedLog = ''
           this.logError = this.errorMessage(error, 'Task log could not be loaded.')
         }
       } finally {
-        if (!silent) {
+        if (!silent && requestId === this.logRequestId) {
           this.loadingLog = false
         }
       }
@@ -754,16 +774,8 @@ export default {
       this.selectedTaskId = taskId
       await this.loadSelectedTaskLog()
     },
-    restoreScrollPosition(scrollY) {
-      this.$nextTick(() => {
-        if (Math.abs(window.scrollY - scrollY) > 2) {
-          window.scrollTo({
-            top: scrollY,
-            left: window.scrollX,
-            behavior: 'auto'
-          })
-        }
-      })
+    payloadsMatch(current, next) {
+      return JSON.stringify(current) === JSON.stringify(next)
     },
     changeScreen(screen) {
       this.activeScreen = screen
