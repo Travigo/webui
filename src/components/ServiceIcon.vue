@@ -4,7 +4,7 @@
     :style="serviceIconStyle"
     v-if="service.ServiceName != '' || service.BrandIcon != ''"
   >
-    <div class="flex items-center h-full">
+    <div class="flex h-full items-center" :class="{ 'justify-center': short || !service.ServiceName }">
       <img 
         v-if="service.BrandIcon != ''" 
         :src="service.BrandIcon"

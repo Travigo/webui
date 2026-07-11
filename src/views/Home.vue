@@ -76,6 +76,7 @@
         <TabBar
           :tabs="stopPanelTabs"
           :model-value="stopPanelTab"
+          storage-key="travigo_home_stops_tab"
           @update:model-value="changeStopPanel"
         />
 
@@ -722,6 +723,11 @@ export default {
   mounted () {
     this.getStats()
     this.startNearbyLocationPollingIfAllowed()
+
+    if (this.stopPanelTab === 'saved') {
+      this.getSavedStops()
+    }
+
     this.refreshTimer = setInterval(this.getStats, 250000)
   },
   beforeRouteLeave() {

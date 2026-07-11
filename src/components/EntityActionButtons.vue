@@ -138,7 +138,7 @@ export default {
       return this.entityType.toLowerCase()
     },
     supportsSave() {
-      return this.readableEntityType === 'stop'
+      return ['stop', 'journey'].includes(this.readableEntityType)
     },
     supportsNotifications() {
       return this.availableNotificationTypes.length > 0
@@ -205,14 +205,14 @@ export default {
     },
     saveTitle() {
       if (!this.supportsSave) {
-        return 'Only stops can be saved right now'
+        return `Saving ${this.readableEntityType}s is not available yet`
       }
 
       if (this.saved) {
         return 'Saved'
       }
 
-      return 'Save stop'
+      return `Save ${this.readableEntityType}`
     }
   },
   methods: {
@@ -265,13 +265,13 @@ export default {
 
       if (!this.isAuthenticated) {
         this.closeMenu()
-        this.showToast('Sign in to save stops.', 'warning')
+        this.showToast(`Sign in to save ${this.readableEntityType}s.`, 'warning')
         return
       }
 
       if (!this.entityIdentifier) {
         this.closeMenu()
-        this.showToast('This stop could not be saved.', 'error')
+        this.showToast(`This ${this.readableEntityType} could not be saved.`, 'error')
         return
       }
 
@@ -280,7 +280,7 @@ export default {
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         await axios.post(`${API.URL}/core/saved`, {
-          Type: 'Stop',
+          Type: this.entityType,
           ObjectIdentifier: this.entityIdentifier
         }, {
           headers: {
@@ -301,7 +301,7 @@ export default {
           return
         }
 
-        this.showToast('Saved stop could not be updated.', 'error')
+        this.showToast(`Saved ${this.readableEntityType} could not be updated.`, 'error')
       } finally {
         this.saving = false
       }

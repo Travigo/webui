@@ -9,7 +9,7 @@
       v-bind:key="tab.id"
       class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
       :class="{'text-blue-600 dark:text-blue-300': modelValue === tab.id}"
-      @click="$emit('update:modelValue', tab.id)"
+      @click="selectTab(tab.id)"
     >
       <span v-if="tab.icon" class="material-symbols-outlined text-[20px]">{{ tab.icon }}</span>
       <span>{{ tab.name }}</span>
@@ -32,6 +32,14 @@ export default {
     modelValue: {
       type: String,
       required: true
+    },
+    storageKey: {
+      type: String,
+      default: ''
+    },
+    persist: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['update:modelValue'],
@@ -40,6 +48,34 @@ export default {
       return {
         gridTemplateColumns: `repeat(${this.tabs.length}, minmax(0, 1fr))`
       }
+    },
+    resolvedStorageKey() {
+      if (!this.persist) {
+        return ''
+      }
+
+      return this.storageKey || `travigo_tab_bar_${this.tabs.map(tab => tab.id).join('_')}`
+    }
+  },
+  methods: {
+    selectTab(tabId) {
+      if (this.resolvedStorageKey) {
+        sessionStorage.setItem(this.resolvedStorageKey, tabId)
+      }
+
+      this.$emit('update:modelValue', tabId)
+    }
+  },
+  mounted() {
+    if (!this.resolvedStorageKey) {
+      return
+    }
+
+    const savedTab = sessionStorage.getItem(this.resolvedStorageKey)
+    const isKnownTab = this.tabs.some(tab => tab.id === savedTab)
+
+    if (isKnownTab && savedTab !== this.modelValue) {
+      this.$emit('update:modelValue', savedTab)
     }
   }
 }

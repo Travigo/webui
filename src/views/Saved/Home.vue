@@ -2,25 +2,32 @@
   <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
     <PageHeader
       title="Saved items"
-      subtitle="Manage stops and services you want quick access to."
+      subtitle="Manage stops and journeys you want quick access to."
       icon="bookmark"
       variant="panel"
-    />
-
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl">
-      <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5 sm:py-4">
-        <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Your stops</h2>
+    >
+      <template #actions>
         <button
-          v-if="savedStops.length > 0"
+          v-if="hasSavedItems"
           type="button"
-          class="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           @click="toggleEditing"
         >
           <span class="material-symbols-outlined text-[18px]">{{ editing ? 'done' : 'edit' }}</span>
-          {{ editing ? 'Done' : 'Edit' }}
+          {{ editing ? 'Done' : 'Edit items' }}
         </button>
-      </div>
+      </template>
+    </PageHeader>
 
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl">
+      <TabBar
+        :tabs="savedItemTabs"
+        :model-value="savedItemsTab"
+        storage-key="travigo_saved_items_tab"
+        @update:model-value="changeSavedItemsTab"
+      />
+
+      <template v-if="savedItemsTab === 'stops'">
       <LoadingState
         v-if="loadingSavedObjects"
         title="Loading saved stops"
@@ -68,18 +75,72 @@
           v-if="editing"
           type="button"
           class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
-          @click="removeSavedStop(stop)"
+          @click="removeSavedItem(stop, 'stop')"
           :aria-label="`Remove ${stop.PrimaryName}`"
         >
           <span class="material-symbols-outlined text-[21px]">delete</span>
         </button>
       </article>
+      </template>
+
+      <template v-else>
+      <LoadingState
+        v-if="loadingSavedObjects"
+        title="Loading saved journeys"
+        subtitle="Fetching your saved journeys."
+        compact
+        bare
+        :rows="3"
+        :show-tabs="false"
+      />
+
+      <div v-else-if="savedObjectsError" class="px-4 py-6 sm:px-5">
+        <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+          {{ savedObjectsError }}
+        </div>
+      </div>
+
+      <div v-else-if="!auth0.isAuthenticated" class="px-4 py-6 sm:px-5">
+        <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100">
+          Sign in to see your saved journeys.
+        </div>
+      </div>
+
+      <div v-else-if="savedJourneys.length === 0" class="px-4 py-6 sm:px-5">
+        <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
+          You do not have any saved journeys yet.
+        </div>
+      </div>
+
+      <article
+        v-for="journey in savedJourneys"
+        v-bind:key="journey.SavedObjectPrimaryIdentifier || journey.PrimaryIdentifier"
+        class="relative border-b border-slate-100 last:border-b-0 dark:border-slate-800"
+      >
+        <div :class="editing ? 'pr-14 sm:pr-16' : ''">
+          <SavedJourneyCard
+            :journey="journey"
+            :saved-object-identifier="journey.SavedObjectIdentifier"
+          />
+        </div>
+
+        <button
+          v-if="editing"
+          type="button"
+          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
+          @click="removeSavedItem(journey, 'journey')"
+          :aria-label="`Remove ${journey.DestinationDisplay || 'saved journey'}`"
+        >
+          <span class="material-symbols-outlined text-[21px]">delete</span>
+        </button>
+      </article>
+      </template>
     </section>
 
     <Modal
       v-model:open="confirmRemoveModalOpen"
-      title="Remove saved stop?"
-      :subtitle="`${stopPendingRemoval?.PrimaryName || 'This stop'} will be removed from your saved stops.`"
+      title="Remove saved item?"
+      :subtitle="`${savedItemName} will be removed from your saved items.`"
       icon="delete"
       size="sm"
       close-label="Close saved stop action"
@@ -127,7 +188,9 @@ import { getApiAccessToken } from '@/auth'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import SavedJourneyCard from '@/components/SavedJourneyCard.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
+import TabBar from '@/components/TabBar.vue'
 
 export default {
   name: 'SavedStops',
@@ -135,27 +198,50 @@ export default {
     LoadingState,
     Modal,
     PageHeader,
-    StopInfo
+    SavedJourneyCard,
+    StopInfo,
+    TabBar
   },
   data() {
     return {
       auth0: useAuth0(),
       confirmRemoveModalOpen: false,
       stopPendingRemoval: undefined,
+      pendingRemovalType: '',
       removingSavedStop: false,
       removeSavedStopError: '',
       editing: false,
+      savedItemsTab: 'stops',
       loadingSavedObjects: false,
       savedObjectsError: '',
-      savedStops: []
+      savedStops: [],
+      savedJourneys: []
+    }
+  },
+  computed: {
+    hasSavedItems() {
+      return this.savedStops.length > 0 || this.savedJourneys.length > 0
+    },
+    savedItemTabs() {
+      return [
+        { id: 'stops', name: 'Stops', icon: 'location_on' },
+        { id: 'journeys', name: 'Journeys', icon: 'route' }
+      ]
+    },
+    savedItemName() {
+      return this.savedItemNameFrom(this.stopPendingRemoval || {})
     }
   },
   methods: {
+    changeSavedItemsTab(tab) {
+      this.savedItemsTab = tab
+    },
     toggleEditing() {
       this.editing = !this.editing
     },
-    removeSavedStop(stop) {
-      this.stopPendingRemoval = stop
+    removeSavedItem(item, type) {
+      this.stopPendingRemoval = item
+      this.pendingRemovalType = type
       this.removeSavedStopError = ''
       this.confirmRemoveModalOpen = true
     },
@@ -166,6 +252,7 @@ export default {
 
       this.confirmRemoveModalOpen = false
       this.stopPendingRemoval = undefined
+      this.pendingRemovalType = ''
       this.removeSavedStopError = ''
     },
     showToast(message, type = 'info') {
@@ -178,7 +265,7 @@ export default {
     },
     async confirmRemoveSavedStop() {
       if (!this.stopPendingRemoval?.SavedObjectPrimaryIdentifier) {
-        this.removeSavedStopError = 'This saved stop could not be removed.'
+        this.removeSavedStopError = 'This saved item could not be removed.'
         return
       }
 
@@ -187,27 +274,32 @@ export default {
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
-        await this.deleteSavedStop(this.stopPendingRemoval, auth0token)
-        const removedStop = this.stopPendingRemoval
+        await this.deleteSavedItem(this.stopPendingRemoval, this.pendingRemovalType, auth0token)
+        const removedItem = this.stopPendingRemoval
 
-        this.savedStops = this.savedStops.filter(stop => stop.SavedObjectPrimaryIdentifier !== removedStop.SavedObjectPrimaryIdentifier)
+        if (this.pendingRemovalType === 'journey') {
+          this.savedJourneys = this.savedJourneys.filter(journey => journey.SavedObjectPrimaryIdentifier !== removedItem.SavedObjectPrimaryIdentifier)
+        } else {
+          this.savedStops = this.savedStops.filter(stop => stop.SavedObjectPrimaryIdentifier !== removedItem.SavedObjectPrimaryIdentifier)
+        }
         this.confirmRemoveModalOpen = false
         this.stopPendingRemoval = undefined
+        this.pendingRemovalType = ''
         this.removeSavedStopError = ''
-        this.showToast(`${removedStop.PrimaryName} removed.`, 'success')
+        this.showToast(`${this.savedItemNameFrom(removedItem)} removed.`, 'success')
 
-        if (this.savedStops.length === 0) {
+        if (this.savedStops.length === 0 && this.savedJourneys.length === 0) {
           this.editing = false
         }
       } catch (error) {
         console.log(error)
-        this.removeSavedStopError = 'Saved stop could not be removed.'
-        this.showToast('Saved stop could not be removed.', 'error')
+        this.removeSavedStopError = 'Saved item could not be removed.'
+        this.showToast('Saved item could not be removed.', 'error')
       } finally {
         this.removingSavedStop = false
       }
     },
-    async deleteSavedStop(stop, auth0token) {
+    async deleteSavedItem(item, type, auth0token) {
       const config = {
         headers: {
           Authorization: `Bearer ${auth0token}`
@@ -215,7 +307,7 @@ export default {
       }
 
       try {
-        return await axios.delete(`${API.URL}/core/saved/${stop.SavedObjectPrimaryIdentifier}`, config)
+        return await axios.delete(`${API.URL}/core/saved/${item.SavedObjectPrimaryIdentifier}`, config)
       } catch (error) {
         if (![404, 405].includes(error.response?.status)) {
           throw error
@@ -224,8 +316,8 @@ export default {
         return axios.delete(`${API.URL}/core/saved`, {
           ...config,
           data: {
-            Type: 'Stop',
-            ObjectIdentifier: stop.SavedObjectIdentifier || stop.PrimaryIdentifier
+            Type: type === 'journey' ? 'Journey' : 'Stop',
+            ObjectIdentifier: item.SavedObjectIdentifier || item.PrimaryIdentifier
           }
         })
       }
@@ -235,6 +327,7 @@ export default {
 
       if (!this.auth0.isAuthenticated) {
         this.savedStops = []
+        this.savedJourneys = []
         return
       }
 
@@ -244,10 +337,16 @@ export default {
         const auth0token = await getApiAccessToken(this.auth0)
         const response = await this.getSavedObjectsResponse(auth0token)
         const savedObjects = this.normaliseSavedObjects(response.data)
-        this.savedStops = await this.hydrateSavedStops(savedObjects)
+        const [savedStops, savedJourneys] = await Promise.all([
+          this.hydrateSavedStops(savedObjects),
+          this.hydrateSavedJourneys(savedObjects)
+        ])
+        this.savedStops = savedStops
+        this.savedJourneys = savedJourneys
       } catch (error) {
         console.log(error)
         this.savedStops = []
+        this.savedJourneys = []
         this.savedObjectsError = 'Saved stops could not be loaded.'
       } finally {
         this.loadingSavedObjects = false
@@ -297,8 +396,37 @@ export default {
 
       return hydratedStops.filter(Boolean)
     },
+    async hydrateSavedJourneys(savedObjects) {
+      const savedJourneys = savedObjects.filter(savedObject => this.isJourneySavedObject(savedObject))
+      const hydratedJourneys = await Promise.all(savedJourneys.map(async savedObject => {
+        if (!savedObject.ObjectIdentifier) {
+          return undefined
+        }
+
+        try {
+          const response = await axios.get(`${API.URL}/core/journeys/${savedObject.ObjectIdentifier}`)
+
+          return {
+            ...response.data,
+            SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
+            SavedObjectIdentifier: savedObject.ObjectIdentifier
+          }
+        } catch (error) {
+          console.log(error)
+          return undefined
+        }
+      }))
+
+      return hydratedJourneys.filter(Boolean)
+    },
     isStopSavedObject(savedObject) {
       return ['stop', 'stops'].includes(String(savedObject.Type || '').toLowerCase())
+    },
+    isJourneySavedObject(savedObject) {
+      return ['journey', 'journeys'].includes(String(savedObject.Type || '').toLowerCase())
+    },
+    savedItemNameFrom(item) {
+      return item.PrimaryName || item.DestinationDisplay || 'Saved item'
     }
   },
   mounted() {
