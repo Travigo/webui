@@ -862,7 +862,7 @@ export default {
       }
     },
     getDoorSides() {
-      if (this.journey == null) {
+      if (this.journey == null || this.journey?.Service?.TransportType === 'Bus') {
         return
       }
 
