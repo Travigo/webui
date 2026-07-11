@@ -37,8 +37,8 @@
               Stop
             </span>
           </div>
-          <p class="mt-1 flex items-center gap-1 text-[0.7rem] text-slate-500 sm:text-base">
-            <span class="material-symbols-outlined text-base text-[0.7rem]">{{ metaIcon }}</span>
+          <p v-if="metaIcon || distanceLabel" class="mt-1 flex items-center gap-1 text-[0.7rem] text-slate-500 sm:text-base">
+            <span v-if="metaIcon" class="material-symbols-outlined text-base text-[0.7rem]">{{ metaIcon }}</span>
             {{ distanceLabel }}
           </p>
         </div>

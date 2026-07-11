@@ -73,6 +73,13 @@
     <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.9fr)] xl:items-start xl:gap-6">
     <section>
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 sm:rounded-3xl">
+        <TabBar
+          :tabs="stopPanelTabs"
+          :model-value="stopPanelTab"
+          @update:model-value="changeStopPanel"
+        />
+
+        <template v-if="stopPanelTab === 'nearby'">
         <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -111,6 +118,60 @@
           See all nearby stops
           <span class="material-symbols-outlined text-xl sm:text-2xl">chevron_right</span>
         </router-link>
+        </template>
+
+        <template v-else>
+          <div class="flex items-center justify-between gap-3 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
+            <div>
+              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Saved Stops</h2>
+              <p class="text-xs text-slate-500 sm:text-base">Your quick-access stops</p>
+            </div>
+            <router-link
+              :to="{ name: 'saved/home' }"
+              class="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl px-2 text-sm font-extrabold text-blue-600 transition hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10"
+            >
+              Manage
+              <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </router-link>
+          </div>
+
+          <LoadingState
+            v-if="loadingSavedStops"
+            title="Loading saved stops"
+            subtitle="Fetching your quick-access stops."
+            compact
+            bare
+            :rows="3"
+            :show-tabs="false"
+          />
+
+          <div v-else-if="savedStopsError" class="px-4 pb-4 sm:px-5 sm:pb-5">
+            <div class="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+              {{ savedStopsError }}
+            </div>
+          </div>
+
+          <div v-else-if="!auth0.isAuthenticated" class="px-4 pb-4 sm:px-5 sm:pb-5">
+            <div class="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3 text-sm font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100">
+              Sign in to see your saved stops.
+            </div>
+          </div>
+
+          <div v-else-if="savedStops.length === 0" class="px-4 pb-4 sm:px-5 sm:pb-5">
+            <div class="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
+              You do not have any saved stops yet.
+            </div>
+          </div>
+
+          <StopInfo
+            v-for="stop in savedStops"
+            v-bind:key="stopKey(stop)"
+            :stop="stop"
+            :bordered="true"
+            meta-icon=""
+            distance-label-fallback=""
+          />
+        </template>
       </div>
     </section>
 
@@ -218,9 +279,13 @@
 
 <script>
 import SearchBar from '@/components/SearchBar.vue'
+import { useAuth0 } from '@auth0/auth0-vue'
+import { getApiAccessToken } from '@/auth'
 import LocationPicker from '@/components/LocationPicker.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
+import TabBar from '@/components/TabBar.vue'
 
 import axios from 'axios'
 import API from '@/API'
@@ -230,8 +295,10 @@ export default {
   components: {
     SearchBar,
     LocationPicker,
+    LoadingState,
     Modal,
-    StopInfo
+    StopInfo,
+    TabBar
   },
   data () {
     return {
@@ -249,6 +316,11 @@ export default {
       nearbyStopsError: '',
       nearbyPosition: undefined,
       nearbyStopsPosition: undefined,
+      auth0: useAuth0(),
+      stopPanelTab: 'nearby',
+      loadingSavedStops: false,
+      savedStopsError: '',
+      savedStops: [],
       quickActions: [
         { label: 'Nearby', icon: 'near_me', route: { name: 'map' }, bg: 'border-blue-100 bg-blue-50', color: 'text-blue-600' },
         { label: 'Departures', icon: 'train', route: { name: 'timetables/home' }, bg: 'border-purple-100 bg-purple-50', color: 'text-purple-600' },
@@ -261,6 +333,12 @@ export default {
     }
   },
   computed: {
+    stopPanelTabs() {
+      return [
+        { id: 'nearby', name: 'Nearby', icon: 'near_me' },
+        { id: 'saved', name: 'Saved', icon: 'bookmark' }
+      ]
+    },
     nearbyStopsStatus() {
       if (this.loadingNearbyStops) {
         return 'Finding stops near your current location...'
@@ -377,6 +455,71 @@ export default {
     openStatsModal(viewName) {
       this.selectedStatsView = viewName
       this.statsModalOpen = true
+    },
+    changeStopPanel(tab) {
+      this.stopPanelTab = tab
+
+      if (tab === 'saved') {
+        this.getSavedStops()
+      }
+    },
+    async getSavedStops() {
+      this.savedStopsError = ''
+
+      if (!this.auth0.isAuthenticated) {
+        this.savedStops = []
+        return
+      }
+
+      this.loadingSavedStops = true
+
+      try {
+        const auth0token = await getApiAccessToken(this.auth0)
+        const response = await axios.get(`${API.URL}/core/saved`, {
+          headers: { Authorization: `Bearer ${auth0token}` }
+        })
+        this.savedStops = await this.hydrateSavedStops(this.normaliseSavedObjects(response.data))
+      } catch (error) {
+        console.log(error)
+        this.savedStops = []
+        this.savedStopsError = 'Saved stops could not be loaded.'
+      } finally {
+        this.loadingSavedStops = false
+      }
+    },
+    normaliseSavedObjects(responseData) {
+      const resultSet = [
+        responseData,
+        responseData?.SavedObjects,
+        responseData?.savedObjects,
+        responseData?.data,
+        responseData?.Data
+      ].find(result => Array.isArray(result))
+
+      return resultSet || []
+    },
+    async hydrateSavedStops(savedObjects) {
+      const stopObjects = savedObjects.filter(savedObject => ['stop', 'stops'].includes(String(savedObject.Type || '').toLowerCase()))
+      const hydratedStops = await Promise.all(stopObjects.map(async savedObject => {
+        if (!savedObject.ObjectIdentifier) {
+          return undefined
+        }
+
+        try {
+          const response = await axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
+
+          return {
+            ...response.data,
+            SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
+            SavedObjectIdentifier: savedObject.ObjectIdentifier
+          }
+        } catch (error) {
+          console.log(error)
+          return undefined
+        }
+      }))
+
+      return hydratedStops.filter(Boolean)
     },
     closeStatsModal() {
       this.statsModalOpen = false
