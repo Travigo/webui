@@ -217,6 +217,9 @@ export default {
     },
     carriages() {
       return this.trains.flatMap(train => train.Carriages || [])
+    },
+    passengerCarriages() {
+      return this.carriages.filter(carriage => !this.isPowerCarriage(carriage))
     }
   },
   data() {
@@ -236,12 +239,22 @@ export default {
     closeFacilityModal() {
       this.facilityModalOpen = false
     },
+    normaliseVehicleRole(value) {
+      return String(value || '').trim().toLowerCase().replace(/[\s_-]/g, '')
+    },
+    isPowerCarriage(carriage) {
+      return this.normaliseVehicleRole(carriage?.VehicleRole) === 'powercar'
+    },
     carriageLabel(carriage) {
-      const carriageIndex = this.carriages.indexOf(carriage)
-
       if (carriage.Label || carriage.Name) {
         return carriage.Label || carriage.Name
       }
+
+      if (this.isPowerCarriage(carriage)) {
+        return 'Power car'
+      }
+
+      const carriageIndex = this.passengerCarriages.indexOf(carriage)
 
       return carriageIndex >= 0 ? `Coach ${carriageIndex + 1}` : 'this coach'
     }

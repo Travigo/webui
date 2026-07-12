@@ -2,7 +2,6 @@
   <section v-if="normalisedCarriages.length > 0" class="mt-2 space-y-2">
     <div class="flex items-center justify-between gap-3">
       <div class="min-w-0">
-        <h2 class="text-xs font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400">Train layout</h2>
         <p class="mt-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">{{ layoutSummary }}</p>
       </div>
       <span
@@ -20,45 +19,51 @@
           <li
             v-for="carriage in normalisedCarriages"
             v-bind:key="carriage.key"
-            class="w-[5.75rem] shrink-0"
-            :class="{ 'ml-2 border-l-2 border-slate-200 pl-2 dark:border-slate-700': carriage.startsTrain && carriage.trainIndex > 0 }"
+            class="shrink-0"
+            :class="[carriageShellClasses(carriage), { 'ml-2 border-l-2 border-slate-200 pl-2 dark:border-slate-700': carriage.startsTrain && carriage.trainIndex > 0 }]"
           >
             <button
               type="button"
-              class="relative flex min-h-[3.75rem] w-full flex-col justify-between overflow-hidden border px-2.5 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-500/20"
-              :class="[carriageShapeClasses(carriage), carriage.occupancyClasses]"
-              :title="carriage.id ? `Carriage ID: ${carriage.id}` : carriage.label"
+              class="relative flex w-full flex-col overflow-hidden border text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-500/20"
+              :class="[carriageShapeClasses(carriage), carriage.occupancyClasses, carriageButtonSizeClasses(carriage)]"
+              :title="carriageTitle(carriage)"
               :aria-label="`Open details for ${carriage.label}`"
               @click="openCarriageModal(carriage)"
             >
-              <div class="min-w-0">
-                <p class="truncate text-[11px] font-extrabold text-slate-950 dark:text-slate-100">{{ carriage.label }}</p>
-                <p
-                  v-if="carriage.hasOccupancy"
-                  class="mt-0.5 truncate text-[10px] font-bold"
-                  :class="carriage.occupancyTextClass"
-                >
-                  {{ carriage.occupancyLabel }}
-                </p>
-                <span
-                  v-if="carriage.id"
-                  class="sr-only"
-                >
-                  {{ carriage.id }}
-                </span>
+              <div v-if="carriage.isPowerCar" class="flex min-h-[2rem] flex-col items-center justify-center gap-0.5 text-center">
+                <span class="material-symbols-outlined text-[18px] leading-none text-slate-700 dark:text-slate-100">electric_bolt</span>
+                <p class="text-[9px] font-black uppercase leading-none text-slate-600 dark:text-slate-200">Power Car</p>
               </div>
+              <template v-else>
+                <div class="min-w-0">
+                  <p class="truncate text-[11px] font-extrabold text-slate-950 dark:text-slate-100">{{ carriage.label }}</p>
+                  <p
+                    v-if="carriage.hasOccupancy"
+                    class="mt-0.5 truncate text-[10px] font-bold"
+                    :class="carriage.occupancyTextClass"
+                  >
+                    {{ carriage.occupancyLabel }}
+                  </p>
+                  <span
+                    v-if="carriage.id"
+                    class="sr-only"
+                  >
+                    {{ carriage.id }}
+                  </span>
+                </div>
 
-              <div v-if="carriage.features.length > 0" class="mt-1.5 flex min-h-5 flex-wrap items-center gap-1">
-                <span
-                  v-for="feature in carriage.features"
-                  v-bind:key="feature.key"
-                  class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white/80 text-slate-700 shadow-sm dark:bg-slate-950/80 dark:text-slate-200"
-                  :title="feature.label"
-                >
-                  <span v-if="feature.text" class="text-[9px] font-black leading-none">{{ feature.text }}</span>
-                  <span v-else class="material-symbols-outlined text-[14px] leading-none">{{ feature.icon }}</span>
-                </span>
-              </div>
+                <div v-if="carriage.features.length > 0" class="mt-1.5 flex min-h-5 flex-wrap items-center gap-1">
+                  <span
+                    v-for="feature in carriage.features"
+                    v-bind:key="feature.key"
+                    class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white/80 text-slate-700 shadow-sm dark:bg-slate-950/80 dark:text-slate-200"
+                    :title="feature.label"
+                  >
+                    <span v-if="feature.text" class="text-[9px] font-black leading-none">{{ feature.text }}</span>
+                    <span v-else class="material-symbols-outlined text-[14px] leading-none">{{ feature.icon }}</span>
+                  </span>
+                </div>
+              </template>
             </button>
           </li>
         </ol>
@@ -195,10 +200,13 @@ export default {
         })
     },
     normalisedCarriages() {
-      let index = 0
+      let visualIndex = 0
+      let passengerIndex = 0
 
       return this.orderedTrains.flatMap((train, trainIndex) => {
         return (train.Carriages || []).map((carriage, carriageIndex) => {
+          const isPowerCar = this.isPowerCarriage(carriage)
+          const isPassengerCarriage = this.countsAsPassengerCarriage(carriage)
           const occupancy = this.normaliseOccupancy(carriage.Occupancy)
           const normalised = {
             raw: carriage,
@@ -207,8 +215,11 @@ export default {
             startsTrain: carriageIndex === 0,
             key: `${train.ID || trainIndex}-${carriage.ID || carriage.Id || carriage.Identifier || carriageIndex}`,
             id: carriage.ID || carriage.Id || carriage.Identifier || '',
-            index,
-            label: this.coachLabel(carriage, index),
+            index: visualIndex,
+            passengerIndex: isPassengerCarriage ? passengerIndex : -1,
+            isPowerCar,
+            isPassengerCarriage,
+            label: this.coachLabel(carriage, passengerIndex),
             features: this.carriageFeatures(carriage),
             occupancy,
             hasOccupancy: occupancy >= 0,
@@ -217,23 +228,39 @@ export default {
             occupancyTextClass: this.occupancyTextClass(occupancy)
           }
 
-          index += 1
+          visualIndex += 1
+          if (isPassengerCarriage) {
+            passengerIndex += 1
+          }
           return normalised
         })
       })
     },
+    passengerCarriages() {
+      return this.normalisedCarriages.filter(carriage => carriage.isPassengerCarriage)
+    },
+    powerCarriages() {
+      return this.normalisedCarriages.filter(carriage => carriage.isPowerCar)
+    },
     layoutSummary() {
-      const coachCount = `${this.normalisedCarriages.length} coach${this.normalisedCarriages.length === 1 ? '' : 'es'}`
+      const coachCount = this.formatCoachCount(this.passengerCarriages.length)
+      const powerCarCount = this.powerCarriages.length > 0
+        ? `${this.powerCarriages.length} power car${this.powerCarriages.length === 1 ? '' : 's'}`
+        : ''
       const unitCount = this.orderedTrains.length > 1 ? `${this.orderedTrains.length} units · ` : ''
-      const seatingClasses = [...new Set(this.normalisedCarriages
+      const seatingClasses = [...new Set(this.passengerCarriages
         .flatMap(carriage => this.normaliseCarriageClasses(carriage.raw.SeatingClasses))
         .filter(seatingClass => seatingClass !== 'unknown'))]
         .map(seatingClass => `${seatingClass.charAt(0).toUpperCase()}${seatingClass.slice(1)} class`)
-      const toiletLabels = this.normalisedCarriages
+      const toiletLabels = this.passengerCarriages
         .filter(carriage => carriage.features.some(feature => feature.key === 'toilet' || feature.key === 'accessible-toilet'))
         .map(carriage => carriage.label)
 
       const summaryParts = [`${unitCount}${coachCount}`]
+
+      if (powerCarCount) {
+        summaryParts.push(powerCarCount)
+      }
 
       if (seatingClasses.length > 0) {
         summaryParts.push(seatingClasses.join(' & '))
@@ -246,7 +273,7 @@ export default {
       return summaryParts.join(' · ')
     },
     layoutStatus() {
-      const knownOccupancies = this.normalisedCarriages
+      const knownOccupancies = this.passengerCarriages
         .map(carriage => carriage.occupancy)
         .filter(occupancy => occupancy >= 0)
 
@@ -265,7 +292,7 @@ export default {
       return [
         this.selectedCarriage?.train?.VehicleTypeName,
         this.selectedCarriage?.train?.ID ? `Unit ${this.selectedCarriage.train.ID}` : '',
-        this.selectedCarriage?.id ? `Carriage ${this.selectedCarriage.id}` : ''
+        this.selectedCarriage?.id ? `${this.selectedCarriage?.isPowerCar ? 'Power car' : 'Carriage'} ${this.selectedCarriage.id}` : ''
       ].filter(Boolean).join(' · ')
     },
     selectedCarriageToilets() {
@@ -279,6 +306,7 @@ export default {
       const carriage = this.selectedCarriage.raw
 
       return [
+        this.detail('Vehicle role', this.displayVehicleRole(carriage.VehicleRole)),
         this.detail('Seating classes', this.displaySeatingClasses(carriage.SeatingClasses)),
         this.detail('Seats', carriage.SeatCount > 0 ? carriage.SeatCount : ''),
         this.detail('Carriage type', carriage.CarriageType),
@@ -300,13 +328,15 @@ export default {
         return []
       }
 
+      const formationCount = this.trainPassengerCarriageCount(train)
+
       return [
         this.detail('Vehicle', train.VehicleTypeName || train.VehicleType),
         this.detail('Unit ID', train.ID),
         this.detail('Fleet', train.FleetID),
         this.detail('Power', train.PowerType),
         this.detail('Top speed', train.SpeedKMH > 0 ? `${train.SpeedKMH} km/h` : ''),
-        this.detail('Formation', train.TrainLength > 0 ? `${train.TrainLength} coaches` : ''),
+        this.detail('Formation', formationCount > 0 ? this.formatCoachCount(formationCount) : ''),
         this.detail('Direction', train.Reversed ? 'Reversed formation' : '')
       ].filter(Boolean)
     }
@@ -316,8 +346,19 @@ export default {
       this.selectedCarriage = carriage
       this.carriageModalOpen = true
     },
-    coachLabel(carriage, index) {
-      return carriage.Label || carriage.Name || `Coach ${index + 1}`
+    coachLabel(carriage, passengerIndex) {
+      if (this.isPowerCarriage(carriage)) {
+        return carriage.Label || carriage.Name || 'Power car'
+      }
+
+      return carriage.Label || carriage.Name || `Coach ${passengerIndex + 1}`
+    },
+    carriageTitle(carriage) {
+      if (carriage.isPowerCar) {
+        return carriage.id ? `Power car ID: ${carriage.id}` : 'Power car'
+      }
+
+      return carriage.id ? `Carriage ID: ${carriage.id}` : carriage.label
     },
     detail(label, value, include = true) {
       if (!include || value === '' || value === null || value === undefined) {
@@ -325,6 +366,42 @@ export default {
       }
 
       return { label, value }
+    },
+    displayVehicleRole(value) {
+      const role = this.normaliseVehicleRole(value)
+
+      if (role === 'powercar') {
+        return 'Power car'
+      }
+
+      if (role === 'passenger') {
+        return 'Passenger'
+      }
+
+      if (role === 'unknown') {
+        return 'Unknown'
+      }
+
+      return ''
+    },
+    normaliseVehicleRole(value) {
+      return String(value || '').trim().toLowerCase().replace(/[\s_-]/g, '')
+    },
+    isPowerCarriage(carriage) {
+      return this.normaliseVehicleRole(carriage?.VehicleRole) === 'powercar'
+    },
+    countsAsPassengerCarriage(carriage) {
+      return !this.isPowerCarriage(carriage)
+    },
+    trainPassengerCarriageCount(train) {
+      if (train?.TrainLength > 0) {
+        return train.TrainLength
+      }
+
+      return (train?.Carriages || []).filter(carriage => this.countsAsPassengerCarriage(carriage)).length
+    },
+    formatCoachCount(count) {
+      return `${count} coach${count === 1 ? '' : 'es'}`
     },
     displaySeatingClasses(values) {
       const seatingClasses = this.normaliseCarriageClasses(values)
@@ -405,6 +482,16 @@ export default {
 
       return 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-200'
     },
+    carriageShellClasses(carriage) {
+      return carriage.isPowerCar ? 'w-[3.25rem] self-center' : 'w-[5.75rem]'
+    },
+    carriageButtonSizeClasses(carriage) {
+      if (carriage.isPowerCar) {
+        return 'min-h-[3.75rem] items-center justify-center px-1.5 py-1.5 border-slate-300 bg-slate-100 dark:border-slate-600 dark:bg-slate-700/70'
+      }
+
+      return 'min-h-[3.75rem] justify-between px-2.5 py-2'
+    },
     carriageShapeClasses(carriage) {
       if (this.normalisedCarriages.length === 1) {
         return 'rounded-[1.75rem]'
@@ -421,6 +508,14 @@ export default {
       return 'rounded-xl'
     },
     carriageFeatures(carriage) {
+      if (this.isPowerCarriage(carriage)) {
+        return [{
+          key: 'power-car',
+          label: 'Power car',
+          icon: 'electric_bolt'
+        }]
+      }
+
       const features = []
       const toilets = carriage.Toilets || []
 

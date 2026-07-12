@@ -501,6 +501,14 @@ export default {
     detailedRailCarriages() {
       return this.detailedRailTrains.flatMap(train => train.Carriages || [])
     },
+    detailedRailPassengerCarriages() {
+      return this.detailedRailCarriages.filter(carriage => !this.isPowerCarriage(carriage))
+    },
+    detailedRailPassengerCarriageCount() {
+      return this.detailedRailTrains.reduce((total, train) => {
+        return total + this.trainPassengerCarriageCount(train)
+      }, 0)
+    },
     hasDetailedRailFacilityPills() {
       const trainFacilityKeys = [
         'AirConditioning',
@@ -518,7 +526,7 @@ export default {
     railSeatingClasses() {
       const classes = [
         ...(this.detailedRailInfo.Seating || []),
-        ...this.detailedRailCarriages.flatMap(carriage => carriage.SeatingClasses || [])
+        ...this.detailedRailPassengerCarriages.flatMap(carriage => carriage.SeatingClasses || [])
       ]
 
       return [...new Set(classes.filter(value => value && value.toLowerCase() !== 'unknown'))]
@@ -585,10 +593,10 @@ export default {
         items.push({ icon: 'directions_bus', label: 'Rail replacement bus' })
       }
 
-      if (this.detailedRailCarriages.length > 0) {
+      if (this.detailedRailPassengerCarriageCount > 0) {
         items.push({
           icon: 'train',
-          label: `${this.detailedRailCarriages.length} coach${this.detailedRailCarriages.length === 1 ? '' : 'es'}`
+          label: this.formatCoachCount(this.detailedRailPassengerCarriageCount)
         })
       }
 
@@ -705,12 +713,12 @@ export default {
   methods: {
     trainDetailItems(train) {
       const details = []
-      const carriageCount = train.Carriages?.length || train.TrainLength || 0
+      const carriageCount = this.trainPassengerCarriageCount(train)
 
       if (carriageCount > 0) {
         details.push({
           label: 'Formation',
-          value: `${carriageCount} coach${carriageCount === 1 ? '' : 'es'}`
+          value: this.formatCoachCount(carriageCount)
         })
       }
 
@@ -735,6 +743,22 @@ export default {
       }
 
       return details
+    },
+    normaliseVehicleRole(value) {
+      return String(value || '').trim().toLowerCase().replace(/[\s_-]/g, '')
+    },
+    isPowerCarriage(carriage) {
+      return this.normaliseVehicleRole(carriage?.VehicleRole) === 'powercar'
+    },
+    trainPassengerCarriageCount(train) {
+      if (train?.TrainLength > 0) {
+        return train.TrainLength
+      }
+
+      return (train?.Carriages || []).filter(carriage => !this.isPowerCarriage(carriage)).length
+    },
+    formatCoachCount(count) {
+      return `${count} coach${count === 1 ? '' : 'es'}`
     },
     pointCancelled(point) {
       return point.realtime && point.realtime.Cancelled
