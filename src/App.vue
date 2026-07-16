@@ -221,7 +221,7 @@ export default {
         </div>
       </div>
     </nav>
-    <main class="h-full" v-bind:class="{ 'pb-24 sm:pb-28 xl:pb-10': this.showChrome && !this.isFullscreen }">
+    <main class="h-full">
       <div 
         class="h-full"
         v-bind:class="{'max-w-5xl mx-auto px-4 sm:px-8 lg:max-w-6xl lg:px-10 xl:pl-36': !this.isFullscreen}"
@@ -229,6 +229,15 @@ export default {
         <router-view />
       </div>
     </main>
+
+    <footer class="mx-2 my-4" v-if="!this.isFullscreen" v-bind:class="{ 'pb-24 sm:pb-28 xl:pb-10': this.showChrome && !this.isFullscreen }">
+      <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
+        &copy; Aaron Claydon {{ new Date().getFullYear() }} &bull; 
+        <router-link :to="{ name: 'about' }">About</router-link> &bull; 
+        <!-- <router-link :to="{ name: 'faq' }">FAQ</router-link> &bull;  -->
+        <router-link :to="{ name: 'contact' }">Contact</router-link>
+      </div>
+    </footer>
 
     <nav
       v-if="this.showChrome"
