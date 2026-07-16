@@ -1096,13 +1096,18 @@ export default {
 
       let activeStopIndex = -1
       if (!activeStop) {
-        activeStopIndex = journeyPoints.findIndex((point) => (
-          point.realtime?.TimeType === 'EstimatedFuture' &&
-          (
-            journey.RealtimeJourney.NextStopRef === point.stop.PrimaryIdentifier ||
-            point.stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
-          )
-        ))
+        const nextStopIndex = journey.RealtimeJourney.NextStopIndex
+        if (Number.isInteger(nextStopIndex) && nextStopIndex > 0 && nextStopIndex < journeyPoints.length) {
+          activeStopIndex = nextStopIndex
+        } else {
+          activeStopIndex = journeyPoints.findIndex((point) => (
+            point.realtime?.TimeType === 'EstimatedFuture' &&
+            (
+              journey.RealtimeJourney.NextStopRef === point.stop.PrimaryIdentifier ||
+              point.stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
+            )
+          ))
+        }
       }
 
       if (!activeStop) {
