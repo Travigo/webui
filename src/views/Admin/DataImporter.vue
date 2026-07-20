@@ -311,9 +311,17 @@
                           <h4 class="break-words text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
                           <p class="mt-1 break-words text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
                         </div>
-                        <span :class="statusClass(task.status, true)">
-                          {{ formatStatus(task.status) }}
-                        </span>
+                        <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
+                          <span :class="statusClass(task.status, true)">
+                            {{ formatStatus(task.status) }}
+                          </span>
+                          <span
+                            v-if="task.podStatus"
+                            class="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-extrabold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                          >
+                            Pod {{ formatStatus(task.podStatus) }}
+                          </span>
+                        </div>
                       </div>
 
                       <dl class="mt-3 grid gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -343,9 +351,17 @@
                           <h4 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
                           <p class="mt-1 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
                         </div>
-                        <span :class="statusClass(task.status, true)">
-                          {{ formatStatus(task.status) }}
-                        </span>
+                        <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
+                          <span :class="statusClass(task.status, true)">
+                            {{ formatStatus(task.status) }}
+                          </span>
+                          <span
+                            v-if="task.podStatus"
+                            class="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-extrabold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                          >
+                            Pod {{ formatStatus(task.podStatus) }}
+                          </span>
+                        </div>
                       </div>
                     </button>
                   </div>
