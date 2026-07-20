@@ -109,6 +109,21 @@
             {{ object }}
           </span>
         </div>
+
+        <div class="sm:col-span-2">
+          <div v-if="isReportLoading(dataset)" class="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Loading latest import report…
+          </div>
+          <div v-else-if="latestReport(dataset)" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span class="font-bold text-slate-700 dark:text-slate-200">
+              Last imported {{ formatReportDate(latestReport(dataset).CreationDateTime) }}
+            </span>
+            <span>{{ reportSummary(latestReport(dataset)) }}</span>
+          </div>
+          <span v-else class="text-xs font-medium text-slate-500 dark:text-slate-400">
+            No import report available
+          </span>
+        </div>
       </article>
     </section>
   </div>
@@ -133,8 +148,11 @@ export default {
     return {
       pretty: Pretty,
       datasource: null,
+      importReports: {},
+      reportLoading: {},
       loading: true,
       error: undefined,
+      datasourceRequestId: 0,
     }
   },
   computed: {
@@ -160,13 +178,95 @@ export default {
         .filter(([, supported]) => supported)
         .map(([object]) => object)
     },
+    fullDatasetIdentifier(dataset) {
+      const datasetIdentifier = dataset?.Identifier || ''
+      const datasourceIdentifier = this.datasource?.Identifier || ''
+
+      if (!datasetIdentifier || !datasourceIdentifier || datasetIdentifier.startsWith(`${datasourceIdentifier}-`)) {
+        return datasetIdentifier
+      }
+
+      return `${datasourceIdentifier}-${datasetIdentifier}`
+    },
+    latestReport(dataset) {
+      return this.importReports[this.fullDatasetIdentifier(dataset)]
+    },
+    isReportLoading(dataset) {
+      return this.reportLoading[this.fullDatasetIdentifier(dataset)] === true
+    },
+    formatReportDate(value) {
+      if (!value) {
+        return 'unknown date'
+      }
+
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) {
+        return 'unknown date'
+      }
+
+      return date.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      })
+    },
+    reportSummary(report) {
+      const counts = [
+        ['stops', report.ImportedStops],
+        ['stop groups', report.ImportedStopGroups],
+        ['services', report.ImportedServices],
+        ['journeys', report.ImportedJourneys],
+        ['operators', report.ImportedOperators],
+        ['operation groups', report.ImportedOperationGroups]
+      ].filter(([, count]) => count > 0)
+
+      return counts.length > 0
+        ? counts.map(([label, count]) => `${count.toLocaleString()} ${label}`).join(' · ')
+        : 'No records imported'
+    },
+    getImportReports(datasource, requestId) {
+      const datasets = datasource?.Datasets || []
+      const reportRequests = datasets
+        .filter(dataset => dataset.Identifier)
+        .map(dataset => {
+          const datasetIdentifier = this.fullDatasetIdentifier(dataset)
+          this.reportLoading[datasetIdentifier] = true
+
+          return axios
+            .get(`${API.URL}/core/datasources/dataset/${encodeURIComponent(datasetIdentifier)}/import_report`)
+            .then(response => {
+              if (requestId === this.datasourceRequestId) {
+                this.importReports[datasetIdentifier] = response.data
+              }
+            })
+            .catch(error => {
+              if (requestId === this.datasourceRequestId && error.response?.status !== 404) {
+                console.log(error)
+              }
+            })
+            .finally(() => {
+              if (requestId === this.datasourceRequestId) {
+                this.reportLoading[datasetIdentifier] = false
+              }
+            })
+        })
+
+      return Promise.allSettled(reportRequests)
+    },
     getDatasource() {
       this.loading = true
+      const requestId = ++this.datasourceRequestId
+      this.importReports = {}
+      this.reportLoading = {}
 
       axios
         .get(`${API.URL}/core/datasources/provider/${this.$route.params.id}`)
         .then(response => {
+          if (requestId !== this.datasourceRequestId) {
+            return
+          }
+
           this.datasource = response.data
+          this.getImportReports(response.data, requestId)
         })
         .catch(error => {
           console.log(error)
