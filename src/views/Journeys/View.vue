@@ -356,7 +356,7 @@
       </div>
     </section>
 
-    <DatasourceAttributes v-if="!loadingJourney" :datasources="utils.getDatasources(journey, journeyPoints)" />
+    <DatasourceAttributes v-if="!loadingJourney" :datasources="utils.getDatasources(journey, journeyPoints, journey?.Path)" />
   </div>
 </template>
 
