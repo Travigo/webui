@@ -1,11 +1,7 @@
 <template>
-  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
+  <Alert v-if="error" type="error" class="mt-4">{{ error }}</Alert>
 
-  <LoadingState
-    v-if="loading"
-    title="Loading datasource"
-    subtitle="Fetching provider details and datasets."
-  />
+  <LoadingState v-if="loading" title="Loading datasource" subtitle="Fetching provider details and datasets." />
 
   <div v-else-if="datasource" class="space-y-4 pb-16 pt-2 sm:pb-20">
     <PageHeader
@@ -32,9 +28,7 @@
       <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
         <div class="px-4 py-3 sm:px-5">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Region</p>
-          <p class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">
-            {{ regionLabel }}
-          </p>
+          <p class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ regionLabel }}</p>
         </div>
         <div class="px-4 py-3 sm:px-5">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Website</p>
@@ -51,19 +45,16 @@
         </div>
       </div>
       <div class="border-t border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Available data</p>
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Supports</p>
         <div class="mt-2 flex flex-wrap gap-2">
           <span
             v-for="object in allSupportedObjects"
             v-bind:key="object"
             class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
           >
-            {{ object }}
+            {{ capabilityLabel(object) }}
           </span>
-          <span
-            v-if="allSupportedObjects.length === 0"
-            class="text-sm font-medium text-slate-500 dark:text-slate-400"
-          >
+          <span v-if="allSupportedObjects.length === 0" class="text-sm font-medium text-slate-500 dark:text-slate-400">
             No supported object types listed.
           </span>
         </div>
@@ -73,9 +64,7 @@
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
         <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Datasets</h2>
-        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
-          {{ datasetCount }}
-        </span>
+        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ datasetCount }}</span>
       </div>
 
       <div v-if="datasets.length === 0" class="px-4 py-6 text-sm font-medium text-slate-500 dark:text-slate-400 sm:px-5">
@@ -88,41 +77,47 @@
         class="grid gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:px-5"
       >
         <div class="min-w-0">
-          <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">
-            {{ dataset.Identifier || 'Unnamed dataset' }}
-          </h3>
-          <p class="mt-1 truncate text-xs font-medium text-slate-500 dark:text-slate-400">
-            {{ dataset.Source || 'Source unavailable' }}
-          </p>
+          <h3 class="break-words text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ dataset.Identifier || 'Unnamed dataset' }}</h3>
+          <a
+            v-if="isHttpUrl(dataset.Source)"
+            class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+            :href="dataset.Source"
+            target="_blank"
+            rel="noreferrer"
+            :title="dataset.Source"
+          >
+            <span class="truncate">{{ sourceLabel(dataset.Source) }}</span>
+            <span class="material-symbols-outlined shrink-0 text-[14px]">open_in_new</span>
+          </a>
+          <p v-else class="mt-1 break-all text-xs font-medium text-slate-500 dark:text-slate-400">{{ dataset.Source || 'Source unavailable' }}</p>
         </div>
-
         <span class="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {{ dataset.Format || 'Unknown format' }}
+          {{ formatLabel(dataset.Format) }}
         </span>
 
-        <div v-if="supportedObjects(dataset).length > 0" class="flex flex-wrap gap-1.5 sm:col-span-2">
-          <span
-            v-for="object in supportedObjects(dataset)"
-            v-bind:key="object"
-            class="inline-flex items-center rounded-full bg-slate-50 px-2 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800/70 dark:text-slate-300"
-          >
-            {{ object }}
-          </span>
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:col-span-2">
+          <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Supports</span>
+          <template v-if="supportedObjects(dataset).length > 0">
+            <span
+              v-for="object in supportedObjects(dataset)"
+              v-bind:key="object"
+              class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+            >
+              {{ capabilityLabel(object) }}
+            </span>
+          </template>
+          <span v-else class="text-xs font-medium text-slate-500 dark:text-slate-400">Not listed</span>
         </div>
 
-        <div class="sm:col-span-2">
-          <div v-if="isReportLoading(dataset)" class="text-xs font-medium text-slate-500 dark:text-slate-400">
-            Loading latest import report…
-          </div>
-          <div v-else-if="latestReport(dataset)" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <span class="font-bold text-slate-700 dark:text-slate-200">
-              Last imported {{ formatReportDate(latestReport(dataset).CreationDateTime) }}
-            </span>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400 sm:col-span-2">
+          <span class="font-bold text-slate-700 dark:text-slate-200">Latest report</span>
+          <span v-if="isReportLoading(dataset)">Loading…</span>
+          <template v-else-if="latestReport(dataset)">
+            <span>{{ formatReportDate(latestReport(dataset).CreationDateTime) }}</span>
+            <span v-if="formatReportRuntime(latestReport(dataset).RunTime)">{{ formatReportRuntime(latestReport(dataset).RunTime) }}</span>
             <span>{{ reportSummary(latestReport(dataset)) }}</span>
-          </div>
-          <span v-else class="text-xs font-medium text-slate-500 dark:text-slate-400">
-            No import report available
-          </span>
+          </template>
+          <span v-else>No completed import report</span>
         </div>
       </article>
     </section>
@@ -178,6 +173,56 @@ export default {
         .filter(([, supported]) => supported)
         .map(([object]) => object)
     },
+    capabilityLabel(object) {
+      const labels = {
+        Operators: 'Operators',
+        OperatorGroups: 'Operator Groups',
+        Stops: 'Stops',
+        StopGroups: 'Stop Groups',
+        StopsDetailed: 'Detailed Stops',
+        Services: 'Services',
+        Journeys: 'Journeys',
+        RealtimeJourneys: 'Realtime Journeys',
+        ServiceAlerts: 'Service Alerts'
+      }
+
+      return labels[object] || object
+    },
+    formatLabel(format) {
+      if (!format) {
+        return 'Unknown format'
+      }
+
+      const labels = {
+        'gtfs-schedule': 'GTFS Schedule',
+        'gtfs-realtime': 'GTFS Realtime',
+        'gb-cif': 'CIF',
+        'gb-naptan': 'NaPTAN',
+        'gb-transxchange': 'TransXChange',
+        'gb-travelinenoc': 'Traveline NOC',
+        'gb-nationalrailtoc': 'National Rail TOC',
+        'gb-networkrailcorpus': 'Network Rail CORPUS',
+        'eu-siri-vm': 'SIRI VM',
+        'eu-siri-sx': 'SIRI SX'
+      }
+
+      return labels[format] || format
+        .split('-')
+        .filter(Boolean)
+        .map(part => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+        .join(' ')
+    },
+    isHttpUrl(value) {
+      return typeof value === 'string' && /^https?:\/\//i.test(value)
+    },
+    sourceLabel(source) {
+      try {
+        const url = new URL(source)
+        return `${url.host}${url.pathname === '/' ? '' : url.pathname}`
+      } catch (_) {
+        return source
+      }
+    },
     fullDatasetIdentifier(dataset) {
       const datasetIdentifier = dataset?.Identifier || ''
       const datasourceIdentifier = this.datasource?.Identifier || ''
@@ -209,6 +254,23 @@ export default {
         timeStyle: 'short'
       })
     },
+    formatReportRuntime(value) {
+      if (typeof value !== 'number' || value <= 0) {
+        return ''
+      }
+
+      const seconds = value / 1000000000
+      if (seconds < 1) {
+        return `Completed in ${Math.max(1, Math.round(value / 1000000))} ms`
+      }
+      if (seconds < 60) {
+        return `Completed in ${seconds.toFixed(1)} s`
+      }
+
+      const minutes = Math.floor(seconds / 60)
+      const remainingSeconds = Math.round(seconds % 60)
+      return `Completed in ${minutes}m ${remainingSeconds}s`
+    },
     reportSummary(report) {
       const counts = [
         ['stops', report.ImportedStops],
@@ -217,7 +279,7 @@ export default {
         ['journeys', report.ImportedJourneys],
         ['operators', report.ImportedOperators],
         ['operation groups', report.ImportedOperationGroups]
-      ].filter(([, count]) => count > 0)
+      ].filter(([, count]) => typeof count === 'number' && count > 0)
 
       return counts.length > 0
         ? counts.map(([label, count]) => `${count.toLocaleString()} ${label}`).join(' · ')
@@ -255,8 +317,10 @@ export default {
     getDatasource() {
       this.loading = true
       const requestId = ++this.datasourceRequestId
+      this.datasource = null
       this.importReports = {}
       this.reportLoading = {}
+      this.error = undefined
 
       axios
         .get(`${API.URL}/core/datasources/provider/${this.$route.params.id}`)
@@ -270,7 +334,7 @@ export default {
         })
         .catch(error => {
           console.log(error)
-          this.error = error
+          this.error = error.response?.data?.error || 'Unable to load this datasource.'
         })
         .finally(() => this.loading = false)
     },
@@ -278,5 +342,10 @@ export default {
   mounted () {
     this.getDatasource()
   },
+  watch: {
+    '$route.params.id'() {
+      this.getDatasource()
+    }
+  }
 }
 </script>

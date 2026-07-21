@@ -180,7 +180,7 @@
       <div class="mb-3 sm:mb-4">
         <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Network summary</h2>
         <p class="text-sm text-slate-500 sm:text-base">Data currently ingested in Travigo</p>
-        <p v-if="statsUpdatedAt" class="mt-1 text-xs font-medium text-slate-400">Updated {{ statsUpdatedAt }}</p>
+        <p v-if="statsGeneratedAt" class="mt-1 text-xs font-medium text-slate-400">Generated {{ statsGeneratedAt }}</p>
       </div>
 
       <div v-if="statsLoading" class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4 xl:grid-cols-2" aria-label="Loading network summary">
@@ -306,7 +306,7 @@ export default {
       stats: undefined,
       statsLoading: true,
       statsError: '',
-      statsUpdatedAt: '',
+      statsGeneratedAt: '',
       selectedStatsView: undefined,
       statsModalOpen: false,
       refreshTimer: undefined,
@@ -708,10 +708,18 @@ export default {
           }
 
           this.stats = response.data
-          this.statsUpdatedAt = new Intl.DateTimeFormat('en-GB', {
-            hour: '2-digit',
-            minute: '2-digit'
-          }).format(new Date())
+
+          const generatedAt = Object.values(response.data)
+            .map(stat => new Date(stat?.timestamp || stat?.Timestamp))
+            .filter(timestamp => !Number.isNaN(timestamp.getTime()))
+            .sort((first, second) => second.getTime() - first.getTime())[0]
+
+          this.statsGeneratedAt = generatedAt
+            ? new Intl.DateTimeFormat('en-GB', {
+              hour: '2-digit',
+              minute: '2-digit'
+            }).format(generatedAt)
+            : ''
         })
         .catch(error => {
           console.log(error)
