@@ -46,6 +46,16 @@ export default {
       datasources.push(element.datasource)
     }
 
+    if (element.TrackDataSource !== null && element.TrackDataSource !== undefined) {
+      datasources.push(element.TrackDataSource)
+    }
+    if (element.TrackDatasource !== null && element.TrackDatasource !== undefined) {
+      datasources.push(element.TrackDatasource)
+    }
+    if (element.trackdatasource !== null && element.trackdatasource !== undefined) {
+      datasources.push(element.trackdatasource)
+    }
+
     return datasources
   }
 }
