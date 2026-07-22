@@ -185,6 +185,17 @@
                     --:--
                   </div>
                   <div
+                    v-else-if="point.lastOne && pointRealtimeArrivalChanged(point)"
+                    class="text-[15px] font-bold leading-tight"
+                  >
+                    <span class="mr-1 text-xs text-slate-400 line-through">
+                      {{ pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
+                    </span>
+                    <span class="text-red-500">
+                      {{ pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone) }}
+                    </span>
+                  </div>
+                  <div
                     v-else-if="pointRealtimeDepartureChanged(point)"
                     class="text-[15px] font-bold leading-tight"
                   >
@@ -198,9 +209,9 @@
                   <div
                     v-else
                     class="text-[15px] font-bold leading-tight"
-                    :class="pointRealtimeDepartureSame(point) ? 'text-green-700' : 'text-slate-950'"
+                    :class="(point.lastOne ? pointRealtimeArrivalSame(point) : pointRealtimeDepartureSame(point)) ? 'text-green-700' : 'text-slate-950'"
                   >
-                    {{ pretty.time(point.departureTime, journey.DepartureTimezone) }}
+                    {{ pretty.time(point.lastOne ? point.arrivalTime : point.departureTime, journey.DepartureTimezone) }}
                   </div>
                 </div>
 
@@ -774,6 +785,19 @@ export default {
     pointRealtimeDepartureSame(point) {
       return point.realtime &&
         this.pretty.time(point.departureTime, this.journey.DepartureTimezone) === this.pretty.time(point.realtime.DepartureTime, this.journey.DepartureTimezone)
+    },
+    pointRealtimeArrivalChanged(point) {
+      return point.realtime &&
+        point.realtime.ArrivalTime &&
+        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) !== this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone) &&
+        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
+    },
+    pointRealtimeArrivalSame(point) {
+      return point.lastOne &&
+        point.realtime &&
+        point.realtime.ArrivalTime &&
+        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z' &&
+        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) === this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone)
     },
     pointArrivalSummary(point) {
       if (
