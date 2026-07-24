@@ -192,10 +192,21 @@ export default {
           const carriages = [...(train.Carriages || [])].sort((first, second) => {
             return (first.VehiclePosition || 0) - (second.VehiclePosition || 0)
           })
+          let passengerNumber = 0
+          const numberedCarriages = carriages.map(carriage => {
+            const displayPassengerNumber = this.countsAsPassengerCarriage(carriage)
+              ? passengerNumber++
+              : null
+
+            return {
+              ...carriage,
+              displayPassengerNumber
+            }
+          })
 
           return {
             ...train,
-            Carriages: train.Reversed ? carriages.reverse() : carriages
+            Carriages: train.Reversed ? numberedCarriages.reverse() : numberedCarriages
           }
         })
     },
@@ -219,7 +230,7 @@ export default {
             passengerIndex: isPassengerCarriage ? passengerIndex : -1,
             isPowerCar,
             isPassengerCarriage,
-            label: this.coachLabel(carriage, passengerIndex),
+            label: this.coachLabel(carriage, carriage.displayPassengerNumber ?? passengerIndex),
             features: this.carriageFeatures(carriage),
             occupancy,
             hasOccupancy: occupancy >= 0,
@@ -314,11 +325,7 @@ export default {
         this.detail('Vehicle ID', carriage.VehicleID),
         this.detail('Position in unit', carriage.VehiclePosition > 0 ? carriage.VehiclePosition : ''),
         this.detail('Length', carriage.LengthMM > 0 ? `${(carriage.LengthMM / 1000).toFixed(1)} m` : ''),
-        this.detail('Weight', carriage.WeightKG > 0 ? `${carriage.WeightKG} kg` : ''),
         this.detail('Livery', carriage.Livery),
-        this.detail('Special characteristics', carriage.SpecialCharacteristics),
-        this.detail('Vehicle status', carriage.VehicleStatus),
-        this.detail('Registered status', carriage.RegisteredStatus)
       ].filter(Boolean)
     },
     selectedTrainDetails() {
