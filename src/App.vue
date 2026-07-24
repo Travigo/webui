@@ -1,25 +1,26 @@
 <script>
 import UserOrLogin from '@/components/UserOrLogin.vue'
+import ThemeMenu from '@/components/ThemeMenu.vue'
 import { useAuth0 } from '@auth0/auth0-vue'
 import notify from "@/notify"
 
 export default {
   name: 'App',
   components: {
-    UserOrLogin
+    UserOrLogin,
+    ThemeMenu
   },
   computed: {
     isDev() { return process.env.NODE_ENV === 'development' },
     isFullscreen() { return this.$route.meta.fullscreen === true },
     showChrome() { return this.$route.meta.hideChrome !== true },
-    themeIcon() { return this.darkMode ? 'light_mode' : 'dark_mode' },
-    themeLabel() { return this.darkMode ? 'Use light mode' : 'Use dark mode' }
   },
   data () {
     return {
       auth0: useAuth0(),
       notify: notify,
       darkMode: false,
+      themePreference: 'system',
       systemThemeQuery: undefined,
       toastId: 0,
       toasts: [],
@@ -62,7 +63,8 @@ export default {
       this.systemThemeQuery?.removeEventListener('change', this.handleSystemThemeChange)
       this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
       const savedTheme = localStorage.getItem('travigo_theme')
-      const shouldUseDark = savedTheme === 'dark' || (savedTheme !== 'light' && this.systemThemeQuery.matches)
+      this.themePreference = ['light', 'dark'].includes(savedTheme) ? savedTheme : 'system'
+      const shouldUseDark = this.themePreference === 'dark' || (this.themePreference === 'system' && this.systemThemeQuery.matches)
 
       this.applyTheme(shouldUseDark)
       this.systemThemeQuery.addEventListener('change', this.handleSystemThemeChange)
@@ -72,14 +74,20 @@ export default {
       document.documentElement.classList.toggle('dark', shouldUseDark)
       document.documentElement.style.colorScheme = shouldUseDark ? 'dark' : 'light'
     },
-    toggleTheme() {
-      const nextTheme = !this.darkMode
+    setThemePreference(preference) {
+      this.themePreference = preference
 
-      localStorage.setItem('travigo_theme', nextTheme ? 'dark' : 'light')
-      this.applyTheme(nextTheme)
+      if (preference === 'system') {
+        localStorage.removeItem('travigo_theme')
+        this.applyTheme(this.systemThemeQuery.matches)
+        return
+      }
+
+      localStorage.setItem('travigo_theme', preference)
+      this.applyTheme(preference === 'dark')
     },
     handleSystemThemeChange(event) {
-      if (localStorage.getItem('travigo_theme') !== null) {
+      if (this.themePreference !== 'system') {
         return
       }
 
@@ -193,29 +201,13 @@ export default {
         </div>
 
         <div class="flex items-center gap-2 sm:hidden">
-          <button
-            @click="toggleTheme"
-            class="-m-1.5 inline-flex h-11 w-11 items-center justify-center"
-            :aria-label="themeLabel"
-          >
-            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
-              <span class="material-symbols-outlined text-xl">{{ themeIcon }}</span>
-            </span>
-          </button>
+          <ThemeMenu :preference="themePreference" :dark-mode="darkMode" @select="setThemePreference" />
 
           <UserOrLogin />
         </div>
 
         <div class="hidden sm:flex sm:items-center sm:gap-2">
-          <button
-            @click="toggleTheme"
-            class="-m-0.5 inline-flex h-11 w-11 items-center justify-center"
-            :aria-label="themeLabel"
-          >
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-blue-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-blue-300">
-              <span class="material-symbols-outlined text-[22px]">{{ themeIcon }}</span>
-            </span>
-          </button>
+          <ThemeMenu :preference="themePreference" :dark-mode="darkMode" @select="setThemePreference" />
 
           <UserOrLogin />
         </div>
