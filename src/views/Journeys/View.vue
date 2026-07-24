@@ -100,13 +100,13 @@
 
         <div class="p-4 sm:p-5">
           <button
-            v-if="!expandInactiveStops && hasHiddenStops"
-            @click="showAllStops()"
+            v-if="hasHiddenStops"
+            @click="toggleInactiveStops()"
             type="button"
             class="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
           >
-            <span class="material-symbols-outlined text-[19px]">history</span>
-            Show previous stops
+            <span class="material-symbols-outlined text-[19px]">{{ expandInactiveStops ? 'unfold_less' : 'history' }}</span>
+            {{ expandInactiveStops ? 'Collapse previous stops' : 'Show previous stops' }}
           </button>
 
           <ol class="relative space-y-0">
@@ -1180,8 +1180,8 @@ export default {
     showStop(index) {
       return this.journeyPoints[index]["active"] || this.expandInactiveStops
     },
-    showAllStops() {
-      this.expandInactiveStops = true
+    toggleInactiveStops() {
+      this.expandInactiveStops = !this.expandInactiveStops
     },
   },
   mounted() {
