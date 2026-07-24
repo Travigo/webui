@@ -74,20 +74,24 @@
               Notifications
             </router-link>
 
-            <div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+            <template v-if="canRunImports">
+              <div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>
 
-            <p class="px-3 pb-1 text-xs font-bold uppercase tracking-wide text-slate-400">
-              Admin
-            </p>
+              <div>
+                <p class="px-3 pb-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Admin
+                </p>
 
-            <router-link
-              :to="{ name: 'admin/importer' }"
-              @click="closeMenu"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
-            >
-              <span class="material-symbols-outlined text-[20px]">manufacturing</span>
-              Data importer
-            </router-link>
+                <router-link
+                  :to="{ name: 'admin/importer' }"
+                  @click="closeMenu"
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+                >
+                  <span class="material-symbols-outlined text-[20px]">manufacturing</span>
+                  Data importer
+                </router-link>
+              </div>
+            </template>
             <button
               type="button"
               @click="logout"
@@ -105,29 +109,49 @@
 
 <script>
 import { useAuth0 } from '@auth0/auth0-vue'
+import { DATA_IMPORTER_PERMISSION, getApiAccessTokenClaims, hasAuth0Permission } from '@/auth'
 
 export default {
   setup() {
-    const { loginWithRedirect, logout: auth0Logout, user, isAuthenticated } = useAuth0()
+    const auth0 = useAuth0()
+    const { loginWithRedirect, logout: auth0Logout, user, isAuthenticated, idTokenClaims } = auth0
 
     return {
+      auth0,
       auth0Logout,
       isAuthenticated,
+      idTokenClaims,
       loginWithRedirect,
       user
     }
   },
   data() {
     return {
+      accessTokenClaims: undefined,
       menuOpen: false
     }
   },
   computed: {
+    canRunImports() {
+      return hasAuth0Permission(this.idTokenClaims, DATA_IMPORTER_PERMISSION) ||
+        hasAuth0Permission(this.accessTokenClaims, DATA_IMPORTER_PERMISSION)
+    },
     displayName() {
       return this.user?.name || this.user?.nickname || this.user?.email || 'user'
     }
   },
   methods: {
+    async loadAccessTokenClaims() {
+      while (this.auth0.isLoading.value) {
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+
+      if (!this.isAuthenticated) {
+        return
+      }
+
+      this.accessTokenClaims = await getApiAccessTokenClaims(this.auth0).catch(() => undefined)
+    },
     toggleMenu() {
       this.menuOpen = !this.menuOpen
     },
@@ -160,6 +184,7 @@ export default {
     }
   },
   mounted() {
+    this.loadAccessTokenClaims()
     document.addEventListener('click', this.handleDocumentClick)
     document.addEventListener('keydown', this.handleEscape)
   },

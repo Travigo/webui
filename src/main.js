@@ -10,15 +10,42 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { registerSW } from 'virtual:pwa-register'
 import VueMapboxTs from "vue-mapbox-ts"
 import { createAuth0 } from '@auth0/auth0-vue'
-import { AUTH0_AUDIENCE } from './auth'
+import { AUTH0_AUDIENCE, getApiAccessTokenClaims, hasAuth0Permission } from './auth'
 
 const app = createApp(App)
+const auth0 = createAuth0({
+  domain: 'travigo.uk.auth0.com',
+  clientId: 'Vh6gHFJv724xjISfxHJK3bp8XvLqkw4K',
+  authorizationParams: {
+    redirect_uri: window.location.origin,
+    audience: AUTH0_AUDIENCE
+  },
+  cacheLocation: 'localstorage'
+})
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
 })
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  if (to.meta.requiredPermission) {
+    while (auth0.isLoading.value) {
+      await new Promise(resolve => setTimeout(resolve, 10))
+    }
+
+    const idTokenAllowsRoute = hasAuth0Permission(auth0.idTokenClaims.value, to.meta.requiredPermission)
+    const accessTokenClaims = idTokenAllowsRoute || !auth0.isAuthenticated.value
+      ? undefined
+      : await getApiAccessTokenClaims(auth0).catch(() => undefined)
+
+    const accessTokenAllowsRoute = hasAuth0Permission(accessTokenClaims, to.meta.requiredPermission)
+
+    if (!idTokenAllowsRoute && !accessTokenAllowsRoute) {
+      next({ name: 'home' })
+      return
+    }
+  }
+
   const isInStandaloneMode = () => (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || document.referrer.includes('android-app://')
 
   // Only care about this in PWA world
@@ -58,17 +85,7 @@ app.use(router)
 
 app.use(VueMapboxTs)
 
-app.use(
-  createAuth0({
-    domain: 'travigo.uk.auth0.com',
-    clientId: 'Vh6gHFJv724xjISfxHJK3bp8XvLqkw4K',
-    authorizationParams: {
-      redirect_uri: window.location.origin,
-      audience: AUTH0_AUDIENCE
-    },
-    cacheLocation: 'localstorage'
-  })
-)
+app.use(auth0)
 
 app.mount('#app')
 

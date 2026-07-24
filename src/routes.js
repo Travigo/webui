@@ -3,6 +3,7 @@ import About from './views/About.vue'
 import Contact from './views/Contact.vue'
 import Faq from './views/Faq.vue'
 import NotFound from './views/NotFound.vue'
+import { DATA_IMPORTER_PERMISSION } from './auth'
 
 /** @type {import('vue-router').RouterOptions['routes']} */
 export const routes = [
@@ -154,7 +155,8 @@ export const routes = [
     name: 'admin/home',
     path: '/admin',
     meta: {
-      title: 'Admin'
+      title: 'Admin',
+      requiredPermission: DATA_IMPORTER_PERMISSION
     },
     redirect: { name: 'admin/importer' }
   },
@@ -162,7 +164,8 @@ export const routes = [
     name: 'admin/importer',
     path: '/admin/importer',
     meta: {
-      title: 'Data importer'
+      title: 'Data importer',
+      requiredPermission: DATA_IMPORTER_PERMISSION
     },
     component: () => import('./views/Admin/DataImporter.vue')
   },
