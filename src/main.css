@@ -2,12 +2,14 @@
 @import "leaflet.markercluster/dist/MarkerCluster.css";
 @import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
-.text-brand-travi {
-  color: #eb6ea5;
+:root {
+  --brand-blue: #696aad;
+  --brand-pink: #eb6ea5;
 }
-.text-brand-go {
-  color: #696aad;
-}
+
+/* Keep the original semantic text utilities available outside Tailwind. */
+.brand-blue { color: var(--brand-blue); }
+.brand-pink { color: var(--brand-pink); }
 
 
 

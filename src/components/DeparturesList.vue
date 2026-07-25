@@ -26,7 +26,7 @@
         />
         <div
           v-else
-          class="flex h-12 min-w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm"
+          class="flex h-12 min-w-12 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm"
         >
           <span class="material-symbols-outlined text-[24px]">directions_bus</span>
         </div>
@@ -79,7 +79,7 @@
         />
         <div
           v-else
-          class="flex h-12 min-w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm"
+          class="flex h-12 min-w-12 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm"
         >
           <span class="material-symbols-outlined text-[24px]">directions_bus</span>
         </div>

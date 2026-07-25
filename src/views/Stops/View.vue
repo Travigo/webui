@@ -109,7 +109,7 @@
 
         <button
           type="button"
-          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 disabled:opacity-75 sm:min-h-11 sm:rounded-2xl"
+          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 sm:min-h-11 sm:rounded-2xl"
           :disabled="boardLoading"
           @click="refreshView()"
         >
@@ -276,7 +276,7 @@
                       <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Male ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'">
                         {{ toilet.Male ? 'Male toilets' : 'No male toilets listed' }}
                       </span>
-                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Female ? 'bg-pink-50 text-pink-700' : 'bg-slate-100 text-slate-500'">
+                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Female ? 'bg-brand-pink/10 text-brand-pink' : 'bg-slate-100 text-slate-500'">
                         {{ toilet.Female ? 'Female toilets' : 'No female toilets listed' }}
                       </span>
                     </div>

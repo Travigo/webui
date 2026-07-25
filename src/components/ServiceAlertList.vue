@@ -241,7 +241,7 @@ export default {
     },
     statusIconClasses(tone) {
       return {
-        info: 'bg-blue-600 text-white',
+        info: 'bg-brand-blue text-white',
         warning: 'bg-orange-500 text-white',
         error: 'bg-red-600 text-white',
         success: 'bg-emerald-600 text-white'

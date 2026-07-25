@@ -10,7 +10,7 @@
       :service="journey.Service"
       :short="journey.Service?.BrandDisplayMode === 'short'"
     />
-    <span v-else class="flex h-13 w-13 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm sm:h-16 sm:w-16 sm:rounded-2xl">
+    <span v-else class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm sm:h-16 sm:w-16 sm:rounded-2xl">
       <span class="material-symbols-outlined text-[25px]">route</span>
     </span>
 

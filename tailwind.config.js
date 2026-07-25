@@ -6,6 +6,20 @@ module.exports = {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      colors: {
+        brand: {
+          blue: {
+            DEFAULT: '#696aad',
+            dark: '#55568f',
+            light: '#9192c5',
+          },
+          pink: {
+            DEFAULT: '#eb6ea5',
+            dark: '#c95587',
+            light: '#f29ac1',
+          },
+        },
+      },
       fontFamily: {
         sans: ['"Inter var"', ...defaultTheme.fontFamily.sans],
       },

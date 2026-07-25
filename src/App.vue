@@ -181,7 +181,7 @@ export default {
       <div class="flex items-start justify-between gap-3 sm:gap-4">
         <div>
           <router-link :to="{ path: '/' }" class="inline-flex items-center gap-2 sm:gap-3">
-            <span class="bg-gradient-to-r from-pink-500 via-fuchsia-400 to-indigo-600 bg-clip-text text-[clamp(1.5rem,3vw,3rem)] font-semibold tracking-normal text-transparent">
+            <span class="bg-linear-to-r from-[#eb6ea5] via-[#e87676] to-[#696aad] bg-clip-text text-[clamp(1.5rem,3vw,3rem)] font-semibold tracking-normal text-transparent">
               Travigo
             </span>
             <span

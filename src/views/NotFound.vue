@@ -12,7 +12,7 @@
       </p>
       <router-link
         :to="{ name: 'home' }"
-        class="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+        class="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-brand-blue px-4 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
       >
         <span class="material-symbols-outlined text-[20px]">home</span>
         Go home

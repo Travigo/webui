@@ -43,7 +43,7 @@
       <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
         <div
           class="h-full rounded-full transition-all"
-          :class="ruleLimitReached ? 'bg-red-500' : 'bg-blue-600'"
+          :class="ruleLimitReached ? 'bg-red-500' : 'bg-brand-blue'"
           :style="{ width: `${ruleLimitPercent}%` }"
         ></div>
       </div>

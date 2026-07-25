@@ -159,7 +159,7 @@
 
               <button
                 type="button"
-                class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-brand-blue px-4 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-70"
                 :disabled="startingRun || selectedPlanTasks.size === 0"
                 @click="startRun"
               >

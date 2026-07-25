@@ -35,7 +35,7 @@
       <span class="material-symbols-outlined text-xl sm:text-4xl">tune</span>
       <span
         v-if="selectedFilterCount > 0"
-        class="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold leading-none text-white sm:h-5 sm:min-w-5 sm:text-xs"
+        class="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-pink px-1 text-[10px] font-bold leading-none text-white sm:h-5 sm:min-w-5 sm:text-xs"
       >
         {{ selectedFilterCount }}
       </span>
@@ -131,7 +131,7 @@
                 >
                   <span
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                    :class="isFilterSelected(section.id, option.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
+                    :class="isFilterSelected(section.id, option.id) ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
                   >
                     <span class="material-symbols-outlined text-[21px] leading-none">{{ option.icon }}</span>
                   </span>
@@ -163,7 +163,7 @@
             </button>
             <button
               type="button"
-              class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/20"
+              class="rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
               @click="closeFilters"
             >
               Apply filters

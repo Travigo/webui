@@ -93,7 +93,7 @@
               :disabled="loadingNearbyStops"
               @click="requestNearbyStops"
             >
-              <span class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 sm:rounded-2xl">
+              <span class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark sm:rounded-2xl">
                 <span class="material-symbols-outlined text-[19px]" :class="{'animate-spin': loadingNearbyStops}">{{ loadingNearbyStops ? 'progress_activity' : 'near_me' }}</span>
                 <span>{{ nearbyStopsButtonLabel }}</span>
               </span>
@@ -323,11 +323,11 @@ export default {
       savedStopsError: '',
       savedStops: [],
       quickActions: [
-        { label: 'Nearby', icon: 'near_me', route: { name: 'map' }, bg: 'border-blue-100 bg-blue-50', color: 'text-blue-600' },
+        { label: 'Nearby', icon: 'near_me', route: { name: 'map' }, bg: 'border-brand-blue/20 bg-brand-blue/10', color: 'text-brand-blue' },
         { label: 'Departures', icon: 'train', route: { name: 'timetables/home' }, bg: 'border-purple-100 bg-purple-50', color: 'text-purple-600' },
         { label: 'Journey Planner', icon: 'route', route: { name: 'journeyplanner/home' }, bg: 'border-green-100 bg-green-50', color: 'text-green-700' },
         { label: 'Operators', icon: 'groups', route: { name: 'operators/home' }, bg: 'border-amber-100 bg-amber-50', color: 'text-amber-600' },
-        { label: 'Saved', icon: 'bookmark', route: { name: 'account/home' }, bg: 'border-pink-100 bg-pink-50', color: 'text-pink-500' },
+        { label: 'Saved', icon: 'bookmark', route: { name: 'account/home' }, bg: 'border-brand-pink/20 bg-brand-pink/10', color: 'text-brand-pink' },
         { label: 'More', icon: 'more_horiz', route: { name: 'about' }, bg: 'border-slate-100 bg-slate-50', color: 'text-slate-700' },
       ],
       nearbyStops: []

@@ -8,13 +8,13 @@
       v-for="tab in tabs"
       v-bind:key="tab.id"
       class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
-      :class="{'text-blue-600 dark:text-blue-300': modelValue === tab.id}"
+      :class="{'text-brand-blue dark:text-brand-blue-light': modelValue === tab.id}"
       @click="selectTab(tab.id)"
     >
       <span v-if="tab.icon" class="material-symbols-outlined text-[20px]">{{ tab.icon }}</span>
       <span>{{ tab.name }}</span>
       <span
-        class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600 dark:bg-blue-300"
+        class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-brand-pink dark:bg-brand-pink-light"
         v-if="modelValue === tab.id"
       />
     </button>

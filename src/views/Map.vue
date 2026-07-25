@@ -115,7 +115,7 @@
                 >
                   <span
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                    :class="isMapLayerEnabled(layer.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
+                    :class="isMapLayerEnabled(layer.id) ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
                   >
                     <span class="material-symbols-outlined text-[21px] leading-none">{{ layer.icon }}</span>
                   </span>
@@ -142,7 +142,7 @@
               </button>
               <button
                 type="button"
-                class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/20"
+                class="rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
                 @click="closeMapFilters"
               >
                 Apply filters
@@ -170,7 +170,7 @@
                 <router-link
                   @click="closeStopModal"
                   :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
-                  class="inline-flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700"
+                  class="inline-flex items-center gap-1 rounded-full bg-brand-blue px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
                 >
                   View more
                   <span class="material-symbols-outlined text-base">chevron_right</span>

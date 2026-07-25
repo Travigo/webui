@@ -32,7 +32,7 @@
             </span>
             <span
               v-if="displayedServices.length === 0"
-              class="inline-flex h-5 items-center rounded-md bg-blue-600 px-1.5 text-[0.72rem] font-semibold text-white sm:h-6 sm:px-2 sm:text-sm"
+              class="inline-flex h-5 items-center rounded-md bg-brand-blue px-1.5 text-[0.72rem] font-semibold text-white sm:h-6 sm:px-2 sm:text-sm"
             >
               Stop
             </span>

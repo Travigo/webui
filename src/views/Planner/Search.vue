@@ -225,7 +225,7 @@
               <router-link
                 v-if="step.journeyId"
                 :to="{ name: 'journeys/view', params: { id: step.journeyId } }"
-                class="mt-3 inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+                class="mt-3 inline-flex h-9 items-center gap-1.5 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
                 @click="closeJourneyPlanModal"
               >
                 Open journey

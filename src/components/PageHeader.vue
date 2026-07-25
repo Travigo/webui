@@ -9,7 +9,7 @@
         <div class="min-w-0">
           <slot name="meta"></slot>
 
-          <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">
+          <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-wide text-brand-blue dark:text-brand-blue-light">
             {{ eyebrow }}
           </p>
 

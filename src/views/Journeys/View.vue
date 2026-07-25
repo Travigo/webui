@@ -126,7 +126,7 @@
                 ></span>
                 <span
                   class="relative z-10 mt-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white shadow-sm"
-                  :class="point.active ? 'bg-blue-600' : 'bg-slate-300'"
+                  :class="point.active ? 'bg-brand-blue' : 'bg-slate-300'"
                 ></span>
               </div>
 

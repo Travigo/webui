@@ -23,7 +23,7 @@
                 v-bind:key="option.value"
                 type="button"
                 class="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-extrabold transition"
-                :class="originMode === option.value ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'"
+                :class="originMode === option.value ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'"
                 @click="setOriginMode(option.value)"
               >
                 <span class="material-symbols-outlined text-[17px]">{{ option.icon }}</span>
@@ -60,7 +60,7 @@
 
             <button
               type="button"
-              class="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-70"
+              class="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:opacity-70"
               :disabled="locatingOrigin"
               @click="requestOriginLocation"
             >
@@ -93,7 +93,7 @@
 
         <button 
           type="submit" 
-          class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-60"
+          class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brand-blue px-4 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:opacity-60"
           :disabled="!canSubmit"
         >
           <span class="material-symbols-outlined text-[22px]">search</span>

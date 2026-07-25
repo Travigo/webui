@@ -1,7 +1,7 @@
 <template>
   <button
     :type="type"
-    class="inline-flex h-10 w-10 shrink-0 items-center justify-center bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+    class="inline-flex h-10 w-10 shrink-0 items-center justify-center bg-white text-slate-700 shadow-sm transition hover:bg-brand-blue/10 hover:text-brand-blue disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-brand-blue/20 dark:hover:text-brand-blue-light"
     :class="shapeClass"
     :disabled="disabled"
     :aria-label="label"
