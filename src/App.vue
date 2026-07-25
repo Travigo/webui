@@ -199,8 +199,8 @@ export default {
               </svg>
             </span>
             <span class="inline-flex items-baseline gap-1.5 sm:gap-2">
-              <span class="bg-linear-to-r from-brand-pink via-[#aa6caa] to-brand-blue bg-clip-text text-[clamp(1.5rem,3vw,3rem)] font-semibold leading-[1.15] tracking-normal text-transparent">
-                Travigo
+              <span class="text-[clamp(1.5rem,3vw,3rem)] font-semibold leading-[1.15] tracking-normal">
+                <span class="bg-linear-to-r from-brand-pink-light to-brand-pink-dark bg-clip-text text-transparent">Travi</span><span class="bg-linear-to-r from-brand-blue-light to-brand-blue-dark bg-clip-text text-transparent">go</span>
               </span>
               <span
                 v-if="this.isDev"
