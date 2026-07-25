@@ -180,21 +180,40 @@ export default {
     >
       <div class="flex items-start justify-between gap-3 sm:gap-4">
         <div>
-          <router-link :to="{ path: '/' }" class="inline-flex items-center gap-2 sm:gap-3">
-            <span class="bg-linear-to-r from-[#eb6ea5] via-[#e87676] to-[#696aad] bg-clip-text text-[clamp(1.5rem,3vw,3rem)] font-semibold tracking-normal text-transparent">
-              Travigo
+          <router-link :to="{ path: '/' }" class="inline-flex items-center gap-1.5 sm:gap-2.5">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white p-0.5 shadow-sm shadow-slate-300/50 sm:h-11 sm:w-11 sm:rounded-2xl dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20" aria-hidden="true">
+              <svg class="h-full w-full" viewBox="0 0 48 44" fill="none">
+                <defs>
+                  <linearGradient id="header-journey-line" x1="10" y1="29" x2="40" y2="24" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#eb6ea5" />
+                    <stop offset="1" stop-color="#696aad" />
+                  </linearGradient>
+                </defs>
+                <path d="M10 29C18 18 27 19 34 26C36 28 38 28 41 25" stroke="url(#header-journey-line)" stroke-width="3.5" stroke-linecap="round" />
+                <g transform="rotate(-14 11 25)">
+                  <rect x="2.5" y="18.5" width="17" height="12" rx="4" fill="#f59e0b" />
+                  <path d="M6.5 22.5H15.5M7.5 26.5H10.5M13.5 26.5H15.5" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                </g>
+                <path d="M38 9C33.25 9 29.75 12.65 29.75 17.15C29.75 23.1 38 32 38 32C38 32 46.25 23.1 46.25 17.15C46.25 12.65 42.75 9 38 9Z" fill="#696aad" />
+                <circle cx="38" cy="17" r="3" fill="white" />
+              </svg>
             </span>
-            <span
-              v-if="this.isDev"
-              class="rounded-md border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-red-600 sm:rounded-lg sm:px-3 sm:py-1 sm:text-sm"
-            >
-              Dev
-            </span>
-            <span
-              v-else
-              class="rounded-md border border-orange-200 bg-orange-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-orange-600 sm:rounded-lg sm:px-3 sm:py-1 sm:text-sm"
-            >
-              Beta
+            <span class="inline-flex items-baseline gap-1.5 sm:gap-2">
+              <span class="bg-linear-to-r from-brand-pink via-[#aa6caa] to-brand-blue bg-clip-text text-[clamp(1.5rem,3vw,3rem)] font-semibold leading-[1.15] tracking-normal text-transparent">
+                Travigo
+              </span>
+              <span
+                v-if="this.isDev"
+                class="shrink-0 text-[9px] font-bold uppercase leading-none tracking-[0.12em] text-red-500/80 dark:text-red-300/80 sm:text-[10px]"
+              >
+                Dev
+              </span>
+              <span
+                v-else
+                class="shrink-0 text-[9px] font-bold uppercase leading-none tracking-[0.12em] text-brand-blue/70 dark:text-brand-blue-light/80 sm:text-[10px]"
+              >
+                Beta
+              </span>
             </span>
           </router-link>
 
