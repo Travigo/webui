@@ -341,7 +341,7 @@
           <div v-for="(point, index) in journeyPoints" v-bind:key="index">
             <mapbox-marker :lngLat="point.location" v-if="point.location">
               <template v-slot:icon>
-                <img src="/icons/bus-stop-station-svgrepo-com-16x16.png">
+                <StopIcon :stop="stopForMapIcon(point)" />
               </template>
             </mapbox-marker>
 
@@ -360,7 +360,9 @@
             v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2"
           >
             <template v-slot:icon>
-              <img src="/icons/bus-svgrepo-com-32x32.png">
+              <span class="material-symbols-outlined text-[32px] leading-none text-blue-600">
+                {{ transportIcon(journey.Service?.TransportType) }}
+              </span>
             </template>
           </mapbox-marker>
         </mapbox-map>
@@ -373,6 +375,7 @@
 
 <script>
 import ServiceIcon from '@/components/ServiceIcon.vue'
+import StopIcon from '@/components/StopIcon.vue'
 import Alert from "@/components/Alert.vue"
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
@@ -444,6 +447,7 @@ export default {
   components: {
     Alert,
     ServiceIcon,
+    StopIcon,
     DetailedInformationRail,
     DepartureTypeIcon,
     DatasourceAttributes,
@@ -722,6 +726,28 @@ export default {
     }
   },
   methods: {
+    stopForMapIcon(point) {
+      const services = point?.stop?.Services
+
+      return {
+        ...point?.stop,
+        Services: Array.isArray(services) && services.length > 0
+          ? services
+          : this.journey?.Service ? [this.journey.Service] : []
+      }
+    },
+    transportIcon(type) {
+      return {
+        Rail: 'train',
+        Train: 'train',
+        Bus: 'directions_bus',
+        Coach: 'airport_shuttle',
+        Tram: 'tram',
+        Metro: 'subway',
+        Ferry: 'directions_boat',
+        Air: 'flight'
+      }[type] || 'directions'
+    },
     trainDetailItems(train) {
       const details = []
       const carriageCount = this.trainPassengerCarriageCount(train)

@@ -41,7 +41,7 @@ export default {
       services?.forEach(service => {
         let serviceID
         let serviceIcon
-        if (service.BrandIcon === "") {
+        if (!service.BrandIcon) {
           serviceID = service.TransportType
 
           serviceIcon = {
