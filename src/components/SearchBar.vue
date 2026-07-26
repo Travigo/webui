@@ -149,10 +149,6 @@
             </section>
           </div>
 
-          <div class="mt-4 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
-            This is only a placeholder for now. Does not apply any filters or function
-          </div>
-
           <div class="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
             <button
               type="button"
@@ -286,12 +282,17 @@ export default {
           description: 'Show stops served by selected modes.',
           type: 'multi-select',
           options: [
-            { id: 'bus', label: 'Bus', icon: 'directions_bus' },
-            { id: 'train', label: 'Train', icon: 'train' },
-            { id: 'metro', label: 'Metro', icon: 'subway' },
-            { id: 'tram', label: 'Tram', icon: 'tram' },
-            { id: 'ferry', label: 'Ferry', icon: 'directions_boat' },
-            { id: 'coach', label: 'Coach', icon: 'airport_shuttle' },
+            { id: 'Bus', label: 'Bus', icon: 'directions_bus' },
+            { id: 'Coach', label: 'Coach', icon: 'airport_shuttle' },
+            { id: 'Tram', label: 'Tram', icon: 'tram' },
+            { id: 'Taxi', label: 'Taxi', icon: 'local_taxi' },
+            { id: 'Rail', label: 'Train', icon: 'train' },
+            { id: 'Metro', label: 'Metro', icon: 'subway' },
+            { id: 'Ferry', label: 'Ferry', icon: 'directions_boat' },
+            { id: 'Airport', label: 'Airport', icon: 'flight' },
+            { id: 'CableCar', label: 'Cable car', icon: 'gondola_lift' },
+            { id: 'Funicular', label: 'Funicular', icon: 'funicular' },
+            { id: 'UNKNOWN', label: 'Other', icon: 'pin_drop' },
           ],
         }
       ],
@@ -350,6 +351,7 @@ export default {
     },
     closeFilters() {
       this.filtersOpen = false
+      this.searchStops()
     },
     selectedSectionCount(sectionId) {
       return this.selectedFilters[sectionId]?.length || 0
@@ -449,7 +451,12 @@ export default {
       this.loadingResults = true
 
       axios
-          .get(`${API.URL}/core/stops/search?name=`+this.searchTerm)
+          .get(`${API.URL}/core/stops/search`, {
+            params: {
+              name: this.searchTerm,
+              transporttype: this.selectedFilters.transportType.join(',')
+            }
+          })
           .then(response => {
             this.results = response.data
             this.activeResultIndex = this.searchResults.length > 0 ? 0 : -1
