@@ -84,6 +84,8 @@ import API from '@/API'
 import { getApiAccessToken } from '@/auth'
 import IconButton from '@/components/IconButton.vue'
 import NotificationRuleModal from '@/components/NotificationRuleModal.vue'
+import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
+import notificationSubscriptions from '@/notificationSubscriptions'
 
 export default {
   name: 'EntityActionButtons',
@@ -130,6 +132,7 @@ export default {
       messageType: 'info',
       saving: false,
       saved: false,
+      savingNotification: false,
       notificationModalOpen: false
     }
   },
@@ -143,51 +146,12 @@ export default {
     supportsNotifications() {
       return this.availableNotificationTypes.length > 0
     },
-    serviceAlertTypeOptions() {
-      return [
-        { value: 'Information', label: 'Service update' },
-        { value: 'Warning', label: 'Service warning' },
-        { value: 'StopClosed', label: 'Stop closed' },
-        { value: 'ServiceSuspended', label: 'Service suspended' },
-        { value: 'ServicePartSuspended', label: 'Service part suspended' },
-        { value: 'SevereDelays', label: 'Severe delays' },
-        { value: 'Delays', label: 'Delays' },
-        { value: 'MinorDelays', label: 'Minor delays' },
-        { value: 'Planned', label: 'Planned notice' },
-        { value: 'JourneyDelayed', label: 'Journey delayed' },
-        { value: 'JourneyPartiallyCancelled', label: 'Journey partially cancelled' },
-        { value: 'JourneyCancelled', label: 'Journey cancelled' }
-      ]
-    },
     availableNotificationTypes() {
-      const defaultTypes = []
-
-      if (['stop', 'journey'].includes(this.readableEntityType)) {
-        defaultTypes.push(this.serviceAlertNotificationType)
+      if (this.notificationTypes.length > 0) {
+        return this.notificationTypes
       }
 
-      return [
-        ...defaultTypes,
-        ...this.notificationTypes.filter(type => !defaultTypes.some(defaultType => defaultType.id === type.id))
-      ]
-    },
-    serviceAlertNotificationType() {
-      return {
-        id: 'service-alert',
-        label: 'Service Alert',
-        icon: 'campaign',
-        fields: [
-          {
-            id: 'serviceAlertTypes',
-            label: 'Type of service alert',
-            type: 'multi-select',
-            placeholder: 'Select alert types',
-            allSelectedLabel: 'All alert types',
-            description: 'Choose which alert types should trigger this notification.',
-            options: this.serviceAlertTypeOptions
-          }
-        ]
-      }
+      return notificationRuleTypesForSubject(this.entityType)
     },
     saveDisabled() {
       return !this.supportsSave || this.saving || this.saved
@@ -314,7 +278,7 @@ export default {
       this.closeMenu()
       this.notificationModalOpen = true
     },
-    saveNotificationRule() {
+    async saveNotificationRule(rule) {
       if (!this.isAuthenticated) {
         this.showToast('Sign in to save notification rules.', 'warning')
         this.loginWithRedirect({
@@ -325,7 +289,27 @@ export default {
         return
       }
 
-      this.showToast('Notification rule saved. Syncing rules to the API is not connected yet.', 'warning')
+      if (!this.entityIdentifier || this.savingNotification) {
+        this.showToast(`This ${this.readableEntityType} could not be used for notifications.`, 'error')
+        return
+      }
+
+      this.savingNotification = true
+
+      try {
+        await notificationSubscriptions.create(this.auth0, rule)
+        this.showToast('Notification rule saved.', 'success')
+      } catch (error) {
+        console.log(error)
+        this.showToast(
+          error.response?.status === 409
+            ? 'Your notification rule limit has been reached.'
+            : 'Notification rule could not be saved.',
+          error.response?.status === 409 ? 'warning' : 'error'
+        )
+      } finally {
+        this.savingNotification = false
+      }
     },
     handleDocumentClick() {
       this.closeMenu()

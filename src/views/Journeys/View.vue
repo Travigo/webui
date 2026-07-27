@@ -390,6 +390,7 @@ import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
 import Utils from '@/utils'
+import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
 
 export default {
   data() {
@@ -665,64 +666,9 @@ export default {
         }))
     },
     journeyNotificationTypes() {
-      return [
-        {
-          id: 'journey',
-          label: 'Journey',
-          icon: 'route',
-          fields: [
-            {
-              id: 'journeyEvents',
-              label: 'Journey changes',
-              type: 'multi-select',
-              placeholder: 'Select journey changes',
-              allSelectedLabel: 'All journey changes',
-              description: 'Choose which scheduled journey changes should trigger this notification.',
-              options: [
-                { value: 'JourneyRemoved', label: 'Removed' },
-                { value: 'JourneyEdited', label: 'Edited' }
-              ]
-            }
-          ]
-        },
-        {
-          id: 'realtime-journey',
-          label: 'Realtime journey',
-          icon: 'directions',
-          fields: [
-            {
-              id: 'realtimeJourneyEvents',
-              label: 'Realtime journey changes',
-              type: 'multi-select',
-              placeholder: 'Select realtime changes',
-              selectAll: false,
-              description: 'Choose which live journey changes should trigger this notification.',
-              options: [
-                { value: 'RealtimeJourneyCreated', label: 'Created', exclusiveGroup: 'general' },
-                { value: 'RealtimeJourneyActivelyTracked', label: 'Actively tracked', exclusiveGroup: 'general' },
-                { value: 'RealtimeJourneyPlatformSet', label: 'Platform set', exclusiveGroup: 'platform' },
-                { value: 'RealtimeJourneyPlatformChanged', label: 'Platform changed', exclusiveGroup: 'platform' },
-                { value: 'RealtimeJourneyCancelled', label: 'Cancelled', exclusiveGroup: 'general' },
-                { value: 'RealtimeJourneyLocationTextChanged', label: 'Location text changed', exclusiveGroup: 'general' },
-                { value: 'RealtimeJourneyNextStopChanged', label: 'Next stop changed', exclusiveGroup: 'general' }
-              ]
-            },
-            {
-              id: 'platformStopRefs',
-              label: 'Stops for platform alerts',
-              type: 'multi-select',
-              placeholder: 'Select stops',
-              allSelectedLabel: 'All stops',
-              description: 'Required when platform set or platform changed is selected.',
-              visibleWhen: {
-                fieldId: 'realtimeJourneyEvents',
-                includesAny: ['RealtimeJourneyPlatformSet', 'RealtimeJourneyPlatformChanged']
-              },
-              options: this.journeyStopOptions
-            }
-          ]
-        }
-      ]
+      return notificationRuleTypesForSubject('Journey', {
+        stopOptions: this.journeyStopOptions
+      })
     }
   },
   methods: {

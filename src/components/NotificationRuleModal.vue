@@ -22,7 +22,7 @@
         v-model="selectedNotificationTypeId"
         class="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-500/20"
       >
-        <option value="" disabled>Select notification type</option>
+        <option value="" disabled>Select what to monitor</option>
         <option
           v-for="type in notificationTypes"
           v-bind:key="type.id"
@@ -413,7 +413,7 @@ export default {
         return selectedOptions[0].label
       }
 
-      return `${selectedOptions.length} alert types selected`
+      return `${selectedOptions.length} ${field.selectionNoun || 'options'} selected`
     },
     isFieldDropdownOpen(fieldId) {
       return Boolean(this.fieldDropdownOpen[fieldId])

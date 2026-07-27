@@ -8,26 +8,15 @@
       variant="panel"
     />
 
-    <section class="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-amber-900 shadow-sm shadow-amber-100/60 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100 dark:shadow-black/20 sm:rounded-3xl sm:p-5">
-      <div class="flex items-start gap-3">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-amber-600 dark:bg-slate-900/70 dark:text-amber-200">
-          <span class="material-symbols-outlined text-[23px]">info</span>
-        </span>
-        <div>
-          <h2 class="text-base font-extrabold sm:text-lg">Placeholder preferences</h2>
-          <p class="mt-1 text-sm font-medium leading-relaxed">
-            These notification rules are placeholder data. Editing and deleting updates this page only until rule storage is connected.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl sm:p-5">
+    <section
+      v-if="auth0.isAuthenticated"
+      class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl sm:p-5"
+    >
       <div class="flex items-start justify-between gap-4">
         <div>
           <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Saved rule usage</h2>
           <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            {{ notificationRules.length }} of {{ ruleLimit }} saved notification rules used.
+            {{ ruleUsage }} of {{ ruleLimit }} saved notification rules used.
           </p>
         </div>
         <span
@@ -49,7 +38,31 @@
       </div>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl">
+    <section
+      v-if="!auth0.isLoading && !auth0.isAuthenticated"
+      class="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:rounded-3xl sm:px-5"
+    >
+      Sign in to manage notification rules.
+    </section>
+
+    <section
+      v-else-if="loadingRules"
+      class="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:rounded-3xl sm:px-5"
+    >
+      Loading notification rules…
+    </section>
+
+    <section
+      v-else-if="rulesError"
+      class="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100 sm:rounded-3xl sm:px-5"
+    >
+      {{ rulesError }}
+    </section>
+
+    <section
+      v-if="auth0.isAuthenticated && !loadingRules && !rulesError"
+      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl"
+    >
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
         <div>
           <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Configured notifications</h2>
@@ -59,7 +72,7 @@
 
       <div v-if="notificationRules.length === 0" class="px-4 py-6 sm:px-5">
         <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          No placeholder notification rules are configured.
+          No notification rules are configured.
         </div>
       </div>
 
@@ -87,6 +100,7 @@
                   <button
                     type="button"
                     class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+                    :disabled="savingRuleIdentifier === rule.id"
                     :aria-label="`Edit ${rule.entityName} notification`"
                     @click="openEditRule(rule)"
                   >
@@ -95,6 +109,7 @@
                   <button
                     type="button"
                     class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-red-50 hover:text-red-700 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-200"
+                    :disabled="deletingRuleIdentifier === rule.id"
                     :aria-label="`Delete ${rule.entityName} notification`"
                     @click="openDeleteRule(rule)"
                   >
@@ -148,13 +163,14 @@
       body-class="space-y-4 p-4 sm:p-5"
     >
       <p class="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-        This placeholder notification rule will be removed from the list.
+        This notification rule will be permanently removed.
       </p>
 
       <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <button
           type="button"
           class="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          :disabled="Boolean(deletingRuleIdentifier)"
           @click="closeDeleteRule"
         >
           Cancel
@@ -162,10 +178,13 @@
         <button
           type="button"
           class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700"
+          :disabled="Boolean(deletingRuleIdentifier)"
           @click="deleteRule"
         >
-          <span class="material-symbols-outlined text-[20px]">delete</span>
-          Delete rule
+          <span class="material-symbols-outlined text-[20px]" :class="{ 'animate-spin': deletingRuleIdentifier }">
+            {{ deletingRuleIdentifier ? 'progress_activity' : 'delete' }}
+          </span>
+          {{ deletingRuleIdentifier ? 'Deleting…' : 'Delete rule' }}
         </button>
       </div>
     </Modal>
@@ -173,9 +192,12 @@
 </template>
 
 <script>
+import { useAuth0 } from '@auth0/auth0-vue'
 import Modal from '@/components/Modal.vue'
 import NotificationRuleModal from '@/components/NotificationRuleModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
+import notificationSubscriptions from '@/notificationSubscriptions'
 
 export default {
   name: 'AccountNotifications',
@@ -186,162 +208,164 @@ export default {
   },
   data() {
     return {
-      ruleLimit: 5,
+      auth0: useAuth0(),
+      ruleLimit: 0,
+      ruleUsage: 0,
+      loadingRules: false,
+      rulesError: '',
+      savingRuleIdentifier: '',
+      deletingRuleIdentifier: '',
       ruleModalOpen: false,
       deleteModalOpen: false,
       editingRule: null,
       rulePendingDeletion: null,
-      notificationRules: [
-        {
-          id: 1,
-          entityType: 'Stop',
-          entityName: 'Cambridge Rail Station',
-          entityIdentifier: 'tmr-stop-a499f2e2140c892d3bc61fce694f',
-          notificationType: 'service-alert',
-          values: {
-            serviceAlertTypes: ['Delays', 'SevereDelays', 'JourneyCancelled']
-          }
-        },
-        {
-          id: 2,
-          entityType: 'Journey',
-          entityName: 'Cambridge to Brighton',
-          entityIdentifier: 'placeholder-journey-1',
-          notificationType: 'realtime-journey',
-          values: {
-            realtimeJourneyEvents: ['RealtimeJourneyPlatformChanged', 'RealtimeJourneyCancelled']
-          }
-        },
-        {
-          id: 3,
-          entityType: 'Stop',
-          entityName: 'London Kings Cross',
-          entityIdentifier: 'placeholder-stop-1',
-          notificationType: 'service-alert',
-          values: {
-            serviceAlertTypes: ['Information', 'Warning', 'Planned']
-          }
-        }
-      ],
-      notificationTypes: [
-        {
-          id: 'service-alert',
-          label: 'Service Alert',
-          icon: 'campaign',
-          fields: [
-            {
-              id: 'serviceAlertTypes',
-              label: 'Type of service alert',
-              type: 'multi-select',
-              placeholder: 'Select alert types',
-              allSelectedLabel: 'All alert types',
-              description: 'Choose which alert types should trigger this notification.',
-              options: [
-                { value: 'Information', label: 'Service update' },
-                { value: 'Warning', label: 'Service warning' },
-                { value: 'StopClosed', label: 'Stop closed' },
-                { value: 'ServiceSuspended', label: 'Service suspended' },
-                { value: 'ServicePartSuspended', label: 'Service part suspended' },
-                { value: 'SevereDelays', label: 'Severe delays' },
-                { value: 'Delays', label: 'Delays' },
-                { value: 'MinorDelays', label: 'Minor delays' },
-                { value: 'Planned', label: 'Planned notice' },
-                { value: 'JourneyDelayed', label: 'Journey delayed' },
-                { value: 'JourneyPartiallyCancelled', label: 'Journey partially cancelled' },
-                { value: 'JourneyCancelled', label: 'Journey cancelled' }
-              ]
-            }
-          ]
-        },
-        {
-          id: 'realtime-journey',
-          label: 'Realtime Journey',
-          icon: 'rss_feed',
-          fields: [
-            {
-              id: 'realtimeJourneyEvents',
-              label: 'Realtime journey events',
-              type: 'multi-select',
-              placeholder: 'Select event types',
-              description: 'Choose realtime journey changes that should trigger this notification.',
-              options: [
-                { value: 'RealtimeJourneyCreated', label: 'Created' },
-                { value: 'RealtimeJourneyActivelyTracked', label: 'Actively tracked' },
-                { value: 'RealtimeJourneyPlatformSet', label: 'Platform set' },
-                { value: 'RealtimeJourneyPlatformChanged', label: 'Platform changed' },
-                { value: 'RealtimeJourneyCancelled', label: 'Cancelled' },
-                { value: 'RealtimeJourneyLocationTextChanged', label: 'Location text changed' },
-                { value: 'RealtimeJourneyNextStopChanged', label: 'Next stop changed' }
-              ]
-            }
-          ]
-        }
-      ]
+      notificationRules: []
     }
   },
   computed: {
     ruleLimitReached() {
-      return this.notificationRules.length >= this.ruleLimit
+      return this.ruleLimit > 0 && this.ruleUsage >= this.ruleLimit
     },
     ruleLimitRemaining() {
-      return Math.max(this.ruleLimit - this.notificationRules.length, 0)
+      return Math.max(this.ruleLimit - this.ruleUsage, 0)
     },
     ruleLimitPercent() {
-      return Math.min(Math.round((this.notificationRules.length / this.ruleLimit) * 100), 100)
+      if (this.ruleLimit === 0) {
+        return 0
+      }
+
+      return Math.min(Math.round((this.ruleUsage / this.ruleLimit) * 100), 100)
     },
     activeRuleEntityType() {
-      return this.editingRule?.entityType || 'Stop'
+      return this.editingRule?.entityType || ''
     },
     activeRuleEntityName() {
-      return this.editingRule?.entityName || 'Placeholder stop'
+      return this.editingRule?.entityName || ''
     },
     activeRuleEntityIdentifier() {
-      return this.editingRule?.entityIdentifier || 'placeholder-stop-new'
+      return this.editingRule?.entityIdentifier || ''
     },
     ruleModalKey() {
       return this.editingRule ? `edit-${this.editingRule.id}` : 'edit-none'
     },
+    notificationTypes() {
+      return notificationRuleTypesForSubject('Journey')
+    },
     activeNotificationTypes() {
-      return this.notificationTypes
+      const stopRefs = this.editingRule?.values?.platformStopRefs || []
+
+      return notificationRuleTypesForSubject(this.activeRuleEntityType, {
+        stopOptions: stopRefs.map(stopRef => ({
+          value: stopRef,
+          label: stopRef
+        }))
+      })
+    }
+  },
+  watch: {
+    'auth0.isAuthenticated'() {
+      this.loadRules()
     }
   },
   methods: {
+    async loadRules() {
+      this.rulesError = ''
+
+      if (!this.auth0.isAuthenticated) {
+        this.notificationRules = []
+        this.ruleUsage = 0
+        this.ruleLimit = 0
+        return
+      }
+
+      this.loadingRules = true
+
+      try {
+        const [rules, quota] = await Promise.all([
+          notificationSubscriptions.list(this.auth0),
+          notificationSubscriptions.quota(this.auth0)
+        ])
+        this.notificationRules = rules
+        this.ruleUsage = quota.used
+        this.ruleLimit = quota.limit
+      } catch (error) {
+        console.log(error)
+        this.notificationRules = []
+        this.rulesError = 'Notification rules could not be loaded.'
+      } finally {
+        this.loadingRules = false
+      }
+    },
     openEditRule(rule) {
+      if (this.savingRuleIdentifier || this.deletingRuleIdentifier) {
+        return
+      }
+
       this.editingRule = rule
       this.ruleModalOpen = true
     },
-    saveRule(rule) {
+    async saveRule(rule) {
       if (!this.editingRule) {
         return
       }
 
-      this.notificationRules = this.notificationRules.map(existingRule => existingRule.id === this.editingRule.id
-        ? {
-            ...existingRule,
-            notificationType: rule.notificationType,
-            values: rule.values
-          }
-        : existingRule)
-      this.showToast('Notification rule updated.', 'success')
-      this.editingRule = null
+      const existingRule = this.editingRule
+      this.savingRuleIdentifier = existingRule.id
+
+      try {
+        const updatedRule = await notificationSubscriptions.update(this.auth0, {
+          ...existingRule,
+          ...rule
+        })
+        this.notificationRules = this.notificationRules.map(notificationRule => notificationRule.id === existingRule.id
+          ? { ...existingRule, ...updatedRule }
+          : notificationRule)
+        this.showToast('Notification rule updated.', 'success')
+        this.editingRule = null
+      } catch (error) {
+        console.log(error)
+        this.showToast('Notification rule could not be updated.', 'error')
+      } finally {
+        this.savingRuleIdentifier = ''
+      }
     },
     openDeleteRule(rule) {
+      if (this.savingRuleIdentifier || this.deletingRuleIdentifier) {
+        return
+      }
+
       this.rulePendingDeletion = rule
       this.deleteModalOpen = true
     },
     closeDeleteRule() {
+      if (this.deletingRuleIdentifier) {
+        return
+      }
+
       this.deleteModalOpen = false
       this.rulePendingDeletion = null
     },
-    deleteRule() {
+    async deleteRule() {
       if (!this.rulePendingDeletion) {
         return
       }
 
       const deletedRule = this.rulePendingDeletion
-      this.notificationRules = this.notificationRules.filter(rule => rule.id !== deletedRule.id)
-      this.closeDeleteRule()
-      this.showToast('Notification rule deleted.', 'success')
+      this.deletingRuleIdentifier = deletedRule.id
+
+      try {
+        await notificationSubscriptions.delete(this.auth0, deletedRule.id)
+        this.notificationRules = this.notificationRules.filter(rule => rule.id !== deletedRule.id)
+        this.ruleUsage = Math.max(this.ruleUsage - 1, 0)
+        this.deleteModalOpen = false
+        this.rulePendingDeletion = null
+        this.showToast('Notification rule deleted.', 'success')
+      } catch (error) {
+        console.log(error)
+        this.showToast('Notification rule could not be deleted.', 'error')
+      } finally {
+        this.deletingRuleIdentifier = ''
+      }
     },
     notificationType(typeId) {
       return this.notificationTypes.find(type => type.id === typeId) || null
@@ -366,6 +390,10 @@ export default {
         const value = rule.values?.[field.id]
 
         if (Array.isArray(value)) {
+          if (field.id === 'platformStopRefs' && value.length > 0) {
+            return [`${value.length} platform ${value.length === 1 ? 'stop' : 'stops'}`]
+          }
+
           return value.map(optionValue => this.optionLabel(field, optionValue))
         }
 
@@ -383,6 +411,9 @@ export default {
         }
       }))
     }
+  },
+  mounted() {
+    this.loadRules()
   }
 }
 </script>
