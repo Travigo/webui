@@ -1,55 +1,69 @@
 <template>
-  <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
+  <div class="space-y-5 pb-8 pt-3 sm:space-y-6 sm:pt-4">
     <PageHeader
       eyebrow="Account"
       title="Notifications"
-      subtitle="Manage the rules Travigo should use when sending notifications."
+      subtitle="Choose the live changes and service updates that matter to you."
       icon="notifications_active"
       variant="panel"
-    />
-
-    <section
-      v-if="auth0.isAuthenticated"
-      class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl sm:p-5"
     >
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Saved rule usage</h2>
-          <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            {{ ruleUsage }} of {{ ruleLimit }} saved notification rules used.
-          </p>
+      <div
+        v-if="auth0.isAuthenticated"
+        class="flex flex-col gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950/60 sm:flex-row sm:items-center sm:gap-4"
+      >
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Rules used</p>
+            <p class="text-xs font-extrabold text-slate-500 dark:text-slate-400">
+              {{ ruleUsage }} / {{ ruleLimit }}
+            </p>
+          </div>
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+            <div
+              class="h-full rounded-full transition-all"
+              :class="ruleLimitReached ? 'bg-red-500' : 'bg-brand-blue'"
+              :style="{ width: `${ruleLimitPercent}%` }"
+            ></div>
+          </div>
         </div>
         <span
-          class="shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold"
+          class="shrink-0 self-start rounded-full px-2.5 py-1 text-xs font-extrabold sm:self-auto"
           :class="ruleLimitReached
-            ? 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-200'
-            : 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200'"
+            ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-200'
+            : 'bg-white text-brand-blue shadow-sm dark:bg-slate-900 dark:text-blue-200'"
         >
-          {{ ruleLimitRemaining }} left
+          {{ ruleLimitReached ? 'Limit reached' : `${ruleLimitRemaining} remaining` }}
         </span>
       </div>
-
-      <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-        <div
-          class="h-full rounded-full transition-all"
-          :class="ruleLimitReached ? 'bg-red-500' : 'bg-brand-blue'"
-          :style="{ width: `${ruleLimitPercent}%` }"
-        ></div>
-      </div>
-    </section>
+    </PageHeader>
 
     <section
       v-if="!auth0.isLoading && !auth0.isAuthenticated"
-      class="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:rounded-3xl sm:px-5"
+      class="rounded-3xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900"
     >
-      Sign in to manage notification rules.
+      <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-brand-blue dark:bg-blue-500/10 dark:text-blue-200">
+        <span class="material-symbols-outlined text-[25px]">lock</span>
+      </span>
+      <h2 class="mt-3 text-base font-extrabold text-slate-950 dark:text-slate-100">Sign in to view notifications</h2>
+      <p class="mx-auto mt-1 max-w-md text-sm font-medium text-slate-500 dark:text-slate-400">
+        Your notification rules are private to your Travigo account.
+      </p>
     </section>
 
     <section
       v-else-if="loadingRules"
-      class="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:rounded-3xl sm:px-5"
+      class="grid gap-3 sm:grid-cols-2"
     >
-      Loading notification rules…
+      <div
+        v-for="index in 2"
+        :key="index"
+        class="h-56 animate-pulse rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      >
+        <div class="h-11 w-11 rounded-2xl bg-slate-100 dark:bg-slate-800"></div>
+        <div class="mt-5 h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-800"></div>
+        <div class="mt-2 h-3 w-1/3 rounded bg-slate-100 dark:bg-slate-800"></div>
+        <div class="mt-6 h-16 rounded-2xl bg-slate-50 dark:bg-slate-950"></div>
+      </div>
     </section>
 
     <section
@@ -61,78 +75,98 @@
 
     <section
       v-if="auth0.isAuthenticated && !loadingRules && !rulesError"
-      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl"
+      class="space-y-3"
     >
-      <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Configured notifications</h2>
-          <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Rules that would be evaluated when data changes.</p>
-        </div>
+      <h2 class="px-1 text-lg font-extrabold text-slate-950 dark:text-slate-100">Your rules</h2>
+
+      <div
+        v-if="notificationRules.length === 0"
+        class="rounded-3xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center dark:border-slate-700 dark:bg-slate-900"
+      >
+        <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+          <span class="material-symbols-outlined text-[25px]">notifications_off</span>
+        </span>
+        <h3 class="mt-3 text-base font-extrabold text-slate-950 dark:text-slate-100">No rules yet</h3>
+        <p class="mx-auto mt-1 max-w-md text-sm font-medium text-slate-500 dark:text-slate-400">
+          Open a stop, service or journey and choose “Notify me” from its actions menu.
+        </p>
       </div>
 
-      <div v-if="notificationRules.length === 0" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          No notification rules are configured.
-        </div>
-      </div>
-
-      <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
+      <div v-else class="grid gap-3 lg:grid-cols-2">
         <article
           v-for="rule in notificationRules"
           v-bind:key="rule.id"
-          class="px-4 py-4 sm:px-5"
+          class="flex flex-col rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5"
         >
-          <div class="flex items-start gap-3">
-            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+          <div class="flex min-w-0 items-start gap-3">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-brand-blue dark:bg-blue-500/10 dark:text-blue-200">
               <span class="material-symbols-outlined text-[23px]">{{ notificationTypeIcon(rule.notificationType) }}</span>
             </span>
 
-            <div class="min-w-0 flex-1">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">{{ rule.entityName }}</h3>
-                  <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {{ readableEntityType(rule.entityType) }} · {{ notificationTypeLabel(rule.notificationType) }}
-                  </p>
-                </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-extrabold uppercase tracking-wide text-brand-blue dark:text-blue-300">
+                {{ rule.entityType || 'Notification' }} · {{ notificationTypeLabel(rule.notificationType) }}
+              </p>
+              <router-link
+                v-if="entityRoute(rule)"
+                :to="entityRoute(rule)"
+                class="mt-1 block text-base font-extrabold leading-snug text-slate-950 transition hover:text-brand-blue dark:text-slate-100 dark:hover:text-blue-200"
+              >
+                {{ rule.entityName }}
+              </router-link>
+              <h3 v-else class="mt-1 text-base font-extrabold leading-snug text-slate-950 dark:text-slate-100">
+                {{ rule.entityName }}
+              </h3>
+              <p v-if="rule.entityDescription" class="mt-1 line-clamp-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                {{ rule.entityDescription }}
+              </p>
+            </div>
+          </div>
 
-                <div class="flex shrink-0 items-center gap-1">
-                  <button
-                    type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
-                    :disabled="savingRuleIdentifier === rule.id"
-                    :aria-label="`Edit ${rule.entityName} notification`"
-                    @click="openEditRule(rule)"
+          <div class="mt-4 flex-1 rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-950/60">
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Notify me when</p>
+            <p class="mt-1 text-sm font-extrabold leading-snug text-slate-900 dark:text-slate-100">
+              {{ ruleTriggerSummary(rule) }}
+            </p>
+
+            <div v-if="ruleConditions(rule).length > 0" class="mt-3 space-y-3">
+              <div v-for="condition in ruleConditions(rule)" :key="condition.label">
+                <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400">{{ condition.label }}</p>
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                  <span
+                    v-for="(value, index) in condition.values"
+                    :key="`${value}-${index}`"
+                    class="rounded-full bg-white px-2.5 py-1 text-xs font-extrabold text-slate-700 shadow-sm dark:bg-slate-800 dark:text-slate-200"
                   >
-                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-red-50 hover:text-red-700 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-200"
-                    :disabled="deletingRuleIdentifier === rule.id"
-                    :aria-label="`Delete ${rule.entityName} notification`"
-                    @click="openDeleteRule(rule)"
-                  >
-                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
+                    {{ value }}
+                  </span>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div class="mt-3 flex flex-wrap gap-2">
-                <span
-                  v-if="rule.entityName"
-                  class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-extrabold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
-                >
-                  {{ readableEntityType(rule.entityType) }}: {{ rule.entityName }}
-                </span>
-                <span
-                  v-for="chip in ruleChips(rule)"
-                  v-bind:key="chip"
-                  class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                >
-                  {{ chip }}
-                </span>
-              </div>
+          <div class="mt-4 flex items-center justify-between gap-3">
+            <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ updatedLabel(rule) }}</p>
+            <div class="flex shrink-0 items-center gap-1.5">
+              <button
+                type="button"
+                class="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-blue-50 px-3 text-xs font-extrabold text-brand-blue transition hover:bg-blue-100 disabled:opacity-50 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20"
+                :disabled="savingRuleIdentifier === rule.id"
+                :aria-label="`Edit ${rule.entityName} notification`"
+                @click="openEditRule(rule)"
+              >
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+                Edit
+              </button>
+              <button
+                type="button"
+                class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-200"
+                :disabled="deletingRuleIdentifier === rule.id"
+                :aria-label="`Delete ${rule.entityName} notification`"
+                @click="openDeleteRule(rule)"
+              >
+                <span class="material-symbols-outlined text-[19px]">delete</span>
+              </button>
             </div>
           </div>
         </article>
@@ -199,6 +233,17 @@ import PageHeader from '@/components/PageHeader.vue'
 import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
 import notificationSubscriptions from '@/notificationSubscriptions'
 
+const REALTIME_JOURNEY_SUMMARIES = {
+  RealtimeJourneyCreated: 'live data becomes available for this journey',
+  RealtimeJourneyActivelyTracked: 'live tracking starts for this journey',
+  RealtimeJourneyPlatformSet: 'a platform is assigned to this journey',
+  RealtimeJourneyPlatformChanged: 'the platform for this journey changes',
+  RealtimeJourneyCancelled: 'this journey is cancelled',
+  RealtimeJourneyOverlayCreated: 'this journey is replaced',
+  RealtimeJourneyLocationTextChanged: 'the live location description changes',
+  RealtimeJourneyNextStopChanged: 'the next stop changes'
+}
+
 export default {
   name: 'AccountNotifications',
   components: {
@@ -253,12 +298,21 @@ export default {
     },
     activeNotificationTypes() {
       const stopRefs = this.editingRule?.values?.platformStopRefs || []
+      const resolvedStopRefs = this.editingRule?.resolvedValues?.platformStopRefs || []
+      const resolvedStopsByRef = new Map(resolvedStopRefs.map(stop => [stop.value, stop]))
+
+      const stopOptions = stopRefs.map((stopRef, index) => {
+        const stop = resolvedStopsByRef.get(stopRef)
+
+        return {
+          value: stopRef,
+          label: stop?.label || `Stop ${index + 1}`,
+          description: stop?.description || ''
+        }
+      })
 
       return notificationRuleTypesForSubject(this.activeRuleEntityType, {
-        stopOptions: stopRefs.map(stopRef => ({
-          value: stopRef,
-          label: stopRef
-        }))
+        stopOptions
       })
     }
   },
@@ -376,29 +430,71 @@ export default {
     notificationTypeIcon(typeId) {
       return this.notificationType(typeId)?.icon || 'notifications_active'
     },
-    readableEntityType(entityType) {
-      return String(entityType || 'Object').toLowerCase()
-    },
-    ruleChips(rule) {
-      const notificationType = this.notificationType(rule.notificationType)
-
-      if (!notificationType) {
-        return []
+    entityRoute(rule) {
+      if (!rule.entityResolved || !rule.entityIdentifier) {
+        return null
       }
 
-      return notificationType.fields.flatMap(field => {
-        const value = rule.values?.[field.id]
+      const routeName = {
+        Stop: 'stops/view',
+        Service: 'services/view',
+        Journey: 'journeys/view'
+      }[rule.entityType]
 
-        if (Array.isArray(value)) {
-          if (field.id === 'platformStopRefs' && value.length > 0) {
-            return [`${value.length} platform ${value.length === 1 ? 'stop' : 'stops'}`]
-          }
+      return routeName
+        ? { name: routeName, params: { id: rule.entityIdentifier } }
+        : null
+    },
+    ruleTriggerSummary(rule) {
+      if (rule.notificationType === 'service-alert') {
+        return `a matching alert is published for this ${String(rule.entityType || 'subject').toLowerCase()}`
+      }
 
-          return value.map(optionValue => this.optionLabel(field, optionValue))
+      const eventValue = rule.values?.realtimeJourneyEvent
+      return REALTIME_JOURNEY_SUMMARIES[eventValue] || 'this journey changes'
+    },
+    ruleConditions(rule) {
+      if (rule.notificationType === 'service-alert') {
+        const notificationType = this.notificationType(rule.notificationType)
+        const alertField = notificationType?.fields.find(field => field.id === 'serviceAlertTypes')
+        const selectedAlerts = rule.values?.serviceAlertTypes || []
+
+        if (!alertField || selectedAlerts.length === 0) {
+          return []
         }
 
-        return value ? [this.optionLabel(field, value)] : []
-      })
+        const values = selectedAlerts.length === alertField.options.length
+          ? ['All alert types']
+          : selectedAlerts.map(value => this.optionLabel(alertField, value))
+
+        return [{ label: 'Alert types', values }]
+      }
+
+      const platformStops = rule.resolvedValues?.platformStopRefs || []
+      return platformStops.length > 0
+        ? [{
+            label: platformStops.length === 1 ? 'At this stop' : 'At these stops',
+            values: platformStops.map(stop => stop.label)
+          }]
+        : []
+    },
+    updatedLabel(rule) {
+      const value = rule.modificationDateTime || rule.creationDateTime
+
+      if (!value) {
+        return 'Saved notification'
+      }
+
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) {
+        return 'Saved notification'
+      }
+
+      return `Updated ${new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric'
+      }).format(date)}`
     },
     optionLabel(field, optionValue) {
       return field.options.find(option => option.value === optionValue)?.label || optionValue
