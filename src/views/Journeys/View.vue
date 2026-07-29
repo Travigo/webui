@@ -341,7 +341,10 @@
           <div v-for="(point, index) in journeyPoints" v-bind:key="index">
             <mapbox-marker :lngLat="point.location" v-if="point.location">
               <template v-slot:icon>
-                <StopIcon :stop="stopForMapIcon(point)" />
+                <span
+                  class="block h-4 w-4 rounded-full border-2 border-white shadow-md"
+                  :class="point.active ? 'bg-blue-600' : 'bg-slate-400'"
+                ></span>
               </template>
             </mapbox-marker>
 
@@ -360,7 +363,7 @@
             v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2"
           >
             <template v-slot:icon>
-              <span class="material-symbols-outlined text-[32px] leading-none text-blue-600">
+              <span class="material-symbols-outlined text-[48px] leading-none text-blue-600">
                 {{ transportIcon(journey.Service?.TransportType) }}
               </span>
             </template>
@@ -375,7 +378,6 @@
 
 <script>
 import ServiceIcon from '@/components/ServiceIcon.vue'
-import StopIcon from '@/components/StopIcon.vue'
 import Alert from "@/components/Alert.vue"
 import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
@@ -448,7 +450,6 @@ export default {
   components: {
     Alert,
     ServiceIcon,
-    StopIcon,
     DetailedInformationRail,
     DepartureTypeIcon,
     DatasourceAttributes,
@@ -672,16 +673,6 @@ export default {
     }
   },
   methods: {
-    stopForMapIcon(point) {
-      const services = point?.stop?.Services
-
-      return {
-        ...point?.stop,
-        Services: Array.isArray(services) && services.length > 0
-          ? services
-          : this.journey?.Service ? [this.journey.Service] : []
-      }
-    },
     transportIcon(type) {
       return {
         Rail: 'train',
