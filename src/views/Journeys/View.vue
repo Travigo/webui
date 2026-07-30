@@ -363,8 +363,10 @@
             v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2"
           >
             <template v-slot:icon>
-              <span class="material-symbols-outlined text-[48px] leading-none text-blue-600">
-                {{ transportIcon(journey.Service?.TransportType) }}
+              <span class="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-blue-600 text-white shadow-xl ring-2 ring-blue-200">
+                <span class="material-symbols-outlined text-[36px] leading-none">
+                  {{ transportIcon(journey.Service?.TransportType) }}
+                </span>
               </span>
             </template>
           </mapbox-marker>
