@@ -339,7 +339,7 @@
           @loaded="mapLoaded"
         >
           <div v-for="(point, index) in journeyPoints" v-bind:key="index">
-            <mapbox-marker :lngLat="point.location" v-if="point.location">
+            <mapbox-marker :lngLat="point.location" anchor="center" v-if="point.location">
               <template v-slot:icon>
                 <span
                   class="block h-4 w-4 rounded-full border-2 border-white shadow-md"
@@ -359,12 +359,13 @@
 
           <mapbox-marker 
             :lngLat="journey.RealtimeJourney.VehicleLocation.coordinates"
+            anchor="center"
             :rotation="journey.RealtimeJourney.VehicleBearing-90" 
             v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2"
           >
             <template v-slot:icon>
-              <span class="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-blue-600 text-white shadow-xl ring-2 ring-blue-200">
-                <span class="material-symbols-outlined text-[36px] leading-none">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 text-white shadow-lg">
+                <span class="material-symbols-outlined text-[24px] leading-none">
                   {{ transportIcon(journey.Service?.TransportType) }}
                 </span>
               </span>
