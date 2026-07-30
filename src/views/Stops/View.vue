@@ -61,6 +61,7 @@
       :loading-departures="loadingDepartures && departures === null"
       :arrivals="arrivals"
       :loading-arrivals="loadingArrivals && arrivals === null"
+      :show-station-map="isTrainStation"
       v-model="currentTab"
       @tab-change="refreshView"
     >
@@ -94,6 +95,16 @@
 
           <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts, stopDetails)" />
         </div>
+      </template>
+
+      <template #station-map>
+        <StationMap
+          :stop="stop"
+          :osm-stop="osmStop"
+          :loading="loadingOSMStop"
+          :error="osmStopError"
+          @retry="getOSMStop(true)"
+        />
       </template>
     </StopDeparturesTable>
 
@@ -315,6 +326,7 @@ import Modal from '@/components/Modal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
+import StationMap from '@/components/Stops/StationMap.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
@@ -372,6 +384,10 @@ export default {
       loadingStopDetails: false,
       stopDetailsError: false,
 
+      osmStop: null,
+      loadingOSMStop: false,
+      osmStopError: false,
+
       error: undefined,
 
       zoom: 13,
@@ -397,7 +413,8 @@ export default {
     Modal,
     PageHeader,
     ServiceAlertList,
-    StopDeparturesTable
+    StopDeparturesTable,
+    StationMap
   },
   computed: {
     visibleServices() {
@@ -453,7 +470,18 @@ export default {
       return `Updated ${minutesAgo} min ago`
     },
     boardLoading() {
-      return this.currentTab === 'arrivals' ? this.loadingArrivals : this.loadingDepartures
+      if (this.currentTab === 'arrivals') {
+        return this.loadingArrivals
+      }
+
+      if (this.currentTab === 'departures') {
+        return this.loadingDepartures
+      }
+
+      return false
+    },
+    isTrainStation() {
+      return (this.stop?.TransportTypes || []).some(transportType => String(transportType).toLowerCase() === 'rail')
     }
   },
   methods: {
@@ -585,6 +613,8 @@ export default {
         this.getDepartures()
       } else if (tab === 'arrivals') {
         this.getArrivals()
+      } else if (tab === 'station-map') {
+        this.getOSMStop()
       }
     },
     getStop() {
@@ -675,6 +705,28 @@ export default {
         })
         .finally(() => this.loadingStopDetails = false)
     },
+    getOSMStop(forceRefresh = false) {
+      if (!this.isTrainStation || this.loadingOSMStop || (this.osmStop !== null && !forceRefresh)) {
+        return
+      }
+
+      this.loadingOSMStop = true
+      this.osmStopError = false
+
+      axios
+        .get(`${API.URL}/core/stops/${encodeURIComponent(this.$route.params.id)}/osm`, {
+          params: forceRefresh ? { force_refresh: true } : undefined
+        })
+        .then(response => {
+          this.osmStop = response.data
+        })
+        .catch(error => {
+          console.log(error)
+          this.osmStop = null
+          this.osmStopError = true
+        })
+        .finally(() => this.loadingOSMStop = false)
+    },
     getOperatorStats() {
       console.log("Get operator stats")
 
@@ -718,6 +770,13 @@ export default {
     this.getData()
     this.refreshTimer = setInterval(this.refreshView, 30000)
     this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
+  },
+  watch: {
+    isTrainStation(isTrainStation) {
+      if (!isTrainStation && this.currentTab === 'station-map') {
+        this.currentTab = 'departures'
+      }
+    }
   },
   beforeRouteLeave() {  
     clearInterval(this.refreshTimer)

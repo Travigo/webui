@@ -35,6 +35,10 @@
       <DeparturesList v-else :stop="stop" :departures="arrivals || []" board-type="arrivals" variant="compact" />
     </div>
 
+    <div v-else-if="activeTab === 'station-map'">
+      <slot name="station-map"></slot>
+    </div>
+
     <div v-else>
       <slot name="details"></slot>
     </div>
@@ -80,6 +84,10 @@ export default {
     showDetails: {
       type: Boolean,
       default: true
+    },
+    showStationMap: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['update:modelValue', 'tab-change'],
@@ -106,6 +114,14 @@ export default {
           id: 'details',
           name: 'Details',
           icon: 'info'
+        })
+      }
+
+      if (this.showStationMap) {
+        tabs.push({
+          id: 'station-map',
+          name: 'Map',
+          icon: 'map'
         })
       }
 
