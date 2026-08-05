@@ -290,6 +290,16 @@ import TabBar from '@/components/TabBar.vue'
 
 import axios from 'axios'
 import API from '@/API'
+import { reportRequestFailure, reportRequestSuccess } from '@/offline/connectivity'
+import {
+  auth0CacheScope,
+  CACHE_MAX_AGE,
+  CACHE_REVALIDATE_AFTER,
+  cacheKeys,
+  getCachedResource,
+  loadCachedResource,
+  putCachedResource
+} from '@/offline/resourceCache'
 
 export default {
   name: 'Home',
@@ -472,18 +482,38 @@ export default {
         return
       }
 
-      this.loadingSavedStops = true
+      const scope = auth0CacheScope(this.auth0)
+      const cached = scope
+        ? await getCachedResource(cacheKeys.savedItems, { maxAgeMs: CACHE_MAX_AGE.savedItems, scope })
+        : null
+
+      if (cached) {
+        this.savedStops = cached.data?.savedStops || []
+      }
+
+      this.loadingSavedStops = !cached
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         const response = await axios.get(`${API.URL}/core/saved`, {
           headers: { Authorization: `Bearer ${auth0token}` }
         })
+        reportRequestSuccess()
         this.savedStops = await this.hydrateSavedStops(this.normaliseSavedObjects(response.data))
+
+        if (scope) {
+          await putCachedResource(cacheKeys.savedItems, {
+            savedStops: this.savedStops,
+            savedJourneys: cached?.data?.savedJourneys || []
+          }, { scope })
+        }
       } catch (error) {
         console.log(error)
-        this.savedStops = []
-        this.savedStopsError = 'Saved stops could not be loaded.'
+        reportRequestFailure(error)
+        if (!cached) {
+          this.savedStops = []
+          this.savedStopsError = 'Saved stops could not be loaded.'
+        }
       } finally {
         this.loadingSavedStops = false
       }
@@ -507,10 +537,23 @@ export default {
         }
 
         try {
-          const response = await axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
+          loadCachedResource({
+            key: cacheKeys.departures(savedObject.ObjectIdentifier),
+            maxAgeMs: CACHE_MAX_AGE.board,
+            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}/departures`, {
+              params: { count: 25 }
+            })
+          }).catch(() => undefined)
+
+          const stopResult = await loadCachedResource({
+            key: cacheKeys.stop(savedObject.ObjectIdentifier),
+            maxAgeMs: CACHE_MAX_AGE.entity,
+            revalidateAfterMs: CACHE_REVALIDATE_AFTER.stop,
+            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
+          })
 
           return {
-            ...response.data,
+            ...stopResult.data,
             SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
             SavedObjectIdentifier: savedObject.ObjectIdentifier
           }

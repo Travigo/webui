@@ -19,6 +19,14 @@
       </template>
     </PageHeader>
 
+    <div
+      v-if="savedItemsFromCache"
+      class="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200"
+    >
+      <span class="material-symbols-outlined text-[17px]">offline_pin</span>
+      Showing items saved on this device · {{ savedItemsCacheLabel }}
+    </div>
+
     <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl">
       <TabBar
         :tabs="savedItemTabs"
@@ -191,6 +199,17 @@ import PageHeader from '@/components/PageHeader.vue'
 import SavedJourneyCard from '@/components/SavedJourneyCard.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
 import TabBar from '@/components/TabBar.vue'
+import { reportRequestFailure, reportRequestSuccess } from '@/offline/connectivity'
+import {
+  auth0CacheScope,
+  cacheAgeLabel,
+  CACHE_MAX_AGE,
+  CACHE_REVALIDATE_AFTER,
+  cacheKeys,
+  getCachedResource,
+  loadCachedResource,
+  putCachedResource
+} from '@/offline/resourceCache'
 
 export default {
   name: 'SavedStops',
@@ -215,7 +234,9 @@ export default {
       loadingSavedObjects: false,
       savedObjectsError: '',
       savedStops: [],
-      savedJourneys: []
+      savedJourneys: [],
+      savedItemsFromCache: false,
+      savedItemsUpdatedAt: null
     }
   },
   computed: {
@@ -230,6 +251,13 @@ export default {
     },
     savedItemName() {
       return this.savedItemNameFrom(this.stopPendingRemoval || {})
+    },
+    savedItemsCacheLabel() {
+      if (!this.savedItemsUpdatedAt) {
+        return 'saved previously'
+      }
+
+      return `saved ${cacheAgeLabel(this.savedItemsUpdatedAt)}`
     }
   },
   methods: {
@@ -275,6 +303,7 @@ export default {
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         await this.deleteSavedItem(this.stopPendingRemoval, this.pendingRemovalType, auth0token)
+        reportRequestSuccess()
         const removedItem = this.stopPendingRemoval
 
         if (this.pendingRemovalType === 'journey') {
@@ -291,8 +320,11 @@ export default {
         if (this.savedStops.length === 0 && this.savedJourneys.length === 0) {
           this.editing = false
         }
+        this.savedItemsFromCache = false
+        await this.cacheSavedItems()
       } catch (error) {
         console.log(error)
+        reportRequestFailure(error)
         this.removeSavedStopError = 'Saved item could not be removed.'
         this.showToast('Saved item could not be removed.', 'error')
       } finally {
@@ -331,11 +363,21 @@ export default {
         return
       }
 
-      this.loadingSavedObjects = true
+      const scope = auth0CacheScope(this.auth0)
+      const cached = scope
+        ? await getCachedResource(cacheKeys.savedItems, { maxAgeMs: CACHE_MAX_AGE.savedItems, scope })
+        : null
+
+      if (cached) {
+        this.applySavedItems(cached.data, cached.savedAt, true)
+      }
+
+      this.loadingSavedObjects = !cached
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         const response = await this.getSavedObjectsResponse(auth0token)
+        reportRequestSuccess()
         const savedObjects = this.normaliseSavedObjects(response.data)
         const [savedStops, savedJourneys] = await Promise.all([
           this.hydrateSavedStops(savedObjects),
@@ -343,11 +385,16 @@ export default {
         ])
         this.savedStops = savedStops
         this.savedJourneys = savedJourneys
+        this.savedItemsFromCache = false
+        await this.cacheSavedItems()
       } catch (error) {
         console.log(error)
-        this.savedStops = []
-        this.savedJourneys = []
-        this.savedObjectsError = 'Saved stops could not be loaded.'
+        reportRequestFailure(error)
+        if (!cached) {
+          this.savedStops = []
+          this.savedJourneys = []
+          this.savedObjectsError = 'Saved items could not be loaded.'
+        }
       } finally {
         this.loadingSavedObjects = false
       }
@@ -372,6 +419,24 @@ export default {
 
       return resultSet || []
     },
+    applySavedItems(snapshot, savedAt, fromCache) {
+      this.savedStops = snapshot?.savedStops || []
+      this.savedJourneys = snapshot?.savedJourneys || []
+      this.savedItemsUpdatedAt = new Date(savedAt)
+      this.savedItemsFromCache = fromCache
+    },
+    async cacheSavedItems() {
+      const scope = auth0CacheScope(this.auth0)
+      if (!scope) {
+        return
+      }
+
+      const record = await putCachedResource(cacheKeys.savedItems, {
+        savedStops: this.savedStops,
+        savedJourneys: this.savedJourneys
+      }, { scope })
+      this.savedItemsUpdatedAt = new Date(record.savedAt)
+    },
     async hydrateSavedStops(savedObjects) {
       const savedStops = savedObjects.filter(savedObject => this.isStopSavedObject(savedObject))
       const hydratedStops = await Promise.all(savedStops.map(async savedObject => {
@@ -380,10 +445,23 @@ export default {
         }
 
         try {
-          const response = await axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
+          loadCachedResource({
+            key: cacheKeys.departures(savedObject.ObjectIdentifier),
+            maxAgeMs: CACHE_MAX_AGE.board,
+            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}/departures`, {
+              params: { count: 25 }
+            })
+          }).catch(() => undefined)
+
+          const stopResult = await loadCachedResource({
+            key: cacheKeys.stop(savedObject.ObjectIdentifier),
+            maxAgeMs: CACHE_MAX_AGE.entity,
+            revalidateAfterMs: CACHE_REVALIDATE_AFTER.stop,
+            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
+          })
 
           return {
-            ...response.data,
+            ...stopResult.data,
             SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
             SavedObjectIdentifier: savedObject.ObjectIdentifier
           }
@@ -404,10 +482,14 @@ export default {
         }
 
         try {
-          const response = await axios.get(`${API.URL}/core/journeys/${savedObject.ObjectIdentifier}`)
+          const result = await loadCachedResource({
+            key: cacheKeys.journey(savedObject.ObjectIdentifier),
+            maxAgeMs: CACHE_MAX_AGE.entity,
+            request: () => axios.get(`${API.URL}/core/journeys/${savedObject.ObjectIdentifier}`)
+          })
 
           return {
-            ...response.data,
+            ...result.data,
             SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
             SavedObjectIdentifier: savedObject.ObjectIdentifier
           }
