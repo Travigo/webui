@@ -3,6 +3,7 @@ import UserOrLogin from '@/components/UserOrLogin.vue'
 import ThemeMenu from '@/components/ThemeMenu.vue'
 import { useAuth0 } from '@auth0/auth0-vue'
 import notify from "@/notify"
+import { isConnected, subscribeToConnectivity } from '@/offline/connectivity'
 
 export default {
   name: 'App',
@@ -20,6 +21,8 @@ export default {
       auth0: useAuth0(),
       notify: notify,
       darkMode: false,
+      offline: !isConnected(),
+      unsubscribeConnectivity: undefined,
       themePreference: 'system',
       systemThemeQuery: undefined,
       toastId: 0,
@@ -158,6 +161,9 @@ export default {
   },
   mounted() {
     window.addEventListener('travigo-toast', this.showToast)
+    this.unsubscribeConnectivity = subscribeToConnectivity(online => {
+      this.offline = !online
+    })
 
     this.$nextTick(function () {
       if (this.auth0.isAuthenticated) {
@@ -168,6 +174,7 @@ export default {
   beforeUnmount() {
     this.systemThemeQuery?.removeEventListener('change', this.handleSystemThemeChange)
     window.removeEventListener('travigo-toast', this.showToast)
+    this.unsubscribeConnectivity?.()
   }
 }
 </script>
@@ -232,6 +239,15 @@ export default {
         </div>
       </div>
     </nav>
+    <div
+      v-if="offline"
+      class="mx-auto mt-4 flex max-w-5xl items-center gap-2 px-4 text-sm font-bold text-amber-800 sm:px-8 lg:max-w-6xl lg:px-10 dark:text-amber-200"
+      role="status"
+      aria-live="polite"
+    >
+      <span class="material-symbols-outlined text-[19px]">cloud_off</span>
+      Offline — showing saved data where available
+    </div>
     <main class="h-full">
       <div 
         class="h-full"

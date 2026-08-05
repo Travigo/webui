@@ -6,7 +6,7 @@
     subtitle="Fetching live journey status, stops, and alerts."
   />
 
-  <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else-if="journey" class="space-y-4 pb-16 pt-2 sm:pb-20">
     <PageHeader
       :title="journeyHeaderTitle"
       variant="tinted"
@@ -26,6 +26,13 @@
           >
             <DepartureTypeIcon :journey="journey"/>
             {{ journeyStatus.label }}
+          </span>
+          <span
+            v-if="journeyFromCache || realtimeStale"
+            class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200"
+          >
+            <span class="material-symbols-outlined text-[15px]">schedule</span>
+            {{ journeyDataLabel }}
           </span>
         </div>
       </template>
@@ -50,7 +57,7 @@
 
       <p
         class="truncate text-xs font-medium text-slate-500 dark:text-slate-400"
-        v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked && journey.RealtimeJourney.VehicleLocationDescription"
+        v-if="journey.RealtimeJourney && journey.RealtimeJourney.ActivelyTracked && journey.RealtimeJourney.VehicleLocationDescription && !realtimeTooOld"
       >
         {{ journey.RealtimeJourney.VehicleLocationDescription }}
       </p>
@@ -367,7 +374,7 @@
             :lngLat="journey.RealtimeJourney.VehicleLocation.coordinates"
             anchor="center"
             :rotation="journey.RealtimeJourney.VehicleBearing-90" 
-            v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2"
+            v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2 && !realtimeTooOld"
           >
             <template v-slot:icon>
               <span class="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 text-white shadow-lg">
@@ -383,6 +390,10 @@
 
     <DatasourceAttributes v-if="!loadingJourney" :datasources="utils.getDatasources(journey, journeyPoints, journey?.Path)" />
   </div>
+
+  <Alert v-else-if="!errorJourney" type="warning" class="mt-4">
+    This journey is not available offline yet. Open it once while connected to save it on this device.
+  </Alert>
 </template>
 
 <script>
@@ -402,6 +413,8 @@ import API from "@/API"
 import Pretty from "@/pretty"
 import Utils from '@/utils'
 import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
+import { isConnected, reportRequestFailure, reportRequestSuccess } from '@/offline/connectivity'
+import { cacheAgeLabel, CACHE_MAX_AGE, cacheKeys, loadCachedResource, putCachedResource } from '@/offline/resourceCache'
 
 export default {
   data() {
@@ -432,6 +445,9 @@ export default {
 
       refreshTimer: null,
       serviceAlertsRefreshTimer: null,
+      currentTime: Date.now(),
+      journeyFromCache: false,
+      journeyUpdatedAt: null,
 
       expandInactiveStops: false,
       hasHiddenStops: false,
@@ -501,7 +517,7 @@ export default {
         }
       }
 
-      if (this.journey?.RealtimeJourney?.ActivelyTracked) {
+      if (this.journey?.RealtimeJourney?.ActivelyTracked && !this.realtimeStale) {
         return {
           label: 'Live',
           classes: 'bg-green-50 text-green-700'
@@ -509,9 +525,29 @@ export default {
       }
 
       return {
-        label: 'Scheduled',
+        label: this.journey?.RealtimeJourney?.ActivelyTracked ? 'Last known' : 'Scheduled',
         classes: 'bg-slate-100 text-slate-600'
       }
+    },
+    realtimeStale() {
+      return Boolean(
+        this.journey?.RealtimeJourney &&
+        this.journeyUpdatedAt &&
+        this.currentTime - this.journeyUpdatedAt.getTime() > 2 * 60 * 1000
+      )
+    },
+    realtimeTooOld() {
+      return Boolean(
+        this.journeyUpdatedAt &&
+        this.currentTime - this.journeyUpdatedAt.getTime() > 5 * 60 * 1000
+      )
+    },
+    journeyDataLabel() {
+      if (!this.journeyUpdatedAt) {
+        return 'Saved data'
+      }
+
+      return `${this.journeyFromCache ? 'Saved' : 'Updated'} ${cacheAgeLabel(this.journeyUpdatedAt, this.currentTime)}`
     },
     detailedRailInfo() {
       return this.journey?.RealtimeJourney?.DetailedRailInformation ||
@@ -834,29 +870,47 @@ export default {
       this.getJourney()
       this.getServiceAlerts()
     },
-    getJourney() {
-      axios
-        .get(`${API.URL}/core/journeys/${this.$route.params.id}`)
-        .then((response) => {
-          let newJourney = response.data
+    applyJourney(data, savedAt, source) {
+      this.hasHiddenStops = false
+      this.journeyPoints = this.extractJourneyPoints(data)
+      this.journey = data
+      this.journeyUpdatedAt = new Date(savedAt)
+      this.journeyFromCache = source === 'cache'
+      this.setBounds()
+    },
+    async getJourney() {
+      let cachedApplied = false
 
-          this.journeyPoints = this.extractJourneyPoints(newJourney)
-
-          this.journey = newJourney
-
-          this.setBounds()
-
-          this.getStopAlerts()
-          this.getDoorSides()
+      try {
+        const result = await loadCachedResource({
+          key: cacheKeys.journey(this.$route.params.id),
+          maxAgeMs: CACHE_MAX_AGE.entity,
+          request: () => axios.get(`${API.URL}/core/journeys/${this.$route.params.id}`),
+          onCached: record => {
+            cachedApplied = true
+            this.applyJourney(record.data, record.savedAt, 'cache')
+            this.loadingJourney = false
+          }
         })
-        .catch((error) => {
-          console.log(error)
-          this.errorJourney = error
-        })
-        .finally(() => (this.loadingJourney = false))
+
+        if (result.source === 'network' || !cachedApplied) {
+          this.applyJourney(result.data, result.savedAt, result.source)
+        }
+
+        this.errorJourney = undefined
+        this.getStopAlerts()
+        this.getDoorSides()
+      } catch (error) {
+        console.log(error)
+        if (!this.journey) {
+          this.errorJourney = 'Journey details could not be loaded.'
+        }
+      } finally {
+        this.loadingJourney = false
+      }
     },
     getStopAlerts() {
-      if (this.journey == null) {
+      if (this.journey == null || !isConnected()) {
         return
       }
 
@@ -882,7 +936,7 @@ export default {
       }
     },
     getDoorSides() {
-      if (this.journey == null || this.journey?.Service?.TransportType === 'Bus') {
+      if (this.journey == null || this.journey?.Service?.TransportType === 'Bus' || !isConnected()) {
         return
       }
 
@@ -940,13 +994,18 @@ export default {
           let newRealtimeJourney = response.data
 
           this.journey.RealtimeJourney = newRealtimeJourney
+          this.journeyUpdatedAt = new Date()
+          this.journeyFromCache = false
+          reportRequestSuccess()
 
           this.journeyPoints = this.extractJourneyPoints(this.journey)
 
           this.setBounds()
+          putCachedResource(cacheKeys.journey(this.$route.params.id), this.journey)
         })
         .catch((error) => {
           console.log(error)
+          reportRequestFailure(error)
           this.errorRealtime = error
         })
         .finally(() => (this.loadingRealtime = false))
@@ -1129,6 +1188,10 @@ export default {
       return journeyPoints
     },
     getServiceAlerts() {
+      if (!isConnected()) {
+        return
+      }
+
       // TODO get correct date - this might be wrong when looking at future journey or on journeys that span 2 days
       let yourDate = new Date()
       const offset = yourDate.getTimezoneOffset()
@@ -1155,15 +1218,47 @@ export default {
     toggleInactiveStops() {
       this.expandInactiveStops = !this.expandInactiveStops
     },
+    pollRealtimeJourney() {
+      this.currentTime = Date.now()
+
+      if (!document.hidden && isConnected()) {
+        this.getRealtimeJourney()
+      }
+    },
+    pollServiceAlerts() {
+      if (!document.hidden && isConnected()) {
+        this.getServiceAlerts()
+      }
+    },
+    handleReconnect() {
+      this.getData()
+      this.getRealtimeJourney()
+    },
+    handleVisibilityChange() {
+      if (!document.hidden) {
+        this.getData()
+        this.getRealtimeJourney()
+      }
+    },
+    stopPolling() {
+      clearInterval(this.refreshTimer)
+      clearInterval(this.serviceAlertsRefreshTimer)
+      window.removeEventListener('online', this.handleReconnect)
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+    }
   },
   mounted() {
     this.getData();
-    this.refreshTimer = setInterval(this.getRealtimeJourney, 10000)
-    this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
+    this.refreshTimer = setInterval(this.pollRealtimeJourney, 10000)
+    this.serviceAlertsRefreshTimer = setInterval(this.pollServiceAlerts, 60000)
+    window.addEventListener('online', this.handleReconnect)
+    document.addEventListener('visibilitychange', this.handleVisibilityChange)
   },
   beforeRouteLeave() {
-    clearInterval(this.refreshTimer)
-    clearInterval(this.serviceAlertsRefreshTimer)
+    this.stopPolling()
+  },
+  beforeUnmount() {
+    this.stopPolling()
   },
 };
 </script>

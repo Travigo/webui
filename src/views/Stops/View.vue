@@ -7,7 +7,7 @@
     subtitle="Fetching stop details, services, amenities, and departures."
   />
 
-  <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else-if="stop" class="space-y-4 pb-16 pt-2 sm:pb-20">
     <PageHeader
       :title="stop.PrimaryName"
       :subtitle="stop.OtherNames?.Descriptor || ''"
@@ -54,6 +54,14 @@
       :context-name="stop?.PrimaryName"
       compact
     />
+
+    <div
+      v-if="currentBoardFromCache"
+      class="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200"
+    >
+      <span class="material-symbols-outlined text-[17px]">schedule</span>
+      Showing a saved board · {{ lastUpdatedLabel }}
+    </div>
 
     <StopDeparturesTable
       :stop="stop"
@@ -104,6 +112,10 @@
       </div>
     </Teleport>
   </div>
+
+  <Alert v-else-if="!error" type="warning" class="mt-4">
+    This stop is not available offline yet. Open it once while connected to save it on this device.
+  </Alert>
 
   <Modal
     v-model:open="amenityModalOpen"
@@ -302,6 +314,8 @@ import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
 import Utils from '@/utils'
+import { isConnected } from '@/offline/connectivity'
+import { cacheAgeLabel, CACHE_MAX_AGE, CACHE_REVALIDATE_AFTER, cacheKeys, loadCachedResource } from '@/offline/resourceCache'
 
 const AMENITY_SECTIONS = {
   FoodDrink: {
@@ -363,7 +377,15 @@ export default {
 
       refreshTimer: null,
       serviceAlertsRefreshTimer: null,
-      lastUpdatedAt: null,
+      boardFromCache: {
+        arrivals: false,
+        departures: false
+      },
+      boardUpdatedAt: {
+        arrivals: null,
+        departures: null
+      },
+      currentTime: Date.now(),
       amenityModalOpen: false,
       selectedAmenityKey: null,
 
@@ -422,19 +444,19 @@ export default {
 
       return this.amenitySections.find(section => section.key === this.selectedAmenityKey) || null
     },
+    currentBoardFromCache() {
+      return this.boardFromCache[this.currentTab] || false
+    },
+    lastUpdatedAt() {
+      return this.boardUpdatedAt[this.currentTab] || null
+    },
     lastUpdatedLabel() {
       if (this.lastUpdatedAt === null) {
         return 'Not updated yet'
       }
 
-      const secondsAgo = Math.max(Math.round((Date.now() - this.lastUpdatedAt.getTime()) / 1000), 0)
-
-      if (secondsAgo < 60) {
-        return 'Updated just now'
-      }
-
-      const minutesAgo = Math.round(secondsAgo / 60)
-      return `Updated ${minutesAgo} min ago`
+      const prefix = this.currentBoardFromCache ? 'Cached' : 'Updated'
+      return `${prefix} ${cacheAgeLabel(this.lastUpdatedAt, this.currentTime)}`
     },
     boardLoading() {
       if (this.currentTab === 'arrivals') {
@@ -575,6 +597,24 @@ export default {
 
       return details.Details || details.StopDetails || details
     },
+    applyBoard(boardType, data, savedAt, source) {
+      const items = source === 'cache' ? this.filterElapsedBoardItems(data) : data
+
+      this[boardType] = items
+      this.boardUpdatedAt[boardType] = new Date(savedAt)
+      this.boardFromCache[boardType] = source === 'cache'
+    },
+    filterElapsedBoardItems(items) {
+      if (!Array.isArray(items) || this.$route.query.datetime) {
+        return items
+      }
+
+      const cutoff = this.currentTime - 60000
+      return items.filter(item => {
+        const time = Date.parse(item?.Time)
+        return Number.isNaN(time) || time >= cutoff
+      })
+    },
     refreshView(tab = this.currentTab) {
       if (tab === 'departures') {
         this.getDepartures()
@@ -584,66 +624,106 @@ export default {
         this.getOSMStop()
       }
     },
-    getStop() {
-      axios
-        .get(`${API.URL}/core/stops/${this.$route.params.id}`)
-        .then(response => {
-          this.stop = response.data
+    async getStop() {
+      let cachedApplied = false
 
-          // this.getOperatorStats()
+      try {
+        const result = await loadCachedResource({
+          key: cacheKeys.stop(this.$route.params.id),
+          maxAgeMs: CACHE_MAX_AGE.entity,
+          revalidateAfterMs: CACHE_REVALIDATE_AFTER.stop,
+          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}`),
+          onCached: record => {
+            cachedApplied = true
+            this.stop = record.data
+            this.loadingStop = false
+          }
         })
-        .catch(error => {
-          console.log(error)
-          this.error = error
-        })
-        .finally(() => this.loadingStop = false)
+
+        if (result.source === 'network' || !cachedApplied) {
+          this.stop = result.data
+        }
+        this.error = undefined
+      } catch (error) {
+        console.log(error)
+        if (!this.stop) {
+          this.error = 'Stop details could not be loaded.'
+        }
+      } finally {
+        this.loadingStop = false
+      }
     },
-    getDepartures() {
+    async getDepartures() {
       if (this.loadingDepartures && this.departures !== null) {
         return
       }
       
       this.loadingDepartures = true
-      axios
-        .get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {
-          params: {
-            'count': 25,
-            'datetime': this.$route.query.datetime
+      let cachedApplied = false
+
+      try {
+        const result = await loadCachedResource({
+          key: cacheKeys.departures(this.$route.params.id, this.$route.query.datetime || 'now'),
+          maxAgeMs: CACHE_MAX_AGE.board,
+          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {
+            params: {
+              'count': 25,
+              'datetime': this.$route.query.datetime
+            }
+          }),
+          onCached: record => {
+            cachedApplied = true
+            this.applyBoard('departures', record.data, record.savedAt, 'cache')
           }
         })
-        .then(response => {
-          this.departures = response.data
-          this.lastUpdatedAt = new Date()
-        })
-        .catch(error => {
-          console.log(error)
-          // this.error = error
-        })
-        .finally(() => this.loadingDepartures = false)
+
+        if (result.source === 'network' || !cachedApplied) {
+          this.applyBoard('departures', result.data, result.savedAt, result.source)
+        }
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.loadingDepartures = false
+      }
     },
-    getArrivals() {
+    async getArrivals() {
       if (this.loadingArrivals && this.arrivals !== null) {
         return
       }
 
       this.loadingArrivals = true
-      axios
-        .get(`${API.URL}/core/stops/${this.$route.params.id}/arrivals`, {
-          params: {
-            'count': 25,
-            'datetime': this.$route.query.datetime
+      let cachedApplied = false
+
+      try {
+        const result = await loadCachedResource({
+          key: cacheKeys.arrivals(this.$route.params.id, this.$route.query.datetime || 'now'),
+          maxAgeMs: CACHE_MAX_AGE.board,
+          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/arrivals`, {
+            params: {
+              'count': 25,
+              'datetime': this.$route.query.datetime
+            }
+          }),
+          onCached: record => {
+            cachedApplied = true
+            this.applyBoard('arrivals', record.data, record.savedAt, 'cache')
           }
         })
-        .then(response => {
-          this.arrivals = response.data
-          this.lastUpdatedAt = new Date()
-        })
-        .catch(error => {
-          console.log(error)
-        })
-        .finally(() => this.loadingArrivals = false)
+
+        if (result.source === 'network' || !cachedApplied) {
+          this.applyBoard('arrivals', result.data, result.savedAt, result.source)
+        }
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.loadingArrivals = false
+      }
     },
     getServiceAlerts() {
+      if (!isConnected()) {
+        return
+      }
+
       axios
         .get(`${API.URL}/core/service_alerts/stop/${this.$route.params.id}`)
         .then(response => {
@@ -654,23 +734,38 @@ export default {
           // this.error = error
         })
     },
-    getStopDetails() {
+    async getStopDetails() {
       this.loadingStopDetails = true
       this.stopDetailsError = false
 
-      axios
-        .get(`${API.URL}/core/stops/${this.$route.params.id}/detailed`)
-        .then(response => {
-          this.stopDetails = this.normaliseStopDetails(response.data)
+      let cachedApplied = false
+
+      try {
+        const result = await loadCachedResource({
+          key: cacheKeys.stopDetails(this.$route.params.id),
+          maxAgeMs: CACHE_MAX_AGE.entity,
+          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/detailed`),
+          onCached: record => {
+            cachedApplied = true
+            this.stopDetails = this.normaliseStopDetails(record.data)
+            this.loadingStopDetails = false
+          }
         })
-        .catch(error => {
-          console.log(error)
+
+        if (result.source === 'network' || !cachedApplied) {
+          this.stopDetails = this.normaliseStopDetails(result.data)
+        }
+      } catch (error) {
+        console.log(error)
+        if (!cachedApplied) {
           this.stopDetails = {}
           this.stopDetailsError = true
-        })
-        .finally(() => this.loadingStopDetails = false)
+        }
+      } finally {
+        this.loadingStopDetails = false
+      }
     },
-    getOSMStop(forceRefresh = false) {
+    async getOSMStop(forceRefresh = false) {
       if (!this.isTrainStation || this.loadingOSMStop || (this.osmStop !== null && !forceRefresh)) {
         return
       }
@@ -678,19 +773,33 @@ export default {
       this.loadingOSMStop = true
       this.osmStopError = false
 
-      axios
-        .get(`${API.URL}/core/stops/${encodeURIComponent(this.$route.params.id)}/osm`, {
-          params: forceRefresh ? { force_refresh: true } : undefined
+      let cachedApplied = false
+
+      try {
+        const result = await loadCachedResource({
+          key: cacheKeys.stopOSM(this.$route.params.id),
+          maxAgeMs: CACHE_MAX_AGE.entity,
+          request: () => axios.get(`${API.URL}/core/stops/${encodeURIComponent(this.$route.params.id)}/osm`, {
+            params: forceRefresh ? { force_refresh: true } : undefined
+          }),
+          onCached: record => {
+            cachedApplied = true
+            this.osmStop = record.data
+          }
         })
-        .then(response => {
-          this.osmStop = response.data
-        })
-        .catch(error => {
-          console.log(error)
+
+        if (result.source === 'network' || !cachedApplied) {
+          this.osmStop = result.data
+        }
+      } catch (error) {
+        console.log(error)
+        if (!cachedApplied) {
           this.osmStop = null
           this.osmStopError = true
-        })
-        .finally(() => this.loadingOSMStop = false)
+        }
+      } finally {
+        this.loadingOSMStop = false
+      }
     },
     getOperatorStats() {
       console.log("Get operator stats")
@@ -729,16 +838,50 @@ export default {
       this.refreshView()
       this.getServiceAlerts()
       this.getStopDetails()
+    },
+    pollView() {
+      this.currentTime = Date.now()
+
+      if (this.currentBoardFromCache) {
+        this[this.currentTab] = this.filterElapsedBoardItems(this[this.currentTab])
+      }
+
+      if (!document.hidden && isConnected()) {
+        this.refreshView()
+      }
+    },
+    pollServiceAlerts() {
+      if (!document.hidden && isConnected()) {
+        this.getServiceAlerts()
+      }
+    },
+    handleReconnect() {
+      this.getData()
+    },
+    handleVisibilityChange() {
+      if (!document.hidden) {
+        this.getData()
+      }
+    },
+    stopPolling() {
+      clearInterval(this.refreshTimer)
+      clearInterval(this.serviceAlertsRefreshTimer)
+      window.removeEventListener('online', this.handleReconnect)
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange)
     }
   },
   mounted () {
     this.getData()
-    this.refreshTimer = setInterval(this.refreshView, 30000)
-    this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
+    this.refreshTimer = setInterval(this.pollView, 30000)
+    this.serviceAlertsRefreshTimer = setInterval(this.pollServiceAlerts, 60000)
+    window.addEventListener('online', this.handleReconnect)
+    document.addEventListener('visibilitychange', this.handleVisibilityChange)
   },
   beforeRouteLeave() {  
-    clearInterval(this.refreshTimer)
-    clearInterval(this.serviceAlertsRefreshTimer)
-  }, 
+    this.stopPolling()
+  },
+  beforeUnmount() {
+    this.stopPolling()
+  }
 }
 </script>

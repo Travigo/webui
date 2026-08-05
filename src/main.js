@@ -89,17 +89,14 @@ app.use(auth0)
 
 app.mount('#app')
 
-registerSW({ immediate: true })
+const serviceWorkerUpdateInterval = 60 * 60 * 1000
 
-import { useRegisterSW } from 'virtual:pwa-register/vue'
-
-const intervalMS = 60 * 60 * 1000
-
-const updateServiceWorker = useRegisterSW({
-  onRegistered(r) {
-    r && setInterval(() => {
-      r.update()
-    }, intervalMS)
+registerSW({
+  immediate: true,
+  onRegisteredSW(_, registration) {
+    if (registration) {
+      setInterval(() => registration.update(), serviceWorkerUpdateInterval)
+    }
   }
 })
 
