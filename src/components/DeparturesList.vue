@@ -239,10 +239,9 @@ export default {
       return departure.Type == 'Cancelled'
     },
     isDelayed(departure) {
-      // The API uses Estimated only when a positive realtime offset has been
-      // carried into this scheduled departure. A live-tracked service can
-      // still be on time, so RealtimeTracked is intentionally not included.
-      return departure.Type == 'Estimated'
+      // Estimated remains a legacy delay signal; newer board responses expose
+      // Delayed after comparing the scheduled and realtime stop times.
+      return departure.Delayed === true || departure.Type == 'Estimated'
     },
     alertsFor(departure) {
       const seenAlertKeys = new Set()
