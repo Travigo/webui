@@ -61,43 +61,12 @@
       :loading-departures="loadingDepartures && departures === null"
       :arrivals="arrivals"
       :loading-arrivals="loadingArrivals && arrivals === null"
-      :show-station-map="isTrainStation"
+      :show-details="false"
+      show-map
       v-model="currentTab"
       @tab-change="refreshView"
     >
-      <template #details>
-        <div class="space-y-4 px-4 py-4">
-          <div>
-            <h2 class="text-sm font-extrabold text-slate-950">Stop details</h2>
-            <p class="mt-1 text-sm text-slate-600">
-              {{ stop.OtherNames?.Descriptor || 'Live stop information and mapped location.' }}
-            </p>
-          </div>
-
-          <div class="h-56 overflow-hidden rounded-2xl border border-slate-200">
-            <mapbox-map
-              accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-              mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
-              style="height: 100%"
-              :zoom="zoom"
-              :center="center"
-            >
-              <mapbox-marker :lngLat="center">
-                <mapbox-popup>
-                  <div>
-                    <p><strong>{{ stop.PrimaryName }}</strong></p>
-                    {{ stop.OtherNames?.Descriptor }}
-                  </div>
-                </mapbox-popup>
-              </mapbox-marker>
-            </mapbox-map>
-          </div>
-
-          <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts, stopDetails)" />
-        </div>
-      </template>
-
-      <template #station-map>
+      <template #map>
         <StationMap
           :stop="stop"
           :osm-stop="osmStop"
@@ -107,6 +76,8 @@
         />
       </template>
     </StopDeparturesTable>
+
+    <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts, stopDetails)" />
 
     <Teleport to="#bottom-nav-extra" defer>
       <div class="grid grid-cols-2 gap-2">
@@ -390,10 +361,6 @@ export default {
 
       error: undefined,
 
-      zoom: 13,
-      center: [0.1356, 52.2065],
-      currentZoom: 11.5,
-
       refreshTimer: null,
       serviceAlertsRefreshTimer: null,
       lastUpdatedAt: null,
@@ -613,7 +580,7 @@ export default {
         this.getDepartures()
       } else if (tab === 'arrivals') {
         this.getArrivals()
-      } else if (tab === 'station-map') {
+      } else if (tab === 'map') {
         this.getOSMStop()
       }
     },
@@ -622,8 +589,6 @@ export default {
         .get(`${API.URL}/core/stops/${this.$route.params.id}`)
         .then(response => {
           this.stop = response.data
-
-          this.center = this.stop.Location.coordinates
 
           // this.getOperatorStats()
         })
@@ -770,13 +735,6 @@ export default {
     this.getData()
     this.refreshTimer = setInterval(this.refreshView, 30000)
     this.serviceAlertsRefreshTimer = setInterval(this.getServiceAlerts, 60000)
-  },
-  watch: {
-    isTrainStation(isTrainStation) {
-      if (!isTrainStation && this.currentTab === 'station-map') {
-        this.currentTab = 'departures'
-      }
-    }
   },
   beforeRouteLeave() {  
     clearInterval(this.refreshTimer)

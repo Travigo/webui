@@ -14,7 +14,6 @@
       <router-link
         class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_1fr_auto] dark:hover:bg-slate-800/70"
         :class="{
-          'bg-amber-50/70 dark:bg-amber-500/10': isDelayed(departure),
           'opacity-70': isCancelled(departure)
         }"
         :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}"
@@ -70,10 +69,6 @@
             <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
               Cancelled
             </div>
-            <div v-else-if="isDelayed(departure)" class="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-              <span class="material-symbols-outlined text-[13px] leading-none" aria-hidden="true">warning_amber</span>
-              Delayed
-            </div>
             <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
               Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
             </div>
@@ -85,7 +80,6 @@
       <div
         class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 sm:grid-cols-[3.25rem_1fr_auto]"
         :class="{
-          'bg-amber-50/70 dark:bg-amber-500/10': isDelayed(departure),
           'opacity-70': isCancelled(departure)
         }"
         v-else
@@ -136,10 +130,6 @@
           </div>
           <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
             Cancelled
-          </div>
-          <div v-else-if="isDelayed(departure)" class="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-            <span class="material-symbols-outlined text-[13px] leading-none" aria-hidden="true">warning_amber</span>
-            Delayed
           </div>
           <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
             Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
@@ -297,7 +287,9 @@ export default {
 
       try {
         const response = await axios.get(
-          `${API.URL}/core/service_alerts/matching/${journeyIdentifiers.map(encodeURIComponent).join(',')}`
+          // The API route matches Travigo identifiers as supplied; encoding the
+          // colons leaves the identifier as a literal "%3A" to the matcher.
+          `${API.URL}/core/service_alerts/matching/${journeyIdentifiers.join(',')}`
         )
 
         if (this.journeyAlertsRequestKey !== requestKey) {

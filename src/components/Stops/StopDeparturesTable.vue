@@ -35,8 +35,8 @@
       <DeparturesList v-else :stop="stop" :departures="arrivals || []" board-type="arrivals" variant="compact" />
     </div>
 
-    <div v-else-if="activeTab === 'station-map'">
-      <slot name="station-map"></slot>
+    <div v-else-if="activeTab === 'map'">
+      <slot name="map"></slot>
     </div>
 
     <div v-else>
@@ -85,7 +85,7 @@ export default {
       type: Boolean,
       default: true
     },
-    showStationMap: {
+    showMap: {
       type: Boolean,
       default: false
     }
@@ -117,9 +117,9 @@ export default {
         })
       }
 
-      if (this.showStationMap) {
+      if (this.showMap) {
         tabs.push({
-          id: 'station-map',
+          id: 'map',
           name: 'Map',
           icon: 'map'
         })

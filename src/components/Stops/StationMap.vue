@@ -3,59 +3,26 @@
     <div class="flex items-start justify-between gap-3">
       <div>
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-[20px] text-brand-blue">train</span>
-          <h2 class="text-sm font-extrabold text-slate-950">Station map</h2>
-          <span class="rounded-full bg-brand-pink/10 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-brand-pink">Experimental</span>
+          <span class="material-symbols-outlined text-[20px] text-brand-blue">map</span>
+          <h2 class="text-sm font-extrabold text-slate-950">Map</h2>
+          <span
+            v-if="isTrainStation"
+            class="rounded-full bg-brand-pink/10 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-brand-pink"
+          >
+            Station detail
+          </span>
         </div>
         <p class="mt-1 text-sm text-slate-600">
-          Platforms, entrances and amenities from OpenStreetMap.
+          {{ mapDescription }}
         </p>
       </div>
     </div>
 
-    <LoadingState
-      v-if="loading"
-      title="Loading station map"
-      subtitle="Fetching the mapped station layout and amenities."
-      compact
-      bare
-      :rows="4"
-      :show-tabs="false"
-    />
-
-    <div v-else-if="error" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
-      <div class="flex items-start gap-2">
-        <span class="material-symbols-outlined text-[19px]">warning</span>
-        <div>
-          <p class="font-extrabold">Station map unavailable</p>
-          <p class="mt-1">The OSM station data could not be loaded right now.</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        class="mt-3 inline-flex min-h-9 items-center rounded-xl bg-amber-100 px-3 text-xs font-extrabold text-amber-900 transition hover:bg-amber-200"
-        @click="$emit('retry')"
-      >
-        Try again
-      </button>
-    </div>
-
-    <div v-else-if="!hasMappedFeatures" class="rounded-2xl bg-slate-50 px-3 py-4 text-sm text-slate-600">
-      <div class="flex items-start gap-2">
-        <span class="material-symbols-outlined text-[19px] text-slate-400">map</span>
-        <div>
-          <p class="font-extrabold text-slate-800">No mapped station features yet</p>
-          <p class="mt-1">OpenStreetMap does not currently have a usable platform, entrance, or amenity layout for this station.</p>
-        </div>
-      </div>
-    </div>
-
-    <template v-else>
-      <div
-        ref="mapContainer"
-        class="station-map relative h-[430px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-[560px]"
-        :class="{ 'is-fullscreen': isFullscreen }"
-      >
+    <div
+      ref="mapContainer"
+      class="station-map relative h-[430px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-[560px]"
+      :class="{ 'is-fullscreen': isFullscreen }"
+    >
         <mapbox-map
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
           mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
@@ -65,6 +32,22 @@
           @loaded="mapLoaded"
         >
           <mapbox-navigation-control position="bottom-right" />
+
+          <mapbox-marker v-if="stopLocation && !isTrainStation" :lngLat="stopLocation" anchor="bottom">
+            <template #icon>
+              <span class="stop-location-marker">
+                <span class="material-symbols-outlined text-[22px]">location_on</span>
+              </span>
+            </template>
+            <mapbox-popup>
+              <div class="station-popup">
+                <p class="font-extrabold">{{ stop?.PrimaryName || 'Stop location' }}</p>
+                <p v-if="stop?.OtherNames?.Descriptor" class="mt-0.5 text-xs text-slate-500">
+                  {{ stop.OtherNames.Descriptor }}
+                </p>
+              </div>
+            </mapbox-popup>
+          </mapbox-marker>
 
           <mapbox-geogeometry-raw
             v-if="stationAreaGeoJson.features.length > 0"
@@ -169,6 +152,7 @@
             <span class="material-symbols-outlined text-[21px]">{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</span>
           </button>
           <button
+            v-if="hasMappedFeatures"
             type="button"
             class="station-map-action relative"
             aria-label="Filter station map"
@@ -182,16 +166,51 @@
 
         <div class="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-7.5rem)] rounded-2xl border border-white/70 bg-white/90 px-3 py-2 shadow-lg shadow-slate-900/10 backdrop-blur sm:left-4 sm:top-4">
           <p class="text-xs font-extrabold text-slate-900">{{ stop?.PrimaryName || 'Train station' }}</p>
-          <p class="mt-0.5 text-[11px] font-semibold text-slate-500">{{ platformCount }} platforms · {{ entranceCount }} entrances · {{ amenityCount }} amenities</p>
+          <p class="mt-0.5 text-[11px] font-semibold text-slate-500">{{ mapSummary }}</p>
         </div>
 
-      </div>
+    </div>
 
-      <p class="text-xs leading-relaxed text-slate-500">
+    <div v-if="loading" class="rounded-2xl bg-blue-50 px-3 py-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:text-blue-100">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>
+        <span>Loading additional station layout data…</span>
+      </div>
+    </div>
+
+    <div v-else-if="error" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
+      <div class="flex items-start gap-2">
+        <span class="material-symbols-outlined text-[19px]">warning</span>
+        <div>
+          <p class="font-extrabold">Additional station data unavailable</p>
+          <p class="mt-1">The stop location is still shown. The OpenStreetMap station layout could not be loaded.</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="mt-3 inline-flex min-h-9 items-center rounded-xl bg-amber-100 px-3 text-xs font-extrabold text-amber-900 transition hover:bg-amber-200"
+        @click="$emit('retry')"
+      >
+        Try again
+      </button>
+    </div>
+
+    <div v-else-if="isTrainStation && osmStop && !hasMappedFeatures" class="rounded-2xl bg-slate-50 px-3 py-4 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <div class="flex items-start gap-2">
+        <span class="material-symbols-outlined text-[19px] text-slate-400">map</span>
+        <div>
+          <p class="font-extrabold text-slate-800 dark:text-slate-100">No mapped station features yet</p>
+          <p class="mt-1">OpenStreetMap does not currently have a usable platform, entrance, or amenity layout for this station.</p>
+        </div>
+      </div>
+    </div>
+
+    <p v-if="isTrainStation" class="text-xs leading-relaxed text-slate-500">
         Layout data is sourced from OpenStreetMap through Travigo and may be incomplete or out of date.
-      </p>
+    </p>
 
       <Modal
+        v-if="hasMappedFeatures"
         v-model:open="filtersOpen"
         title="Map filters"
         subtitle="Choose what appears on the station map."
@@ -260,12 +279,10 @@
           </button>
         </div>
       </Modal>
-    </template>
   </div>
 </template>
 
 <script>
-import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
 
 const AMENITY_TYPES = [
@@ -303,7 +320,6 @@ const AMENITY_MARKER_GRID = 0.0006
 export default {
   name: 'StationMap',
   components: {
-    LoadingState,
     Modal
   },
   props: {
@@ -346,6 +362,14 @@ export default {
     }
   },
   computed: {
+    isTrainStation() {
+      return (this.stop?.TransportTypes || []).some(transportType => String(transportType).toLowerCase() === 'rail')
+    },
+    mapDescription() {
+      return this.isTrainStation
+        ? 'View this station location, with platforms, entrances and amenities when available.'
+        : 'View this stop location on the map.'
+    },
     features() {
       const features = this.osmStop?.Features || this.osmStop?.features || []
       return Array.isArray(features) ? features : []
@@ -502,6 +526,29 @@ export default {
         this.amenityFeatures.length > 0 ||
         this.stationAreaGeoJson.features.length > 0
       )
+    },
+    mapSummary() {
+      if (!this.isTrainStation) {
+        return 'Stop location'
+      }
+
+      if (this.loading) {
+        return 'Loading station layout…'
+      }
+
+      if (this.error) {
+        return 'Stop location · station layout unavailable'
+      }
+
+      if (!this.osmStop) {
+        return 'Stop location'
+      }
+
+      if (!this.hasMappedFeatures) {
+        return 'Stop location · no mapped layout'
+      }
+
+      return `${this.platformCount} platforms · ${this.entranceCount} entrances · ${this.amenityCount} amenities`
     },
     filterOptions() {
       return [
@@ -991,6 +1038,24 @@ export default {
 .station-map :deep(.mapboxgl-ctrl-group button) {
   width: 2.4rem;
   height: 2.4rem;
+}
+
+.stop-location-marker {
+  display: inline-flex;
+  width: 2.4rem;
+  height: 2.4rem;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  border-radius: 999px 999px 999px 0;
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 5px 14px rgb(15 23 42 / 0.35);
+  transform: rotate(-45deg);
+}
+
+.stop-location-marker :deep(.material-symbols-outlined) {
+  transform: rotate(45deg);
 }
 
 .station-feature-marker {
