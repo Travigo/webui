@@ -145,10 +145,16 @@
                   >
                     Stop closed
                   </span>
-                  <span v-if="point.platform">
+                  <span
+                    v-if="point.platform"
+                    class="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                  >
                     Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Est.)</span>
                   </span>
-                  <span v-if="point.activity?.length == 1">
+                  <span
+                    v-if="point.activity?.length == 1"
+                    class="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+                  >
                     {{ point.activity[0] }} only
                   </span>
                   <span
