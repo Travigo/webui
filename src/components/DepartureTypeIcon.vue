@@ -8,8 +8,13 @@
   <span class="text-xs text-gray-600 dark:text-gray-400 material-symbols-outlined" v-else-if="this.journeyDepartureType == 'Scheduled'">
     schedule
   </span>
-  <span class="text-xs text-orange-500 material-symbols-outlined" v-else-if="this.journeyDepartureType == 'Estimated'">
-    schedule
+  <span
+    class="text-xs text-amber-600 dark:text-amber-300 material-symbols-outlined"
+    v-else-if="this.journeyDepartureType == 'Estimated'"
+    title="Delayed"
+    aria-label="Delayed"
+  >
+    warning_amber
   </span>
   <span class="text-xs text-red-500 material-symbols-outlined" v-else-if="this.journeyDepartureType == 'Cancelled'">
     warning

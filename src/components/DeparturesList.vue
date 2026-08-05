@@ -13,7 +13,10 @@
 
       <router-link
         class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_1fr_auto] dark:hover:bg-slate-800/70"
-        :class="{'opacity-70': isCancelled(departure)}"
+        :class="{
+          'bg-amber-50/70 dark:bg-amber-500/10': isDelayed(departure),
+          'opacity-70': isCancelled(departure)
+        }"
         :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}"
         v-if="departure.Journey.PrimaryIdentifier !=''"
       >
@@ -37,6 +40,10 @@
               {{ departure.DestinationDisplay }}
             </p>
             <DepartureTypeIcon :departure="departure" />
+            <JourneyAlertIndicator
+              :alerts="alertsFor(departure)"
+              :journey-title="departure.DestinationDisplay || 'Journey'"
+            />
           </div>
           <div class="mt-1 flex min-w-0 items-center gap-2">
             <ServiceIcon
@@ -51,13 +58,23 @@
 
         <div class="flex items-center gap-2 text-right">
           <div>
-            <div class="text-[15px] font-bold leading-tight text-slate-950" :class="{'line-through decoration-red-500 decoration-2': isCancelled(departure)}">
+            <div
+              class="text-[15px] font-bold leading-tight text-slate-950"
+              :class="{
+                'line-through decoration-red-500 decoration-2': isCancelled(departure),
+                'text-amber-800 dark:text-amber-200': isDelayed(departure)
+              }"
+            >
               {{ this.pretty.time(departure.Time, stop.Timezone) }}
             </div>
             <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
               Cancelled
             </div>
-            <div class="mt-1 text-xs text-slate-500" v-else-if="departure.Platform">
+            <div v-else-if="isDelayed(departure)" class="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+              <span class="material-symbols-outlined text-[13px] leading-none" aria-hidden="true">warning_amber</span>
+              Delayed
+            </div>
+            <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
               Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
             </div>
           </div>
@@ -67,7 +84,10 @@
 
       <div
         class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 sm:grid-cols-[3.25rem_1fr_auto]"
-        :class="{'opacity-70': isCancelled(departure)}"
+        :class="{
+          'bg-amber-50/70 dark:bg-amber-500/10': isDelayed(departure),
+          'opacity-70': isCancelled(departure)
+        }"
         v-else
       >
         <ServiceIcon
@@ -90,6 +110,10 @@
               {{ departure.DestinationDisplay }}
             </p>
             <DepartureTypeIcon :departure="departure" />
+            <JourneyAlertIndicator
+              :alerts="alertsFor(departure)"
+              :journey-title="departure.DestinationDisplay || 'Journey'"
+            />
           </div>
           <ServiceIcon
             v-if="departure.Journey.Service!==undefined"
@@ -101,13 +125,23 @@
         </div>
 
         <div class="text-right">
-          <div class="text-[15px] font-bold leading-tight text-slate-950" :class="{'line-through decoration-red-500 decoration-2': isCancelled(departure)}">
+          <div
+            class="text-[15px] font-bold leading-tight text-slate-950"
+            :class="{
+              'line-through decoration-red-500 decoration-2': isCancelled(departure),
+              'text-amber-800 dark:text-amber-200': isDelayed(departure)
+            }"
+          >
             {{ this.pretty.time(departure.Time, stop.Timezone) }}
           </div>
           <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
             Cancelled
           </div>
-          <div class="mt-1 text-xs text-slate-500" v-else-if="departure.Platform">
+          <div v-else-if="isDelayed(departure)" class="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+            <span class="material-symbols-outlined text-[13px] leading-none" aria-hidden="true">warning_amber</span>
+            Delayed
+          </div>
+          <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
             Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
           </div>
         </div>
@@ -158,7 +192,10 @@
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import DepartureTimeView from '@/components/Stops/DepartureTimeView.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
+import JourneyAlertIndicator from '@/components/JourneyAlertIndicator.vue'
 import Notice from '@/components/Notice.vue'
+import axios from 'axios'
+import API from '@/API'
 import Pretty from '@/pretty'
 
 export default {
@@ -178,16 +215,116 @@ export default {
     ServiceIcon,
     DepartureTimeView,
     DepartureTypeIcon,
+    JourneyAlertIndicator,
     Notice
   },
   data () {
     return {
       pretty: Pretty,
+      journeyAlertsByIdentifier: {},
+      journeyAlertsRequestKey: '',
+      journeyAlertsLoadedAt: 0
+    }
+  },
+  watch: {
+    departures: {
+      immediate: true,
+      handler() {
+        this.loadJourneyAlerts()
+      }
     }
   },
   methods: {
     isCancelled(departure) {
       return departure.Type == 'Cancelled'
+    },
+    isDelayed(departure) {
+      // The API uses Estimated only when a positive realtime offset has been
+      // carried into this scheduled departure. A live-tracked service can
+      // still be on time, so RealtimeTracked is intentionally not included.
+      return departure.Type == 'Estimated'
+    },
+    alertsFor(departure) {
+      const seenAlertKeys = new Set()
+      const alerts = []
+
+      for (const identifier of this.journeyAlertIdentifiers(departure)) {
+        for (const alert of this.journeyAlertsByIdentifier[identifier] || []) {
+          const alertKey = alert.PrimaryIdentifier || `${alert.AlertType}|${alert.Title}|${alert.Text}`
+          if (seenAlertKeys.has(alertKey)) {
+            continue
+          }
+
+          seenAlertKeys.add(alertKey)
+          alerts.push(alert)
+        }
+      }
+
+      return alerts
+    },
+    journeyAlertIdentifiers(departure) {
+      const journeyIdentifier = departure.Journey?.PrimaryIdentifier
+
+      if (!journeyIdentifier) {
+        return []
+      }
+
+      const journeyRunDate = this.journeyRunDate(departure)
+      return [
+        journeyIdentifier,
+        `DAYINSTANCEOF:${journeyRunDate}:${journeyIdentifier}`
+      ]
+    },
+    async loadJourneyAlerts() {
+      const departures = this.departures || []
+      const journeyIdentifiers = [...new Set(
+        departures.flatMap(departure => this.journeyAlertIdentifiers(departure))
+      )]
+      const requestKey = journeyIdentifiers.slice().sort().join(',')
+
+      if (requestKey === '') {
+        this.journeyAlertsByIdentifier = {}
+        this.journeyAlertsRequestKey = ''
+        this.journeyAlertsLoadedAt = 0
+        return
+      }
+
+      const cacheAge = Date.now() - this.journeyAlertsLoadedAt
+      if (requestKey === this.journeyAlertsRequestKey && cacheAge < 180000) {
+        return
+      }
+
+      this.journeyAlertsRequestKey = requestKey
+
+      try {
+        const response = await axios.get(
+          `${API.URL}/core/service_alerts/matching/${journeyIdentifiers.map(encodeURIComponent).join(',')}`
+        )
+
+        if (this.journeyAlertsRequestKey !== requestKey) {
+          return
+        }
+
+        const alertsByIdentifier = {}
+
+        for (const alert of response.data || []) {
+          for (const identifier of alert.MatchedIdentifiers || []) {
+            if (identifier) {
+              alertsByIdentifier[identifier] = [
+                ...(alertsByIdentifier[identifier] || []),
+                alert
+              ]
+            }
+          }
+        }
+
+        this.journeyAlertsByIdentifier = alertsByIdentifier
+        this.journeyAlertsLoadedAt = Date.now()
+      } catch (error) {
+        this.journeyAlertsByIdentifier = {}
+        this.journeyAlertsLoadedAt = Date.now()
+        console.log(error)
+      }
     },
     departureDayChange(index) {
       let comparisonDateTime;
@@ -205,7 +342,7 @@ export default {
     },
     journeyRunDate(departure) {
       let date = new Date(Date.parse(departure.Time))
-      return `${date.getFullYear()}-${Pretty.padToTwo(date.getMonth())}-${Pretty.padToTwo(date.getDate())}`
+      return `${date.getFullYear()}-${Pretty.padToTwo(date.getMonth() + 1)}-${Pretty.padToTwo(date.getDate())}`
     }
   }
 }
