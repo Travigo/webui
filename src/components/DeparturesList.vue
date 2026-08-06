@@ -61,9 +61,10 @@
         <div class="flex items-center gap-2 text-right">
           <div>
             <div
-              class="text-[15px] font-bold leading-tight text-slate-950"
+              class="text-[15px] font-bold leading-tight"
               :class="{
                 'line-through decoration-red-500 decoration-2': isCancelled(departure),
+                'text-slate-950 dark:text-slate-100': !isDelayed(departure),
                 'text-amber-800 dark:text-amber-200': isDelayed(departure)
               }"
             >
@@ -126,9 +127,10 @@
 
         <div class="text-right">
           <div
-            class="text-[15px] font-bold leading-tight text-slate-950"
+            class="text-[15px] font-bold leading-tight"
             :class="{
               'line-through decoration-red-500 decoration-2': isCancelled(departure),
+              'text-slate-950 dark:text-slate-100': !isDelayed(departure),
               'text-amber-800 dark:text-amber-200': isDelayed(departure)
             }"
           >

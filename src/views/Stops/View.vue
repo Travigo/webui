@@ -56,7 +56,7 @@
     />
 
     <div
-      v-if="currentBoardFromCache"
+      v-if="showingCachedBoard"
       class="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200"
     >
       <span class="material-symbols-outlined text-[17px]">schedule</span>
@@ -447,6 +447,9 @@ export default {
     currentBoardFromCache() {
       return this.boardFromCache[this.currentTab] || false
     },
+    showingCachedBoard() {
+      return this.currentBoardFromCache && !this.boardLoading
+    },
     lastUpdatedAt() {
       return this.boardUpdatedAt[this.currentTab] || null
     },
@@ -455,7 +458,7 @@ export default {
         return 'Not updated yet'
       }
 
-      const prefix = this.currentBoardFromCache ? 'Cached' : 'Updated'
+      const prefix = this.showingCachedBoard ? 'Cached' : 'Updated'
       return `${prefix} ${cacheAgeLabel(this.lastUpdatedAt, this.currentTime)}`
     },
     boardLoading() {
