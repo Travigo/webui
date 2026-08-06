@@ -5,11 +5,20 @@
     v-if="service.ServiceName != '' || service.BrandIcon != ''"
   >
     <div class="flex h-full items-center" :class="{ 'justify-center': short || !service.ServiceName }">
-      <img 
-        v-if="service.BrandIcon != ''" 
+      <img
+        v-if="showBrandIcon"
         :src="service.BrandIcon"
+        :alt="`${service.PrimaryName || service.ServiceName || 'Service'} logo`"
         :class="{'mr-1': !short, 'h-5': !short, 'w-5': !short, 'h-7': short, 'w-7': short}"
+        @error="brandIconFailed = true"
       />
+      <span
+        v-else-if="service.BrandIcon"
+        class="material-symbols-outlined"
+        :class="{'mr-1 text-[20px]': !short, 'text-[27px]': short}"
+      >
+        {{ transportIcon }}
+      </span>
       <span
         class="w-full"
         v-if="(service.ServiceName != '' && !short) || (service.BrandIcon == '' && short)"
@@ -23,6 +32,11 @@
 
 <script>
 export default {
+  data() {
+    return {
+      brandIconFailed: false
+    }
+  },
   props: {
     service: {},
     short: {
@@ -30,6 +44,24 @@ export default {
     }
   },
   computed: {
+    showBrandIcon() {
+      return Boolean(this.service.BrandIcon) && !this.brandIconFailed
+    },
+    transportIcon() {
+      return {
+        Rail: 'train',
+        Bus: 'directions_bus',
+        Coach: 'airport_shuttle',
+        Tram: 'tram',
+        Taxi: 'local_taxi',
+        Metro: 'subway',
+        Ferry: 'directions_boat',
+        Airport: 'flight',
+        Air: 'flight',
+        CableCar: 'gondola_lift',
+        Funicular: 'funicular'
+      }[this.service.TransportType] || 'route'
+    },
     serviceIconStyle() {
       const styles = {
         color: this.defaultTextColour
@@ -82,6 +114,11 @@ export default {
       }
 
       return color.substring(0, 6)
+    }
+  },
+  watch: {
+    'service.BrandIcon'() {
+      this.brandIconFailed = false
     }
   }
 }

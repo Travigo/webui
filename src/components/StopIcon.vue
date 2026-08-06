@@ -19,7 +19,9 @@ export default {
     }
   },
   data() {
-    return {}
+    return {
+      failedImages: {}
+    }
   },
   methods: {
     getUniqueServiceIcons(services) {
@@ -54,7 +56,8 @@ export default {
 
           serviceIcon = {
             "type": "Image",
-            "value": service.BrandIcon
+            "value": service.BrandIcon,
+            "fallback": transportIcons[service.TransportType] || transportIcons.UNKNOWN
           }
         }
 
@@ -67,6 +70,9 @@ export default {
 
       return serviceIcons
     },
+    markImageFailed(image) {
+      this.failedImages[image] = true
+    }
   }
 }
 </script>
@@ -81,8 +87,21 @@ export default {
     >
       {{ icon['value'] }}
     </span>
-    <span v-else-if="icon['type'] === 'Image'">
-      <img :src="icon['value']" :alt="icon['value']" :class="[width, height]" />
+    <span v-else-if="icon['type'] === 'Image' && !failedImages[icon['value']]">
+      <img
+        :src="icon['value']"
+        alt=""
+        :class="[width, height]"
+        @error="markImageFailed(icon['value'])"
+      />
+    </span>
+    <span
+      v-else
+      class="material-symbols-outlined rounded-lg bg-blue-500 text-center font-light text-white"
+      :class="[width, height]"
+      :style="textStyle"
+    >
+      {{ icon['fallback'] }}
     </span>
   </span>
 
