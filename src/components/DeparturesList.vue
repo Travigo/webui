@@ -1,5 +1,5 @@
 <template>
-  <Notice v-if="this.stop.Services.length == 0 && this.departures.length == 0" type="warning" class="m-3">
+  <Notice v-if="(this.stop?.Services || []).length == 0 && this.departures.length == 0" type="warning" class="m-3">
     No services run at this stop
   </Notice>
   <Notice v-else-if="this.departures.length == 0" type="warning" class="m-3">
@@ -8,7 +8,7 @@
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
     <div v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
       <div class="px-3 pt-3 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400" v-if="this.departureDayChange(index)">
-        {{ this.pretty.day(departure.Time) }}
+        {{ departureDayLabel(index) }}
       </div>
 
       <router-link
@@ -16,7 +16,7 @@
         :class="{
           'opacity-70': isCancelled(departure)
         }"
-        :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}"
+        :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure, index)}}"
         v-if="departure.Journey.PrimaryIdentifier !=''"
       >
         <ServiceIcon
@@ -148,7 +148,7 @@
   </div>
   <div v-else class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
     <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
-      {{ this.pretty.day(departure.Time) }}
+      {{ departureDayLabel(index) }}
     </div>
     <div class="flex">
       <router-link
@@ -174,7 +174,7 @@
       </div>
       <div class="my-auto text-right flex-shrink-0">
         <router-link 
-          :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure)}}" 
+          :to="{'name': 'journeys/view', params: {'id': departure.Journey.PrimaryIdentifier}, query: {'date': journeyRunDate(departure, index)}}"
           v-if="departure.Journey.PrimaryIdentifier !=''"
         >
           <DepartureTimeView :departure="departure" :stop="stop" />
@@ -195,6 +195,7 @@ import Notice from '@/components/Notice.vue'
 import axios from 'axios'
 import API from '@/API'
 import Pretty from '@/pretty'
+import { DateTime } from 'luxon'
 
 export default {
   props: {
@@ -207,6 +208,10 @@ export default {
     boardType: {
       type: String,
       default: 'departures'
+    },
+    boardReferenceTime: {
+      type: [String, Number, Date],
+      default: () => new Date()
     }
   },
   components: {
@@ -232,7 +237,61 @@ export default {
       }
     }
   },
+  computed: {
+    normalisedDepartureDates() {
+      const referenceDate = this.validDateTime(this.boardReferenceTime) || DateTime.now().setZone(this.boardTimezone)
+      let previousDate = null
+
+      return (this.departures || []).map(departure => {
+        const sourceDate = this.validDateTime(departure?.Time)
+        const clockDate = sourceDate || referenceDate
+        let date
+
+        if (previousDate === null) {
+          date = this.dateWithClock(referenceDate, clockDate)
+
+          // A board opened late at night normally rolls into tomorrow when the
+          // first departure's clock is substantially earlier than the request.
+          if (date.toMillis() < referenceDate.toMillis() - (6 * 60 * 60 * 1000)) {
+            date = date.plus({ days: 1 })
+          }
+        } else {
+          date = this.dateWithClock(previousDate, clockDate)
+          if (date.toMillis() < previousDate.toMillis() - 60000) {
+            date = date.plus({ days: 1 })
+          }
+        }
+
+        previousDate = date
+        return date
+      })
+    },
+    boardTimezone() {
+      return this.stop?.Timezone || 'UTC'
+    }
+  },
   methods: {
+    validDateTime(value) {
+      let date
+
+      if (DateTime.isDateTime(value)) {
+        date = value
+      } else if (value instanceof Date || typeof value === 'number') {
+        date = DateTime.fromJSDate(value instanceof Date ? value : new Date(value))
+      } else {
+        date = DateTime.fromISO(String(value || ''))
+      }
+
+      return date.isValid ? date.setZone(this.boardTimezone) : null
+    },
+    dateWithClock(calendarDate, clockDate) {
+      return calendarDate.set({
+        hour: clockDate.hour,
+        minute: clockDate.minute,
+        second: clockDate.second,
+        millisecond: 0
+      })
+    },
     isCancelled(departure) {
       return departure.Type == 'Cancelled'
     },
@@ -266,7 +325,7 @@ export default {
         return []
       }
 
-      const journeyRunDate = this.journeyRunDate(departure)
+      const journeyRunDate = this.journeyRunDate(departure, (this.departures || []).indexOf(departure))
       return [
         journeyIdentifier,
         `DAYINSTANCEOF:${journeyRunDate}:${journeyIdentifier}`
@@ -326,22 +385,20 @@ export default {
       }
     },
     departureDayChange(index) {
-      let comparisonDateTime;
-      // If we're at the start then comparison datetime is current date else its the last items
-      // TODO when able to look in future handle that
-      if (index == 0) {
-        comparisonDateTime = new Date(Date.now())
-      } else {
-        comparisonDateTime = new Date(Date.parse(this.departures[index-1].Time))
-      }
+      const comparisonDateTime = index === 0
+        ? (this.validDateTime(this.boardReferenceTime) || DateTime.now().setZone(this.boardTimezone))
+        : this.normalisedDepartureDates[index - 1]
+      const currentDateTime = this.normalisedDepartureDates[index]
 
-      let currentDateTime = new Date(Date.parse(this.departures[index].Time))
-
-      return comparisonDateTime.getDate() != currentDateTime.getDate()
+      return comparisonDateTime.toISODate() !== currentDateTime.toISODate()
     },
-    journeyRunDate(departure) {
-      let date = new Date(Date.parse(departure.Time))
-      return `${date.getFullYear()}-${Pretty.padToTwo(date.getMonth() + 1)}-${Pretty.padToTwo(date.getDate())}`
+    departureDayLabel(index) {
+      return this.normalisedDepartureDates[index]?.toFormat('cccc') || ''
+    },
+    journeyRunDate(departure, index = -1) {
+      const resolvedIndex = index >= 0 ? index : (this.departures || []).indexOf(departure)
+      const date = this.normalisedDepartureDates[resolvedIndex] || this.validDateTime(this.boardReferenceTime) || DateTime.now().setZone(this.boardTimezone)
+      return date.toISODate()
     }
   }
 }

@@ -71,6 +71,12 @@
       Zoom in to load stops
     </div>
 
+    <div v-if="mapDataError" class="map-error-panel" role="alert">
+      <span class="material-symbols-outlined text-[19px]">cloud_off</span>
+      <span class="min-w-0 flex-1">Map data could not be refreshed.</span>
+      <button type="button" class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="refreshData()">Retry</button>
+    </div>
+
     <button
       type="button"
       class="map-filter-button"
@@ -102,7 +108,7 @@
                 </span>
               </div>
 
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
                   v-for="layer in mapLayerFilters"
                   v-bind:key="layer.id"
@@ -120,7 +126,7 @@
                     <span class="material-symbols-outlined text-[21px] leading-none">{{ layer.icon }}</span>
                   </span>
                   <span class="min-w-0 flex-1">
-                    <span class="block truncate text-sm font-extrabold">{{ layer.label }}</span>
+                    <span class="block text-sm font-extrabold leading-tight">{{ layer.label }}</span>
                   </span>
                   <span
                     class="material-symbols-outlined text-[20px]"
@@ -135,14 +141,14 @@
             <div class="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
               <button
                 type="button"
-                class="rounded-xl px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                class="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                 @click="clearMapFilters"
               >
                 Clear all
               </button>
               <button
                 type="button"
-                class="rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
+                class="min-h-11 rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
                 @click="closeMapFilters"
               >
                 Apply filters
@@ -170,7 +176,7 @@
                 <router-link
                   @click="closeStopModal"
                   :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
-                  class="inline-flex items-center gap-1 rounded-full bg-brand-blue px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
+                  class="inline-flex min-h-11 items-center gap-1 rounded-xl bg-brand-blue px-3 py-1.5 text-sm font-bold text-white shadow-sm shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
                 >
                   View more
                   <span class="material-symbols-outlined text-base">chevron_right</span>
@@ -181,8 +187,10 @@
                 :stop="currentViewedStop"
                 :departures="currentViewedStopDepartures"
                 :loading-departures="loadingDepartures"
+                :departures-error="departuresError"
                 :show-tabs="false"
                 :show-details="false"
+                @retry-departures="getDepartures"
               />
             </div>
           </div>
@@ -219,6 +227,30 @@
   padding: 0.75rem 0.875rem;
   box-shadow: 0 18px 45px rgb(15 23 42 / 0.14);
   backdrop-filter: blur(14px);
+}
+
+.map-error-panel {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 5.5rem;
+  z-index: 40;
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  background: rgb(255 251 235 / 0.96);
+  padding: 0.5rem 0.75rem;
+  color: #78350f;
+  font-size: 0.875rem;
+  box-shadow: 0 12px 30px rgb(15 23 42 / 0.14);
+  backdrop-filter: blur(12px);
+}
+
+:global(.dark) .map-error-panel {
+  background: rgb(120 53 15 / 0.9);
+  color: #fef3c7;
 }
 
 .map-zoom-hint {
@@ -296,8 +328,8 @@
 }
 
 :deep(.mapboxgl-ctrl-group button) {
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 2.75rem;
+  height: 2.75rem;
   background-color: transparent;
   transition: background-color 160ms ease;
 }
@@ -418,6 +450,9 @@ export default {
     activeMapLayerCount() {
       return [this.showStops, this.showVehicles].filter(Boolean).length
     },
+    mapDataError() {
+      return this.stopsError || this.vehiclesError
+    },
     visibleVehicles() {
       return this.vehicles.filter(vehicle => {
         const coordinates = vehicle?.VehicleLocation?.coordinates
@@ -435,7 +470,8 @@ export default {
       vehicles: [],
 
       loading: false,
-      error: null,
+      stopsError: false,
+      vehiclesError: false,
 
       currentZoom: 5,
       currentCenter: [0.1356, 52.2065],
@@ -472,7 +508,8 @@ export default {
       stopModalOpen: false,
 
       loadingDepartures: true,
-      currentViewedStopDepartures: []
+      currentViewedStopDepartures: [],
+      departuresError: false
     }
   },
   components: {
@@ -519,6 +556,7 @@ export default {
 
       // TODO: For now just dont load anything if you're too zoomed out
       if (this.showStops && updateStops && (this.currentZoom >= this.dataLoadMinZoom)) {
+        this.stopsError = false
         axios
           .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
@@ -528,12 +566,13 @@ export default {
           })
           .catch(error => {
             console.log(error)
-            this.error = error
+            this.stopsError = true
           })
           .finally(() => this.loading = false)
       }
 
       if (this.showVehicles && updateVehicles) {
+        this.vehiclesError = false
         axios
           .get(`${API.URL}/core/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
           .then(response => {
@@ -543,7 +582,7 @@ export default {
           })
           .catch(error => {
             console.log(error)
-            this.error = error
+            this.vehiclesError = true
           })
           .finally(() => this.loading = false)
       }
@@ -552,6 +591,7 @@ export default {
       this.currentViewedStop = stop
       this.currentViewedStopDepartures = []
       this.loadingDepartures = true
+      this.departuresError = false
       this.stopModalOpen = true
 
       this.getDepartures()
@@ -598,6 +638,12 @@ export default {
       this.appliedMapStyle = this.mapStyle
     },
     getDepartures() {
+      if (!this.currentViewedStop) {
+        return
+      }
+
+      this.loadingDepartures = true
+      this.departuresError = false
       axios
         .get(`${API.URL}/core/stops/${this.currentViewedStop.PrimaryIdentifier}/departures`, {
           params: {
@@ -610,7 +656,7 @@ export default {
         })
         .catch(error => {
           console.log(error)
-          // this.error = error
+          this.departuresError = true
         })
         .finally(() => this.loadingDepartures = false)
     }

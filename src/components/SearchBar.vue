@@ -19,6 +19,7 @@
       aria-autocomplete="list"
       :aria-label="label || placeholder"
       :aria-expanded="searchResults.length > 0"
+      :aria-busy="loadingResults"
       :aria-controls="resultsListId"
       :aria-activedescendant="activeResultIndex >= 0 ? resultId(activeResultIndex) : undefined"
       v-model="searchTerm"
@@ -44,8 +45,8 @@
     <button
       type="button"
       :class="selectedResultClass"
-      v-if="selectedResult !== undefined"
-      @click="clearSelectedResult()"
+      v-if="selectedResult !== undefined && !editingSelection"
+      @click="beginEditingSelectedResult"
       :aria-label="`Change selected stop: ${stopName(selectedResult) || 'selected stop'}`"
     >
       <div class="flex h-full items-center">
@@ -62,6 +63,15 @@
           </div>
         </div>
       </div>
+    </button>
+    <button
+      v-if="selectedResult !== undefined && !editingSelection"
+      type="button"
+      class="absolute right-1.5 top-1/2 z-[21] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+      :aria-label="`Clear ${stopName(selectedResult) || 'selected stop'}`"
+      @click.stop="clearSelectedResult"
+    >
+      <span class="material-symbols-outlined text-[20px]">close</span>
     </button>
   </div>
   <ul :id="resultsListId" role="listbox" class="relative z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70" v-if="searchResults.length > 0">
@@ -94,6 +104,18 @@
     </li>
   </ul>
 
+  <div v-if="loadingResults" class="mt-2 flex min-h-11 items-center gap-2 rounded-xl bg-blue-50 px-3 text-sm font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200" role="status">
+    <span class="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>
+    Searching stops…
+  </div>
+  <div v-else-if="searchError" class="mt-2 flex min-h-11 items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100" role="alert">
+    <span class="font-semibold">Stops could not be loaded.</span>
+    <button type="button" class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="searchStops">Retry</button>
+  </div>
+  <div v-else-if="searchAttempted && searchTerm && searchResults.length === 0 && (selectedResult === undefined || editingSelection)" class="mt-2 rounded-xl bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+    No matching stops found. Try a broader name or change the filters.
+  </div>
+
   <Modal
     v-if="showIcons && showFilters"
     v-model:open="filtersOpen"
@@ -118,7 +140,7 @@
                 </span>
               </div>
 
-              <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 <button
                   v-for="option in section.options"
                   v-bind:key="option.id"
@@ -136,7 +158,7 @@
                     <span class="material-symbols-outlined text-[21px] leading-none">{{ option.icon }}</span>
                   </span>
                   <span class="min-w-0 flex-1">
-                    <span class="block truncate text-sm font-extrabold">{{ option.label }}</span>
+                    <span class="block text-sm font-extrabold leading-tight">{{ option.label }}</span>
                   </span>
                   <span
                     class="material-symbols-outlined text-[20px]"
@@ -152,14 +174,14 @@
           <div class="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
             <button
               type="button"
-              class="rounded-xl px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              class="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               @click="clearFilters"
             >
               Clear all
             </button>
             <button
               type="button"
-              class="rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
+              class="min-h-11 rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
               @click="closeFilters"
             >
               Apply filters
@@ -206,7 +228,7 @@ export default {
       default: 'link'
     }
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'selected-result'],
   components: {Modal, StopIcon, ServiceIcon},
   computed: {
     wrapperClass() {
@@ -229,7 +251,7 @@ export default {
       return classes
     },
     selectedResultClass() {
-      return `${this.searchClasses} absolute top-0 left-0 z-20 cursor-pointer border rounded-2xl block w-full bg-white text-slate-950`
+      return `${this.searchClasses} absolute top-0 left-0 z-20 cursor-text border rounded-2xl block w-full bg-white pr-12 text-left text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100`
     },
     searchInputId() {
       return this.inputId || `travigo-search-${this.$.uid}`
@@ -268,8 +290,13 @@ export default {
     return {
       searchTerm: '',
       loadingResults: false,
+      searchAttempted: false,
+      searchError: false,
+      searchRequestToken: 0,
+      selectedResultRequestToken: 0,
       results: {},
       selectedResult: undefined,
+      editingSelection: false,
       activeResultIndex: -1,
       filtersOpen: false,
       selectedFilters: {
@@ -320,9 +347,13 @@ export default {
       }
 
       if (identifier == "" || identifier === undefined || identifier === null) {
+        this.selectedResultRequestToken += 1
         this.selectedResult = undefined
+        this.editingSelection = false
         this.searchTerm = ''
         this.results = {}
+        this.searchAttempted = false
+        this.searchError = false
         return
       }
 
@@ -331,19 +362,34 @@ export default {
       }
 
       this.searchTerm = 'Loading stop...'
+      const requestToken = ++this.selectedResultRequestToken
 
       axios
         .get(`${API.URL}/core/stops/${identifier}`)
         .then(response => {
+          if (requestToken !== this.selectedResultRequestToken) {
+            return
+          }
+
           const stop = this.unwrapStop(response.data)
 
           this.selectedResult = stop
+          this.editingSelection = false
           this.searchTerm = this.stopName(stop)
+          this.searchAttempted = false
+          this.searchError = false
+          this.$emit('selected-result', stop)
         })
         .catch(error => {
+          if (requestToken !== this.selectedResultRequestToken) {
+            return
+          }
+
           console.log(error)
           this.selectedResult = undefined
           this.searchTerm = ''
+          this.searchAttempted = true
+          this.searchError = true
         })
     },
     openFilters() {
@@ -381,16 +427,42 @@ export default {
       )
     },
     clearSelectedResult() {
+      this.searchRequestToken += 1
       this.selectedResult = undefined
+      this.editingSelection = false
       this.searchTerm = ''
       this.results = {}
       this.activeResultIndex = -1
+      this.searchAttempted = false
+      this.searchError = false
+      this.loadingResults = false
 
       if (this.mode == 'store') {
         this.$emit('update:modelValue', '')
+        this.$emit('selected-result', undefined)
       }
 
       this.$nextTick(() => this.$refs.searchInput.focus())
+    },
+    beginEditingSelectedResult() {
+      this.editingSelection = true
+      this.searchTerm = ''
+      this.results = {}
+      this.searchAttempted = false
+      this.searchError = false
+      this.$nextTick(() => this.$refs.searchInput?.focus())
+    },
+    cancelSelectionEdit() {
+      if (this.selectedResult === undefined) {
+        return
+      }
+
+      this.editingSelection = false
+      this.searchTerm = this.stopName(this.selectedResult)
+      this.results = {}
+      this.activeResultIndex = -1
+      this.searchAttempted = false
+      this.searchError = false
     },
     handleResultClick(result) {
       const stop = this.unwrapStop(result)
@@ -399,10 +471,14 @@ export default {
       if (this.mode == 'link') {
         this.$router.push({ name: 'stops/view', params: {'id': identifier} })
       } else if(this.mode == 'store') {
+        this.searchRequestToken += 1
         this.selectedResult = stop
+        this.editingSelection = false
         this.searchTerm = this.stopName(stop)
         this.results = {}
+        this.loadingResults = false
         this.$emit('update:modelValue', identifier)
+        this.$emit('selected-result', stop)
       }
     },
     resultId(index) {
@@ -429,26 +505,35 @@ export default {
         return
       }
 
+      if (event.key === 'Enter' && this.editingSelection) {
+        event.preventDefault()
+        return
+      }
+
       if (event.key === 'Escape') {
+        this.cancelSelectionEdit()
         this.results = {}
         this.activeResultIndex = -1
       }
     },
     searchStops() {
       if (this.selectedResult !== undefined && this.searchTerm !== this.stopName(this.selectedResult)) {
-        this.selectedResult = undefined
-
-        if (this.mode == 'store') {
-          this.$emit('update:modelValue', '')
-        }
+        this.editingSelection = true
       }
 
       if (this.searchTerm === '') {
+        this.searchRequestToken += 1
         this.results = {}
         this.activeResultIndex = -1
+        this.searchAttempted = false
+        this.searchError = false
+        this.loadingResults = false
         return
       }
       this.loadingResults = true
+      this.searchAttempted = true
+      this.searchError = false
+      const requestToken = ++this.searchRequestToken
 
       axios
           .get(`${API.URL}/core/stops/search`, {
@@ -458,14 +543,29 @@ export default {
             }
           })
           .then(response => {
+            if (requestToken !== this.searchRequestToken) {
+              return
+            }
+
             this.results = response.data
+            this.searchError = false
             this.activeResultIndex = this.searchResults.length > 0 ? 0 : -1
           })
           .catch(error => {
+            if (requestToken !== this.searchRequestToken) {
+              return
+            }
+
             console.log(error)
-            // this.error = error
+            this.results = {}
+            this.activeResultIndex = -1
+            this.searchError = true
           })
-          .finally(() => this.loadingResults = false)
+          .finally(() => {
+            if (requestToken === this.searchRequestToken) {
+              this.loadingResults = false
+            }
+          })
     },
     unwrapStop(result) {
       if (Array.isArray(result)) {

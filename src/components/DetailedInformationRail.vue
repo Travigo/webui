@@ -38,7 +38,7 @@
                     <span class="material-symbols-outlined text-[20px]">wc</span>
                   </span>
                   <div class="min-w-0">
-                    <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Toilet in {{ carriageLabel(item.carriage) }}</h3>
+                    <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Toilet in {{ item.locationLabel }}</h3>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.toilet.Type || 'Toilet available' }}</p>
                     <p v-if="item.toilet.Status" class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
                       {{ item.toilet.Status }}
@@ -209,11 +209,16 @@ export default {
       return []
     },
     carriageToilets() {
-      return this.carriages.flatMap(carriage => (carriage.Toilets || []).map((toilet, index) => ({
-        carriage,
-        toilet,
-        index
-      })))
+      return this.trains.flatMap((train, trainIndex) => {
+        return this.numberedTrainCarriages(train).flatMap(({ carriage, passengerNumber }) => {
+          return (carriage.Toilets || []).map((toilet, index) => ({
+            carriage,
+            toilet,
+            index,
+            locationLabel: this.carriageLocationLabel(carriage, passengerNumber, train, trainIndex)
+          }))
+        })
+      })
     },
     carriages() {
       return this.trains.flatMap(train => train.Carriages || [])
@@ -245,18 +250,29 @@ export default {
     isPowerCarriage(carriage) {
       return this.normaliseVehicleRole(carriage?.VehicleRole) === 'powercar'
     },
-    carriageLabel(carriage) {
+    numberedTrainCarriages(train) {
+      let passengerNumber = 0
+      const carriages = [...(train?.Carriages || [])]
+        .sort((first, second) => (first.VehiclePosition || 0) - (second.VehiclePosition || 0))
+        .map(carriage => ({
+          carriage,
+          passengerNumber: this.isPowerCarriage(carriage) ? null : passengerNumber++
+        }))
+
+      return train?.Reversed ? carriages.reverse() : carriages
+    },
+    carriageLocationLabel(carriage, passengerNumber, train, trainIndex) {
       if (carriage.Label || carriage.Name) {
-        return carriage.Label || carriage.Name
+        const label = carriage.Label || carriage.Name
+        return this.trains.length > 1 ? `${label} of Unit ${train?.ID || trainIndex + 1}` : label
       }
 
       if (this.isPowerCarriage(carriage)) {
         return 'Power car'
       }
 
-      const carriageIndex = this.passengerCarriages.indexOf(carriage)
-
-      return carriageIndex >= 0 ? `Coach ${carriageIndex + 1}` : 'this coach'
+      const coach = passengerNumber !== null ? `Coach ${passengerNumber + 1}` : 'this coach'
+      return this.trains.length > 1 ? `${coach} of Unit ${train?.ID || trainIndex + 1}` : coach
     }
   }
 }

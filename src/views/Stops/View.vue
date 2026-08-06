@@ -1,6 +1,4 @@
 <template>
-  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
-
   <LoadingState
     v-if="loadingStop"
     title="Loading stop"
@@ -67,12 +65,17 @@
       :stop="stop"
       :departures="departures"
       :loading-departures="loadingDepartures && departures === null"
+      :departures-error="departuresError"
       :arrivals="arrivals"
       :loading-arrivals="loadingArrivals && arrivals === null"
+      :arrivals-error="arrivalsError"
+      :board-reference-time="boardReferenceTime"
       :show-details="false"
       show-map
       v-model="currentTab"
       @tab-change="refreshView"
+      @retry-departures="getDepartures"
+      @retry-arrivals="getArrivals"
     >
       <template #map>
         <StationMap
@@ -91,7 +94,7 @@
       <div class="grid grid-cols-2 gap-2">
         <router-link
           :to="{ name: 'journeyplanner/home' }"
-          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-blue-700 sm:min-h-11 sm:rounded-2xl"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-blue-700 sm:rounded-2xl"
         >
           <span class="material-symbols-outlined text-[21px]">route</span>
           <span>Plan a journey</span>
@@ -99,7 +102,7 @@
 
         <button
           type="button"
-          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 sm:min-h-11 sm:rounded-2xl"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 sm:rounded-2xl"
           :disabled="boardLoading"
           @click="refreshView()"
         >
@@ -113,7 +116,27 @@
     </Teleport>
   </div>
 
-  <Alert v-else-if="!error" type="warning" class="mt-4">
+  <section v-else-if="error" class="mt-4 rounded-2xl border border-red-100 bg-white p-5 shadow-sm dark:border-red-500/20 dark:bg-slate-900">
+    <div class="flex items-start gap-3">
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
+        <span class="material-symbols-outlined">location_off</span>
+      </span>
+      <div>
+        <h1 class="font-extrabold text-slate-950 dark:text-slate-100">Stop unavailable</h1>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ error }}</p>
+      </div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button type="button" class="inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-4 text-sm font-extrabold text-white" @click="retryStop">
+        Try again
+      </button>
+      <router-link :to="{ name: 'home' }" class="inline-flex min-h-11 items-center rounded-xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+        Search for another stop
+      </router-link>
+    </div>
+  </section>
+
+  <Alert v-else type="warning" class="mt-4">
     This stop is not available offline yet. Open it once while connected to save it on this device.
   </Alert>
 
@@ -358,9 +381,11 @@ export default {
 
       departures: null,
       loadingDepartures: true,
+      departuresError: false,
 
       arrivals: null,
       loadingArrivals: true,
+      arrivalsError: false,
 
       operatorStats: undefined,
 
@@ -406,6 +431,9 @@ export default {
     StationMap
   },
   computed: {
+    boardReferenceTime() {
+      return this.$route.query.datetime || this.currentTime
+    },
     visibleServices() {
       return this.stop?.Services || []
     },
@@ -656,12 +684,18 @@ export default {
         this.loadingStop = false
       }
     },
+    retryStop() {
+      this.loadingStop = true
+      this.error = undefined
+      this.getStop()
+    },
     async getDepartures() {
       if (this.loadingDepartures && this.departures !== null) {
         return
       }
       
       this.loadingDepartures = true
+      this.departuresError = false
       let cachedApplied = false
 
       try {
@@ -685,6 +719,7 @@ export default {
         }
       } catch (error) {
         console.log(error)
+        this.departuresError = true
       } finally {
         this.loadingDepartures = false
       }
@@ -695,6 +730,7 @@ export default {
       }
 
       this.loadingArrivals = true
+      this.arrivalsError = false
       let cachedApplied = false
 
       try {
@@ -718,6 +754,7 @@ export default {
         }
       } catch (error) {
         console.log(error)
+        this.arrivalsError = true
       } finally {
         this.loadingArrivals = false
       }

@@ -188,7 +188,7 @@
       </div>
       <button
         type="button"
-        class="mt-3 inline-flex min-h-9 items-center rounded-xl bg-amber-100 px-3 text-xs font-extrabold text-amber-900 transition hover:bg-amber-200"
+        class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 text-xs font-extrabold text-amber-900 transition hover:bg-amber-200"
         @click="$emit('retry')"
       >
         Try again
@@ -249,8 +249,8 @@
                 <span class="material-symbols-outlined text-[21px]">{{ option.icon }}</span>
               </span>
               <span class="min-w-0 flex-1">
-                <span class="block truncate text-sm font-extrabold">{{ option.label }}</span>
-                <span class="mt-0.5 block truncate text-[11px] font-semibold text-slate-500 dark:text-slate-400">{{ option.count }} mapped</span>
+                <span class="block text-sm font-extrabold leading-tight">{{ option.label }}</span>
+                <span class="mt-0.5 block text-[11px] font-semibold text-slate-500 dark:text-slate-400">{{ option.count }} mapped</span>
               </span>
               <span
                 class="material-symbols-outlined shrink-0 text-[20px]"
@@ -265,14 +265,14 @@
         <div class="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
           <button
             type="button"
-            class="rounded-xl px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            class="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
             @click="setAllFilters(false)"
           >
             Clear all
           </button>
           <button
             type="button"
-            class="rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
+            class="min-h-11 rounded-xl bg-brand-blue px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand-blue/20"
             @click="filtersOpen = false"
           >
             Apply filters
@@ -353,11 +353,11 @@ export default {
         tracks: true,
         platforms: true,
         entrances: true,
-        carParks: true,
-        cycleParks: true,
-        shops: true,
-        foodDrink: true,
-        otherAmenities: true
+        carParks: false,
+        cycleParks: false,
+        shops: false,
+        foodDrink: false,
+        otherAmenities: false
       }
     }
   },
@@ -548,7 +548,7 @@ export default {
         return 'Stop location · no mapped layout'
       }
 
-      return `${this.platformCount} platforms · ${this.entranceCount} entrances · ${this.amenityCount} amenities`
+      return `${this.platformCount} platforms · ${this.entranceCount} entrances · ${this.visibleFeatureCount}/${this.mappedFeatureCount} shown`
     },
     filterOptions() {
       return [
@@ -605,14 +605,20 @@ export default {
     hiddenFilterCount() {
       return this.filterOptions.filter(option => !this.mapFilters[option.id]).length
     },
+    visibleFeatureCount() {
+      return this.filterOptions.reduce((total, option) => {
+        return total + (this.mapFilters[option.id] ? option.count : 0)
+      }, 0)
+    },
+    mappedFeatureCount() {
+      return this.filterOptions.reduce((total, option) => total + option.count, 0)
+    },
     mapCoordinates() {
       const coordinates = []
 
       for (const collection of [
         this.stationAreaGeoJson,
-        this.platformGeoJson,
-        this.trackGeoJson,
-        this.accessGeoJson
+        this.platformGeoJson
       ]) {
         for (const feature of collection.features) {
           this.collectGeometryCoordinates(feature.geometry, coordinates)
@@ -621,13 +627,20 @@ export default {
 
       coordinates.push(...this.platformMarkers.map(marker => marker.coordinates))
       coordinates.push(...this.entranceMarkers.map(marker => marker.coordinates))
-      coordinates.push(...this.amenityMarkers.map(marker => marker.coordinates))
 
       if (this.stopLocation) {
         coordinates.push(this.stopLocation)
       }
 
-      return coordinates.filter(this.validCoordinates)
+      const focusCoordinates = coordinates.filter(this.validCoordinates)
+      if (focusCoordinates.length > 0) {
+        return focusCoordinates
+      }
+
+      return [
+        ...this.amenityMarkers.map(marker => marker.coordinates),
+        ...this.visibleTrackFeatures.map(feature => this.featureCoordinates(feature))
+      ].filter(this.validCoordinates)
     }
   },
   watch: {

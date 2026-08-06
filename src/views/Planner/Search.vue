@@ -1,796 +1,637 @@
 <template>
-  <div class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <Alert type="error" class="mt-4" v-if="error !== undefined">{{ errorMessage }}</Alert>
-
-    <PageHeader
-      title="Journey results"
-      :subtitle="`${originName} to ${destinationName}`"
-      icon="route"
-    >
-      <template #meta>
-        <div class="mb-2 flex flex-wrap items-center gap-2">
-          <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
-            Journey options
-          </span>
-        </div>
-      </template>
-
-      <template #actions>
-        <IconButton
-          icon="refresh"
-          label="Refresh journey results"
-          :disabled="loadingResults"
-          :spinning="loadingResults"
-          @click="getJourneyPlan()"
-        />
-      </template>
-    </PageHeader>
-
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <div>
-          <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Available journeys</h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ journeyPlans.length }} result{{ journeyPlans.length === 1 ? '' : 's' }}</p>
-        </div>
-        <router-link
-          :to="{ name: 'journeyplanner/home' }"
-          class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-        >
-          Edit
-          <span class="material-symbols-outlined text-[17px]">edit</span>
-        </router-link>
-      </div>
-
-      <LoadingState
-        v-if="loadingResults"
-        title="Loading journeys"
-        subtitle="Finding available journeys."
-        compact
-        :rows="3"
-        :show-tabs="false"
-      />
-
-      <div v-else-if="journeyPlans.length === 0" class="px-4 py-6">
-        <div class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
-          No journeys were found.
-        </div>
-      </div>
-
-      <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
-        <template
-          v-for="(journeyPlan, index) in journeyPlans"
-          v-bind:key="journeyPlanKey(journeyPlan, index)"
-        >
-          <div class="px-4 pt-4 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500" v-if="departureDayChange(index)">
-            {{ pretty.day(journeyPlan.StartTime) }}
+  <div class="pb-16 pt-2 sm:pb-20">
+    <main class="mx-auto max-w-6xl space-y-4">
+      <header class="overflow-hidden rounded-3xl bg-gradient-to-br from-brand-blue to-blue-700 p-4 text-white shadow-sm sm:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <router-link :to="editRoute" class="mb-3 inline-flex min-h-10 items-center gap-1 rounded-xl bg-white/10 px-2.5 text-xs font-extrabold transition hover:bg-white/20">
+              <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+              Edit journey
+            </router-link>
+            <div class="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight sm:text-2xl">
+              <span class="truncate">{{ originName }}</span>
+              <span class="material-symbols-outlined shrink-0 text-blue-200">arrow_forward</span>
+              <span class="truncate">{{ destinationName }}</span>
+            </div>
+            <p class="mt-1 text-sm font-semibold text-blue-100">{{ searchDescription }}</p>
           </div>
-
           <button
             type="button"
-            class="block w-full px-4 py-4 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/70 sm:px-5"
-            @click="openJourneyPlanModal(journeyPlan)"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15 transition hover:bg-white/25 disabled:opacity-60"
+            :disabled="loadingResults"
+            aria-label="Refresh journey results"
+            @click="getJourneyPlan"
           >
-            <div class="grid grid-cols-[1fr_auto] gap-3">
-              <div class="min-w-0">
-                <div class="flex items-center gap-3">
-                  <div class="text-center">
-                    <div class="text-xl font-extrabold leading-tight text-slate-950 dark:text-slate-100">
-                      {{ formatTime(journeyPlan.StartTime) }}
-                    </div>
-                    <div class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">Depart</div>
-                  </div>
+            <span class="material-symbols-outlined text-[22px]" :class="{ 'animate-spin': loadingResults }">refresh</span>
+          </button>
+        </div>
+      </header>
 
-                  <div class="flex min-w-0 flex-1 items-center gap-2">
-                    <span class="h-px min-w-4 flex-1 bg-slate-200 dark:bg-slate-700"></span>
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
-                      <span class="material-symbols-outlined text-[19px]">{{ transportIcon(transportTypeForItem(primaryRouteItem(journeyPlan))) }}</span>
-                    </span>
-                    <span class="h-px min-w-4 flex-1 bg-slate-200 dark:bg-slate-700"></span>
-                  </div>
+      <div class="grid items-start gap-4 lg:grid-cols-[17rem_minmax(0,1fr)]">
+        <aside class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-4">
+          <h2 class="text-sm font-black text-slate-950 dark:text-slate-100">Your search</h2>
+          <dl class="mt-3 space-y-3 text-sm">
+            <div class="flex gap-2">
+              <span class="material-symbols-outlined mt-0.5 text-[18px] text-blue-600 dark:text-blue-300">schedule</span>
+              <div><dt class="sr-only">When</dt><dd class="font-bold text-slate-700 dark:text-slate-200">{{ searchDescription }}</dd></div>
+            </div>
+            <div class="flex gap-2">
+              <span class="material-symbols-outlined mt-0.5 text-[18px] text-slate-400">sync_alt</span>
+              <div><dt class="sr-only">Maximum changes</dt><dd class="font-semibold text-slate-600 dark:text-slate-300">{{ preferenceSummary }}</dd></div>
+            </div>
+          </dl>
+          <router-link :to="editRoute" class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+            <span class="material-symbols-outlined text-[18px]">edit</span>
+            Change search
+          </router-link>
+        </aside>
 
-                  <div class="text-center">
-                    <div class="text-xl font-extrabold leading-tight text-slate-950 dark:text-slate-100">
-                      {{ formatTime(journeyPlan.ArrivalTime) }}
-                    </div>
-                    <div class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">Arrive</div>
-                  </div>
-                </div>
+        <section class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900" aria-labelledby="journey-results-heading">
+          <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h1 id="journey-results-heading" class="text-base font-black text-slate-950 dark:text-slate-100">Journey options</h1>
+                <p class="mt-0.5 text-sm font-medium text-slate-500 dark:text-slate-400">{{ resultsStatus }}</p>
+              </div>
+              <button v-if="loadingResults" type="button" class="min-h-11 rounded-xl px-3 text-sm font-extrabold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" @click="cancelSearch">Cancel</button>
+            </div>
 
-                <div class="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-                  <span class="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
-                    {{ primaryTransportLabel(journeyPlan) }}
-                  </span>
-                  <span class="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
-                    {{ transfersLabel(journeyPlan) }}
-                  </span>
-                  <span v-if="formatDuration(journeyPlan.Duration)" class="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">
-                    {{ formatDuration(journeyPlan.Duration) }}
-                  </span>
-                  <span
-                    v-if="index === earliestArrivalJourneyID"
-                    class="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
-                  >
-                    Earliest
-                  </span>
-                </div>
+            <div v-if="!loadingResults && journeyPlans.length > 1" class="mt-3 flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Sort journeys">
+              <button
+                v-for="option in sortOptions"
+                :key="option.value"
+                type="button"
+                role="tab"
+                :aria-selected="sortMode === option.value"
+                class="min-h-10 shrink-0 rounded-lg px-3 text-xs font-extrabold transition sm:flex-1"
+                :class="sortMode === option.value ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-950 dark:text-blue-200' : 'text-slate-500 dark:text-slate-400'"
+                @click="sortMode = option.value"
+              >
+                {{ option.label }}
+              </button>
+            </div>
+          </div>
 
-                <p class="mt-2 truncate text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  {{ journeyPlanSummary(journeyPlan) }}
-                </p>
+          <div v-if="loadingResults" class="p-4 sm:p-5" role="status">
+            <LoadingState title="Finding journeys" :subtitle="loadingSubtitle" compact :rows="4" :show-tabs="false" />
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800 dark:bg-blue-500/10 dark:text-blue-100">
+              <span>{{ slowSearch ? 'This search is taking longer than usual. You can keep waiting or edit it.' : 'Checking live and scheduled services…' }}</span>
+              <router-link :to="editRoute" class="min-h-10 rounded-lg px-2.5 py-2 font-extrabold hover:bg-blue-100 dark:hover:bg-blue-500/10">Edit search</router-link>
+            </div>
+          </div>
+
+          <div v-else-if="error !== undefined" class="p-4 sm:p-5">
+            <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+              <p class="font-black">Journeys unavailable</p>
+              <p class="mt-1">{{ errorMessage }}</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
+                <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-extrabold">Edit search</router-link>
+              </div>
+            </div>
+          </div>
+
+          <div v-else-if="journeyPlans.length === 0" class="p-4 sm:p-5">
+            <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+              <p class="font-black">No journeys found</p>
+              <p class="mt-1">Try a later time, allow more changes, or increase the walking distance.</p>
+              <router-link :to="editRoute" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100">Change search</router-link>
+            </div>
+          </div>
+
+          <div v-else class="space-y-3 bg-slate-50/70 p-3 dark:bg-slate-950/30 sm:p-4">
+            <template v-for="(journeyPlan, index) in sortedJourneyPlans" :key="journeyPlanKey(journeyPlan, index)">
+              <div v-if="departureDayChange(index)" class="px-1 pt-1 text-xs font-extrabold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                {{ formatDay(journeyPlan.StartTime) }}
               </div>
 
-              <span class="material-symbols-outlined self-center text-lg text-slate-400">chevron_right</span>
-            </div>
-          </button>
-        </template>
+              <button
+                type="button"
+                class="group block w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500/40 sm:p-5"
+                @click="selectJourneyPlan(journeyPlan)"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex min-w-0 flex-wrap items-center gap-2">
+                    <span v-if="recommendationLabel(journeyPlan)" class="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">{{ recommendationLabel(journeyPlan) }}</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      <span class="h-1.5 w-1.5 rounded-full" :class="statusLabel(journeyPlan) === 'Live' ? 'bg-emerald-500' : 'bg-slate-400'"></span>
+                      {{ statusLabel(journeyPlan) }}
+                    </span>
+                    <span v-if="countdownLabel(journeyPlan.StartTime)" class="text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ countdownLabel(journeyPlan.StartTime) }}</span>
+                  </div>
+                  <span class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600">chevron_right</span>
+                </div>
+
+                <div class="mt-3 grid grid-cols-[auto_minmax(4rem,1fr)_auto] items-center gap-3">
+                  <div>
+                    <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.StartTime, originTimezone) }}</p>
+                    <p class="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">{{ shortPlaceName(originName) }}</p>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
+                      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
+                        <span class="material-symbols-outlined text-[20px]">{{ transportIcon(primaryMode(journeyPlan)) }}</span>
+                      </span>
+                      <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
+                    </div>
+                    <p class="mt-1 text-center text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ formatDuration(journeyPlan.Duration) || calculatedDuration(journeyPlan) }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.ArrivalTime, destinationTimezone) }}</p>
+                    <p class="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">{{ shortPlaceName(destinationName) }}</p>
+                  </div>
+                </div>
+
+                <div class="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined mt-0.5 text-[20px] text-slate-400">{{ transportIcon(primaryMode(journeyPlan)) }}</span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-black text-slate-900 dark:text-slate-100">{{ serviceSummary(journeyPlan) }}</p>
+                      <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ itinerarySummary(journeyPlan) }}</p>
+                    </div>
+                    <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ transfersLabel(journeyPlan) }}</span>
+                  </div>
+                </div>
+              </button>
+            </template>
+          </div>
+        </section>
       </div>
-    </section>
+    </main>
 
     <Modal
       v-model:open="journeyPlanModalOpen"
-      title="Journey steps"
+      title="Journey itinerary"
       :subtitle="selectedJourneyPlanSubtitle"
       icon="route"
       size="lg"
-      close-label="Close journey steps"
+      close-label="Close journey itinerary"
       body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
       @close="selectedJourneyPlan = undefined"
     >
       <div v-if="selectedJourneyPlan" class="space-y-4">
         <div class="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70">
-          <div>
-            <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Depart</p>
-            <p class="mt-1 text-lg font-extrabold text-slate-950 dark:text-slate-100">{{ formatTime(selectedJourneyPlan.StartTime) }}</p>
-          </div>
-          <div>
-            <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Arrive</p>
-            <p class="mt-1 text-lg font-extrabold text-slate-950 dark:text-slate-100">{{ formatTime(selectedJourneyPlan.ArrivalTime) }}</p>
-          </div>
-          <div>
-            <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Changes</p>
-            <p class="mt-1 text-lg font-extrabold text-slate-950 dark:text-slate-100">{{ transferCount(selectedJourneyPlan) }}</p>
-          </div>
+          <div><p class="text-[11px] font-extrabold uppercase text-slate-500">Depart</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.StartTime, originTimezone) }}</p></div>
+          <div><p class="text-[11px] font-extrabold uppercase text-slate-500">Arrive</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.ArrivalTime, destinationTimezone) }}</p></div>
+          <div><p class="text-[11px] font-extrabold uppercase text-slate-500">Changes</p><p class="mt-1 text-lg font-black">{{ transferCount(selectedJourneyPlan) }}</p></div>
         </div>
 
-        <ol v-if="selectedJourneySteps.length > 0" class="space-y-3">
-          <li
-            v-for="(step, index) in selectedJourneySteps"
-            v-bind:key="step.key"
-            class="grid grid-cols-[2.5rem_1fr] gap-3"
-          >
+        <ol class="space-y-3">
+          <li v-for="(step, index) in selectedJourneySteps" :key="step.key" class="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3">
             <div class="relative flex justify-center">
-              <span
-                v-if="index < selectedJourneySteps.length - 1"
-                class="absolute top-10 h-[calc(100%+0.75rem)] w-px bg-slate-200 dark:bg-slate-700"
-              ></span>
-              <span
-                class="relative z-10 flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm"
-                :class="step.journeyId
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200'
-                  : step.isTransfer
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200'
-                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'"
-              >
-                <span class="material-symbols-outlined text-[22px]">{{ step.icon }}</span>
+              <span v-if="index < selectedJourneySteps.length - 1" class="absolute top-10 h-[calc(100%+0.75rem)] w-px bg-slate-200 dark:bg-slate-700"></span>
+              <span class="relative z-10 flex h-10 w-10 items-center justify-center rounded-2xl" :class="step.isTransfer ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200' : 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200'">
+                <span class="material-symbols-outlined text-[21px]">{{ step.icon }}</span>
               </span>
             </div>
-
-            <article
-              class="rounded-2xl border p-3 shadow-sm"
-              :class="step.isTransfer
-                ? 'border-emerald-100 bg-emerald-50/70 dark:border-emerald-500/20 dark:bg-emerald-500/10'
-                : 'border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950'"
-            >
-              <div v-if="step.isTransfer" class="flex items-center justify-between gap-3">
-                <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
-                <div class="flex shrink-0 flex-wrap justify-end gap-2">
-                  <span
-                    v-if="step.distanceLabel"
-                    class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-extrabold text-emerald-800 shadow-sm dark:bg-slate-950/80 dark:text-emerald-200"
-                  >
-                    <span class="material-symbols-outlined text-[15px]">straighten</span>
-                    {{ step.distanceLabel }}
-                  </span>
-                  <span
-                    v-if="step.durationLabel"
-                    class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-extrabold text-emerald-800 shadow-sm dark:bg-slate-950/80 dark:text-emerald-200"
-                  >
-                    <span class="material-symbols-outlined text-[15px]">schedule</span>
-                    {{ step.durationLabel }}
-                  </span>
-                </div>
-              </div>
-
-              <div v-else class="flex items-start justify-between gap-3">
+            <article class="min-w-0 rounded-2xl border p-3" :class="step.isTransfer ? 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-500/10' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'">
+              <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
-                  <p v-if="step.subtitle" class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">{{ step.subtitle }}</p>
+                  <h3 class="text-sm font-black text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
+                  <p v-if="step.subtitle" class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ step.subtitle }}</p>
                 </div>
-                <div class="shrink-0 text-right">
-                  <p class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ step.startTime }}</p>
-                  <p v-if="step.arrivalTime !== '--'" class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ step.arrivalTime }}</p>
-                </div>
+                <div class="shrink-0 text-right"><p class="text-sm font-black">{{ step.startTime }}</p><p v-if="step.arrivalTime !== '--'" class="mt-0.5 text-xs font-bold text-slate-500">{{ step.arrivalTime }}</p></div>
               </div>
-
-              <div v-if="step.chips.length > 0" class="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-                <span
-                  v-for="chip in step.chips"
-                  v-bind:key="chip"
-                  class="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800"
-                >
-                  {{ chip }}
-                </span>
+              <div v-if="step.chips.length" class="mt-3 flex flex-wrap gap-2">
+                <span v-for="chip in step.chips" :key="chip" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ chip }}</span>
               </div>
-
-              <router-link
-                v-if="step.journeyId"
-                :to="{ name: 'journeys/view', params: { id: step.journeyId } }"
-                class="mt-3 inline-flex h-9 items-center gap-1.5 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
-                @click="closeJourneyPlanModal"
-              >
-                Open journey
-                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              <router-link v-if="step.journeyId" :to="step.journeyRoute" class="mt-3 inline-flex min-h-11 items-center gap-1 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white" @click="closeJourneyPlanModal">
+                View this service <span class="material-symbols-outlined text-[18px]">chevron_right</span>
               </router-link>
             </article>
           </li>
         </ol>
-
-        <div v-else class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
-          No step details are available for this journey option.
-        </div>
       </div>
     </Modal>
   </div>
 </template>
 
 <script>
-import Alert from '@/components/Alert.vue'
-import IconButton from '@/components/IconButton.vue'
-import LoadingState from '@/components/LoadingState.vue'
-import Modal from '@/components/Modal.vue'
-import PageHeader from '@/components/PageHeader.vue'
+import { DateTime } from 'luxon'
 import axios from 'axios'
 import API from '@/API'
+import LoadingState from '@/components/LoadingState.vue'
+import Modal from '@/components/Modal.vue'
 import Pretty from '@/pretty'
 
 export default {
   name: 'JourneyPlannerSearch',
-  components: {
-    Alert,
-    IconButton,
-    LoadingState,
-    Modal,
-    PageHeader
-  },
+  components: { LoadingState, Modal },
   data () {
     return {
-      pretty: Pretty,
       results: {},
       loadingResults: true,
-      earliestArrivalJourneyID: 0,
       error: undefined,
       selectedJourneyPlan: undefined,
       journeyPlanModalOpen: false,
-      stopNameCache: {}
+      stopNameCache: {},
+      journeyDetailCache: {},
+      sortMode: 'recommended',
+      currentTime: Date.now(),
+      searchStartedAt: 0,
+      requestController: undefined,
+      requestToken: 0,
+      clockTimer: undefined,
+      sortOptions: [
+        { value: 'recommended', label: 'Recommended' },
+        { value: 'arrival', label: 'Earliest arrival' },
+        { value: 'changes', label: 'Fewest changes' }
+      ]
     }
   },
   computed: {
     journeyPlans() {
       const resultSet = [
-        this.results?.JourneyPlans,
-        this.results?.journeyPlans,
-        this.results?.Plans,
-        this.results?.plans,
-        this.results?.data?.JourneyPlans,
-        this.results?.data?.journeyPlans,
-        this.results?.Data?.JourneyPlans,
-        this.results?.Data?.journeyPlans,
-        this.results
+        this.results?.JourneyPlans, this.results?.journeyPlans, this.results?.Plans, this.results?.plans,
+        this.results?.data?.JourneyPlans, this.results?.data?.journeyPlans,
+        this.results?.Data?.JourneyPlans, this.results?.Data?.journeyPlans, this.results
       ].find(result => Array.isArray(result))
-
       return resultSet || []
+    },
+    sortedJourneyPlans() {
+      const plans = [...this.journeyPlans]
+      if (this.sortMode === 'arrival') return plans.sort((a, b) => this.timestamp(a.ArrivalTime) - this.timestamp(b.ArrivalTime))
+      if (this.sortMode === 'changes') return plans.sort((a, b) => this.transferCount(a) - this.transferCount(b) || this.timestamp(a.ArrivalTime) - this.timestamp(b.ArrivalTime))
+      return plans.sort((a, b) => this.recommendationScore(a) - this.recommendationScore(b))
     },
     originName() {
       return this.stopName(this.results?.OriginStop || this.results?.originStop) ||
+        this.queryValue(this.$route.query.originName) ||
         (this.queryValue(this.$route.query.originType) === 'location' ? 'Current location' : 'Origin')
     },
     destinationName() {
-      return this.stopName(this.results?.DestinationStop || this.results?.destinationStop) || 'Destination'
+      return this.stopName(this.results?.DestinationStop || this.results?.destinationStop) || this.queryValue(this.$route.query.destinationName) || 'Destination'
+    },
+    originTimezone() {
+      return (this.results?.OriginStop || this.results?.originStop)?.Timezone || this.primaryJourney(this.journeyPlans[0])?.DepartureTimezone || this.queryValue(this.$route.query.originTimezone) || 'UTC'
+    },
+    destinationTimezone() {
+      return (this.results?.DestinationStop || this.results?.destinationStop)?.Timezone || this.queryValue(this.$route.query.destinationTimezone) || this.originTimezone
+    },
+    searchDescription() {
+      const datetime = this.queryValue(this.$route.query.datetime)
+      if (!datetime) return 'Leaving now'
+      const date = DateTime.fromISO(datetime).setZone(this.originTimezone)
+      return date.isValid ? `Depart ${date.toLocaleString({ weekday: 'short', day: 'numeric', month: 'short' })} at ${date.toFormat('HH:mm')}` : 'Selected departure time'
+    },
+    preferenceSummary() {
+      const changes = Number(this.queryValue(this.$route.query.maxChanges) || 3)
+      const walking = Number(this.queryValue(this.$route.query.maxWalking) || 1000)
+      return `${changes === 0 ? 'Direct only' : `Up to ${changes} change${changes === 1 ? '' : 's'}`} · ${walking >= 1000 ? `${walking / 1000} km` : `${walking} m`} walk`
+    },
+    editRoute() {
+      return { name: 'journeyplanner/home', query: { ...this.$route.query } }
     },
     selectedJourneySteps() {
       return this.routeItems(this.selectedJourneyPlan).map((item, index) => this.normaliseStep(item, index))
     },
     selectedJourneyPlanSubtitle() {
-      if (!this.selectedJourneyPlan) {
-        return ''
-      }
-
-      return `${this.formatTime(this.selectedJourneyPlan.StartTime)} to ${this.formatTime(this.selectedJourneyPlan.ArrivalTime)} · ${this.transfersLabel(this.selectedJourneyPlan)}`
+      if (!this.selectedJourneyPlan) return ''
+      return `${this.formatTime(this.selectedJourneyPlan.StartTime, this.originTimezone)}–${this.formatTime(this.selectedJourneyPlan.ArrivalTime, this.destinationTimezone)} · ${this.transfersLabel(this.selectedJourneyPlan)}`
     },
     errorMessage() {
-      if (typeof this.error === 'string') {
-        return this.error
-      }
-
+      if (typeof this.error === 'string') return this.error
+      if (this.error?.response?.status === 404) return 'The planner could not find one of these stops.'
+      if (this.error?.code === 'ECONNABORTED') return 'The search timed out. Your route is still here, so you can try it again.'
       return this.error?.message || 'Journey results could not be loaded.'
+    },
+    resultsStatus() {
+      if (this.loadingResults) return 'Searching live and scheduled services…'
+      if (this.error !== undefined) return 'Results could not be loaded'
+      return `${this.journeyPlans.length} option${this.journeyPlans.length === 1 ? '' : 's'} found`
+    },
+    slowSearch() {
+      return this.loadingResults && this.currentTime - this.searchStartedAt > 4000
+    },
+    loadingSubtitle() {
+      return this.slowSearch ? 'Still checking connections and live services.' : `${this.originName} to ${this.destinationName}`
+    },
+    fastestDuration() {
+      return Math.min(...this.journeyPlans.map(plan => this.durationMilliseconds(plan)).filter(Number.isFinite))
+    },
+    earliestArrival() {
+      return Math.min(...this.journeyPlans.map(plan => this.timestamp(plan.ArrivalTime)).filter(Number.isFinite))
+    },
+    fewestChanges() {
+      return Math.min(...this.journeyPlans.map(plan => this.transferCount(plan)))
     }
   },
+  watch: {
+    '$route.fullPath'() {
+      this.getJourneyPlan()
+    }
+  },
+  mounted() {
+    this.clockTimer = window.setInterval(() => { this.currentTime = Date.now() }, 30000)
+    this.getJourneyPlan()
+  },
+  beforeUnmount() {
+    this.requestController?.abort()
+    window.clearInterval(this.clockTimer)
+  },
   methods: {
-    queryValue(value) {
-      return Array.isArray(value) ? value[0] : value || ''
+    queryValue(value) { return Array.isArray(value) ? value[0] : value || '' },
+    timestamp(value) { const result = Date.parse(value); return Number.isFinite(result) ? result : Number.POSITIVE_INFINITY },
+    journeyPlanKey(plan, index) { return plan.PrimaryIdentifier || plan.Identifier || `${plan.StartTime || 'start'}-${plan.ArrivalTime || 'arrival'}-${index}` },
+    routeItems(plan) {
+      return [plan?.RouteItems, plan?.routeItems, plan?.Steps, plan?.steps, plan?.Legs, plan?.legs].find(Array.isArray) || []
     },
-    journeyPlanKey(journeyPlan, index) {
-      return journeyPlan.PrimaryIdentifier ||
-        journeyPlan.Identifier ||
-        `${journeyPlan.StartTime || 'start'}-${journeyPlan.ArrivalTime || 'arrival'}-${index}`
+    rawItemJourney(item) { return item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney || null },
+    itemJourney(item) {
+      const journey = this.rawItemJourney(item)
+      const identifier = this.journeyIdentifier(journey)
+      const detail = identifier ? this.journeyDetailCache[identifier] : undefined
+      if (!detail) return journey
+      return { ...journey, ...detail, RealtimeJourney: journey?.RealtimeJourney || detail?.RealtimeJourney }
     },
-    routeItems(journeyPlan) {
-      const resultSet = [
-        journeyPlan?.RouteItems,
-        journeyPlan?.routeItems,
-        journeyPlan?.Steps,
-        journeyPlan?.steps,
-        journeyPlan?.Legs,
-        journeyPlan?.legs
-      ].find(result => Array.isArray(result))
-
-      return resultSet || []
-    },
-    journeyLegs(journeyPlan) {
-      return this.routeItems(journeyPlan).filter(item => this.itemJourney(item))
-    },
-    primaryRouteItem(journeyPlan) {
-      return this.journeyLegs(journeyPlan)[0] || this.routeItems(journeyPlan)[0]
-    },
-    primaryJourney(journeyPlan) {
-      return this.itemJourney(this.primaryRouteItem(journeyPlan))
-    },
-    primaryTransportLabel(journeyPlan) {
-      return this.transportTypeForItem(this.primaryRouteItem(journeyPlan)) ||
-        this.primaryRouteItem(journeyPlan)?.JourneyType ||
-        this.primaryRouteItem(journeyPlan)?.Type ||
-        'Journey'
-    },
-    journeyPlanSummary(journeyPlan) {
-      const routeItems = this.routeItems(journeyPlan)
-
-      if (routeItems.length === 0) {
-        return this.primaryJourney(journeyPlan)?.DestinationDisplay || this.destinationName
-      }
-
-      return routeItems
-        .map(item => this.stepShortLabel(item))
-        .filter(Boolean)
-        .join(' · ')
-    },
-    stepShortLabel(item) {
-      const journey = this.itemJourney(item)
-      const service = journey?.Service || item?.Service || {}
-
-      if (this.isTransferItem(item)) {
-        return this.transferTitle(item)
-      }
-
-      return service.ServiceName ||
-        journey?.DestinationDisplay ||
-        item?.Summary ||
-        item?.Description ||
-        item?.JourneyType ||
-        item?.Type ||
-        this.transportTypeForItem(item)
-    },
-    transferCount(journeyPlan) {
-      const journeyLegCount = this.journeyLegs(journeyPlan).length || this.routeItems(journeyPlan).length
-
-      return Math.max(journeyLegCount - 1, 0)
-    },
-    transfersLabel(journeyPlan) {
-      const transfers = this.transferCount(journeyPlan)
-
-      if (transfers === 0) {
-        return 'Direct'
-      }
-
-      return `${transfers} transfer${transfers === 1 ? '' : 's'}`
-    },
-    transportIcon(type) {
-      return {
-        Rail: 'train',
-        Train: 'train',
-        Bus: 'directions_bus',
-        Coach: 'airport_shuttle',
-        Tram: 'tram',
-        Metro: 'subway',
-        Ferry: 'directions_boat',
-        Air: 'flight',
-        Walk: 'directions_walk',
-        Walking: 'directions_walk',
-        Transfer: 'sync_alt',
-        Interchange: 'sync_alt',
-        Connection: 'sync_alt',
-        Wait: 'schedule',
-        Waiting: 'schedule'
-      }[type] || 'route'
-    },
-    plannerPathSegment(value) {
-      return encodeURIComponent(value).replace(/%2C/g, ',')
-    },
+    journeyLegs(plan) { return this.routeItems(plan).filter(item => this.itemJourney(item)) },
+    primaryRouteItem(plan) { return this.journeyLegs(plan)[0] || this.routeItems(plan)[0] },
+    primaryJourney(plan) { return this.itemJourney(this.primaryRouteItem(plan)) },
+    isTransferItem(item) { return String(item?.Type || item?.type || '').toLowerCase() === 'transfer' },
     transportTypeForItem(item) {
       const journey = this.itemJourney(item)
-
-      if (this.isTransferItem(item)) {
-        return item?.TransferType || item?.transferType || 'Transfer'
-      }
-
-      return journey?.Service?.TransportType ||
-        item?.Service?.TransportType ||
-        item?.TransportType ||
-        item?.transportType ||
-        item?.JourneyType ||
-        item?.Type ||
-        ''
+      if (this.isTransferItem(item)) return item?.TransferType || item?.transferType || 'Transfer'
+      return journey?.Service?.TransportType || item?.Service?.TransportType || item?.TransportType || item?.transportType || ''
     },
-    isTransferItem(item) {
-      return String(item?.Type || item?.type || '').toLowerCase() === 'transfer'
+    primaryMode(plan) {
+      const item = this.primaryRouteItem(plan)
+      const explicitType = this.transportTypeForItem(item)
+      if (explicitType) return explicitType
+      const identifier = this.journeyIdentifier(this.itemJourney(item)).toLowerCase()
+      if (identifier.includes('rail')) return 'Rail'
+      if (identifier.includes('bus')) return 'Bus'
+      if (identifier.includes('tram')) return 'Tram'
+      if (identifier.includes('metro') || identifier.includes('tube')) return 'Metro'
+      return 'Journey'
     },
-    itemJourney(item) {
-      return item?.Journey ||
-        item?.journey ||
-        item?.RealtimeJourney ||
-        item?.realtimeJourney ||
-        null
+    transportIcon(type) {
+      return { Rail: 'train', Train: 'train', Bus: 'directions_bus', Coach: 'airport_shuttle', Tram: 'tram', Metro: 'subway', Ferry: 'directions_boat', Air: 'flight', Walk: 'directions_walk', Walking: 'directions_walk', Transfer: 'sync_alt', Interchange: 'sync_alt', Connection: 'sync_alt', Wait: 'schedule', Waiting: 'schedule' }[type] || 'route'
     },
-    journeyIdentifier(journey) {
-      return journey?.PrimaryIdentifier ||
-        journey?.primaryIdentifier ||
-        journey?.Identifier ||
-        journey?.identifier ||
-        journey?.ID ||
-        journey?.id ||
-        ''
+    statusLabel(plan) {
+      const items = this.journeyLegs(plan)
+      return items.some(item => this.itemJourney(item)?.RealtimeJourney || /realtime/i.test(String(item?.JourneyType || item?.journeyType || ''))) ? 'Live' : 'Scheduled'
     },
-    itemOriginStop(item) {
-      return item?.OriginStop ||
-        item?.originStop ||
-        item?.FromStop ||
-        item?.fromStop ||
-        item?.StartStop ||
-        item?.startStop ||
-        null
-    },
-    itemOriginStopRef(item) {
-      return item?.OriginStopRef ||
-        item?.originStopRef ||
-        item?.FromStopRef ||
-        item?.fromStopRef ||
-        item?.StartStopRef ||
-        item?.startStopRef ||
-        ''
-    },
-    itemDestinationStop(item) {
-      return item?.DestinationStop ||
-        item?.destinationStop ||
-        item?.ToStop ||
-        item?.toStop ||
-        item?.EndStop ||
-        item?.endStop ||
-        null
-    },
-    itemDestinationStopRef(item) {
-      return item?.DestinationStopRef ||
-        item?.destinationStopRef ||
-        item?.ToStopRef ||
-        item?.toStopRef ||
-        item?.EndStopRef ||
-        item?.endStopRef ||
-        ''
-    },
-    normaliseStep(item, index) {
+    transferCount(plan) { return Math.max(this.journeyLegs(plan).length - 1, 0) },
+    transfersLabel(plan) { const count = this.transferCount(plan); return count === 0 ? 'Direct' : `${count} change${count === 1 ? '' : 's'}` },
+    serviceName(item) {
       const journey = this.itemJourney(item)
       const service = journey?.Service || item?.Service || {}
-      const transportType = this.transportTypeForItem(item)
-      const originName = this.routeItemStopName(item, 'origin')
-      const destinationName = this.routeItemStopName(item, 'destination')
-      const startTime = item?.StartTime || item?.DepartureTime || item?.startTime || item?.departureTime || journey?.StartTime
-      const arrivalTime = item?.ArrivalTime || item?.EndTime || item?.arrivalTime || item?.endTime || journey?.ArrivalTime
-      const journeyId = this.journeyIdentifier(journey)
-      const isTransfer = this.isTransferItem(item)
-      const durationLabel = this.routeItemDuration(item)
-      const distanceLabel = this.routeItemDistance(item)
-      const title = isTransfer
-        ? this.transferTitle(item)
-        : service.ServiceName ||
-          journey?.DestinationDisplay ||
-          item?.Title ||
-          item?.Summary ||
-          item?.JourneyType ||
-          item?.Type ||
-          'Journey step'
-      const chips = isTransfer ? [] : [
-        transportType,
-        durationLabel,
-        distanceLabel,
-        journey?.Operator?.PrimaryName || item?.Operator?.PrimaryName || service.OperatorName || ''
-      ].filter(Boolean)
-
-      return {
-        key: item?.PrimaryIdentifier || item?.Identifier || journeyId || `${index}-${startTime || ''}-${arrivalTime || ''}`,
-        title,
-        subtitle: isTransfer ? '' : [originName, destinationName].filter(Boolean).join(' to '),
-        isTransfer,
-        distanceLabel,
-        durationLabel,
-        chips,
-        startTime: this.formatTime(startTime),
-        arrivalTime: this.formatTime(arrivalTime),
-        journeyId,
-        icon: this.transportIcon(transportType)
-      }
+      const operator = this.operatorName(item)
+      const mode = this.transportTypeForItem(item)
+      return service.ServiceName || service.PrimaryName || service.Name || (operator && mode ? `${operator} ${mode.toLowerCase()}` : '') || mode || 'Service'
     },
+    operatorName(item) {
+      const journey = this.itemJourney(item)
+      return journey?.Operator?.PrimaryName || item?.Operator?.PrimaryName || journey?.Service?.OperatorName || ''
+    },
+    serviceSummary(plan) {
+      const labels = this.journeyLegs(plan).map(item => this.serviceName(item)).filter(Boolean)
+      const summary = [...new Set(labels)].join(' + ')
+      return summary === 'Service' ? `${this.primaryMode(plan)} service` : summary || `${this.primaryMode(plan)} service`
+    },
+    itinerarySummary(plan) {
+      const changes = this.routeItems(plan).filter(item => this.isTransferItem(item)).map(item => this.routeItemStopName(item, 'origin') || this.routeItemStopName(item, 'destination')).filter(Boolean)
+      const operator = this.operatorName(this.primaryRouteItem(plan))
+      if (changes.length) return `Change at ${[...new Set(changes)].join(', ')}${operator ? ` · ${operator}` : ''}`
+      return operator ? `${this.primaryMode(plan)} · ${operator}` : `${this.primaryMode(plan)} service`
+    },
+    durationMilliseconds(plan) {
+      if (typeof plan?.Duration === 'number') return plan.Duration / 1000000
+      const duration = this.timestamp(plan?.ArrivalTime) - this.timestamp(plan?.StartTime)
+      return Number.isFinite(duration) ? duration : Number.POSITIVE_INFINITY
+    },
+    recommendationScore(plan) {
+      return this.timestamp(plan.ArrivalTime) + this.transferCount(plan) * 12 * 60 * 1000
+    },
+    recommendationLabel(plan) {
+      if (this.journeyPlans.length < 2) return ''
+      if (this.durationMilliseconds(plan) === this.fastestDuration) return 'Fastest'
+      if (this.transferCount(plan) === this.fewestChanges && this.fewestChanges < Math.max(...this.journeyPlans.map(item => this.transferCount(item)))) return 'Fewest changes'
+      if (this.timestamp(plan.ArrivalTime) === this.earliestArrival) return 'Earliest arrival'
+      return ''
+    },
+    countdownLabel(value) {
+      const minutes = Math.round((this.timestamp(value) - this.currentTime) / 60000)
+      if (!Number.isFinite(minutes) || minutes < -1 || minutes > 180) return ''
+      if (minutes <= 0) return 'Leaving now'
+      return `Leaves in ${minutes} min`
+    },
+    formatTime(value, timezone) { return value ? Pretty.time(value, timezone || this.originTimezone) : '--' },
+    formatDay(value) {
+      const date = DateTime.fromISO(value).setZone(this.originTimezone)
+      const today = DateTime.now().setZone(this.originTimezone).startOf('day')
+      if (date.hasSame(today, 'day')) return 'Today'
+      if (date.hasSame(today.plus({ days: 1 }), 'day')) return 'Tomorrow'
+      return date.toLocaleString({ weekday: 'long', day: 'numeric', month: 'short' })
+    },
+    formatDuration(value) {
+      if (value === undefined || value === null || value === '') return ''
+      if (typeof value === 'string') return value
+      return Pretty.duration(value)
+    },
+    calculatedDuration(plan) {
+      const minutes = Math.max(1, Math.round(this.durationMilliseconds(plan) / 60000))
+      return minutes >= 60 ? `${Math.floor(minutes / 60)} hr${minutes % 60 ? ` ${minutes % 60} min` : ''}` : `${minutes} min`
+    },
+    formatSeconds(value) {
+      if (!value) return ''
+      const minutes = Math.max(1, Math.ceil(value / 60))
+      return minutes >= 60 ? `${Math.floor(minutes / 60)} hr${minutes % 60 ? ` ${minutes % 60} min` : ''}` : `${minutes} min`
+    },
+    shortPlaceName(name) { return name.length > 22 ? `${name.slice(0, 20)}…` : name },
+    itemOriginStop(item) { return item?.OriginStop || item?.originStop || item?.FromStop || item?.fromStop || item?.StartStop || item?.startStop || null },
+    itemOriginStopRef(item) { return item?.OriginStopRef || item?.originStopRef || item?.FromStopRef || item?.fromStopRef || item?.StartStopRef || item?.startStopRef || '' },
+    itemDestinationStop(item) { return item?.DestinationStop || item?.destinationStop || item?.ToStop || item?.toStop || item?.EndStop || item?.endStop || null },
+    itemDestinationStopRef(item) { return item?.DestinationStopRef || item?.destinationStopRef || item?.ToStopRef || item?.toStopRef || item?.EndStopRef || item?.endStopRef || '' },
+    stopName(stop) { return stop?.PrimaryName || stop?.primaryName || stop?.Name || stop?.name || stop?.CommonName || stop?.commonName || stop?.DisplayName || stop?.displayName || '' },
+    stopIdentifier(stop) { return stop?.PrimaryIdentifier || stop?.primaryIdentifier || stop?.Identifier || stop?.identifier || stop?.ID || stop?.id || '' },
     routeItemStopName(item, direction) {
       const stop = direction === 'origin' ? this.itemOriginStop(item) : this.itemDestinationStop(item)
       const ref = direction === 'origin' ? this.itemOriginStopRef(item) : this.itemDestinationStopRef(item)
-
       return this.stopName(stop) || this.stopNameCache[ref] || ''
     },
     transferTitle(item) {
-      const transferType = item?.TransferType || item?.transferType
-
-      if (['Interchange', 'Connection'].includes(transferType)) {
-        return 'Change services'
-      }
-
-      if (this.hasWalkingTransferData(item) || ['Walking', 'Walk'].includes(transferType)) {
-        return 'Walk'
-      }
-
+      const type = item?.TransferType || item?.transferType
+      if (['Interchange', 'Connection'].includes(type)) return 'Change services'
+      if (this.hasWalkingTransferData(item) || ['Walking', 'Walk'].includes(type)) return 'Walk to the next service'
       return 'Transfer'
     },
-    hasWalkingTransferData(item) {
-      return Boolean(
-        item?.DistanceMetres ||
-        item?.distanceMetres ||
-        item?.WalkDurationSeconds ||
-        item?.walkDurationSeconds
-      )
-    },
+    hasWalkingTransferData(item) { return Boolean(item?.DistanceMetres || item?.distanceMetres || item?.WalkDurationSeconds || item?.walkDurationSeconds) },
     routeItemDuration(item) {
-      const duration = item?.Duration || item?.duration
-
-      if (duration) {
-        return this.formatDuration(duration)
-      }
-
-      const seconds = item?.TotalDurationSeconds ||
-        item?.totalDurationSeconds ||
-        item?.WalkDurationSeconds ||
-        item?.walkDurationSeconds ||
-        item?.MinChangeDurationSeconds ||
-        item?.minChangeDurationSeconds
-
-      return this.formatSeconds(seconds)
+      if (item?.Duration || item?.duration) return this.formatDuration(item.Duration || item.duration)
+      return this.formatSeconds(item?.TotalDurationSeconds || item?.totalDurationSeconds || item?.WalkDurationSeconds || item?.walkDurationSeconds || item?.MinChangeDurationSeconds || item?.minChangeDurationSeconds)
     },
     routeItemDistance(item) {
       const metres = item?.DistanceMetres || item?.distanceMetres
-
-      if (!metres) {
-        return ''
-      }
-
-      if (metres >= 1000) {
-        return `${(metres / 1000).toFixed(1)} km`
-      }
-
-      return `${metres} m`
+      if (!metres) return ''
+      return metres >= 1000 ? `${(metres / 1000).toFixed(1)} km` : `${metres} m`
     },
-    stopName(stop) {
-      return stop?.PrimaryName ||
-        stop?.primaryName ||
-        stop?.Name ||
-        stop?.name ||
-        stop?.CommonName ||
-        stop?.commonName ||
-        stop?.DisplayName ||
-        stop?.displayName ||
-        ''
+    journeyIdentifier(journey) { return journey?.PrimaryIdentifier || journey?.primaryIdentifier || journey?.Identifier || journey?.identifier || journey?.ID || journey?.id || '' },
+    journeyRunDate(plan, journey) {
+      const timezone = journey?.DepartureTimezone || this.originTimezone
+      const date = DateTime.fromISO(plan?.StartTime || journey?.DepartureTime).setZone(timezone)
+      return date.isValid ? date.toISODate() : undefined
     },
-    stopIdentifier(stop) {
-      return stop?.PrimaryIdentifier ||
-        stop?.primaryIdentifier ||
-        stop?.Identifier ||
-        stop?.identifier ||
-        stop?.ID ||
-        stop?.Id ||
-        stop?.id ||
-        ''
+    journeyRoute(plan, journey) {
+      return { name: 'journeys/view', params: { id: this.journeyIdentifier(journey) }, query: { date: this.journeyRunDate(plan, journey) } }
     },
-    seedStopName(stop) {
-      const identifier = this.stopIdentifier(stop)
-      const name = this.stopName(stop)
-
-      if (!identifier || !name) {
-        return
-      }
-
-      this.stopNameCache = {
-        ...this.stopNameCache,
-        [identifier]: name
+    normaliseStep(item, index) {
+      const journey = this.itemJourney(item)
+      const isTransfer = this.isTransferItem(item)
+      const start = item?.StartTime || item?.DepartureTime || item?.startTime || item?.departureTime || journey?.DepartureTime
+      const arrival = item?.ArrivalTime || item?.EndTime || item?.arrivalTime || item?.endTime
+      const mode = this.transportTypeForItem(item)
+      const origin = this.routeItemStopName(item, 'origin')
+      const destination = this.routeItemStopName(item, 'destination')
+      const chips = isTransfer
+        ? [this.routeItemDistance(item), this.routeItemDuration(item)].filter(Boolean)
+        : [mode, this.operatorName(item), this.routeItemDuration(item), this.statusLabel({ RouteItems: [item] })].filter(Boolean)
+      return {
+        key: item?.PrimaryIdentifier || item?.Identifier || this.journeyIdentifier(journey) || `${index}-${start || ''}`,
+        title: isTransfer ? this.transferTitle(item) : this.serviceName(item),
+        subtitle: [origin, destination].filter(Boolean).join(' to '),
+        isTransfer,
+        chips,
+        startTime: this.formatTime(start, journey?.DepartureTimezone || this.originTimezone),
+        arrivalTime: this.formatTime(arrival, journey?.DepartureTimezone || this.destinationTimezone),
+        journeyId: this.journeyIdentifier(journey),
+        journeyRoute: journey ? this.journeyRoute(this.selectedJourneyPlan, journey) : undefined,
+        icon: this.transportIcon(mode)
       }
     },
-    collectPlannerStopRefs() {
-      const refs = new Set()
-
-      this.journeyPlans.forEach(journeyPlan => {
-        this.routeItems(journeyPlan).forEach(item => {
-          const originRef = this.itemOriginStopRef(item)
-          const destinationRef = this.itemDestinationStopRef(item)
-
-          if (originRef) {
-            refs.add(originRef)
-          }
-
-          if (destinationRef) {
-            refs.add(destinationRef)
-          }
-        })
-      })
-
-      return [...refs].filter(ref => !this.stopNameCache[ref])
-    },
-    hydratePlannerStopNames() {
-      this.seedStopName(this.results?.OriginStop || this.results?.originStop)
-      this.seedStopName(this.results?.DestinationStop || this.results?.destinationStop)
-
-      const refs = this.collectPlannerStopRefs()
-
-      if (refs.length === 0) {
-        return Promise.resolve()
+    selectJourneyPlan(plan) {
+      const legs = this.journeyLegs(plan)
+      if (legs.length === 1 && !this.routeItems(plan).some(item => this.isTransferItem(item))) {
+        const journey = this.itemJourney(legs[0])
+        if (this.journeyIdentifier(journey)) {
+          this.$router.push(this.journeyRoute(plan, journey))
+          return
+        }
       }
-
-      return Promise.allSettled(refs.map(ref => axios.get(`${API.URL}/core/stops/${encodeURIComponent(ref)}`)))
-        .then(results => {
-          const nextCache = { ...this.stopNameCache }
-
-          results.forEach((result, index) => {
-            if (result.status !== 'fulfilled') {
-              return
-            }
-
-            const ref = refs[index]
-            const stop = this.unwrapStop(result.value.data)
-            const identifier = this.stopIdentifier(stop)
-            const name = this.stopName(stop)
-
-            if (ref && name) {
-              nextCache[ref] = name
-            }
-
-            if (identifier && name) {
-              nextCache[identifier] = name
-            }
-          })
-
-          this.stopNameCache = nextCache
-        })
-    },
-    unwrapStop(result) {
-      if (Array.isArray(result)) {
-        return undefined
-      }
-
-      return result?.Stop ||
-        result?.stop ||
-        result?.Station ||
-        result?.station ||
-        result?.Data?.Stop ||
-        result?.Data?.stop ||
-        result?.data?.Stop ||
-        result?.data?.stop ||
-        result?.Data ||
-        result?.data ||
-        result?.Result ||
-        result?.result ||
-        result
-    },
-    formatTime(value) {
-      if (!value) {
-        return '--'
-      }
-
-      return this.pretty.time(value)
-    },
-    formatDuration(value) {
-      if (value === undefined || value === null || value === '') {
-        return ''
-      }
-
-      if (typeof value === 'string') {
-        return value
-      }
-
-      return this.pretty.duration(value)
-    },
-    formatSeconds(value) {
-      if (!value) {
-        return ''
-      }
-
-      const minutes = Math.max(1, Math.ceil(value / 60))
-
-      if (minutes < 60) {
-        return `${minutes} min`
-      }
-
-      const hours = Math.floor(minutes / 60)
-      const remainingMinutes = minutes % 60
-
-      return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`
-    },
-    openJourneyPlanModal(journeyPlan) {
-      this.selectedJourneyPlan = journeyPlan
+      this.selectedJourneyPlan = plan
       this.journeyPlanModalOpen = true
     },
-    closeJourneyPlanModal() {
-      this.journeyPlanModalOpen = false
-      this.selectedJourneyPlan = undefined
+    closeJourneyPlanModal() { this.journeyPlanModalOpen = false; this.selectedJourneyPlan = undefined },
+    plannerPathSegment(value) { return encodeURIComponent(value).replace(/%2C/g, ',') },
+    plannerRequestParams() {
+      const params = {
+        count: 8,
+        max_changes: Number(this.queryValue(this.$route.query.maxChanges) || 3),
+        max_transfer_distance_metres: Number(this.queryValue(this.$route.query.maxWalking) || 1000)
+      }
+      const datetime = this.queryValue(this.$route.query.datetime)
+      if (datetime) params.datetime = datetime
+      return params
+    },
+    cancelSearch() {
+      this.requestController?.abort()
+      this.loadingResults = false
+      this.error = 'Search cancelled. Your route and preferences have been kept.'
     },
     getJourneyPlan() {
       const origin = this.queryValue(this.$route.query.origin)
       const destination = this.queryValue(this.$route.query.destination)
-
       if (!origin || !destination) {
         this.loadingResults = false
         this.error = 'Choose an origin and destination to search for journeys.'
         return
       }
-
-      this.loadingResults = true
-      this.error = undefined
-      this.selectedJourneyPlan = undefined
-      this.journeyPlanModalOpen = false
-      this.stopNameCache = {}
-
-      axios
-        .get(`${API.URL}/core/planner/${this.plannerPathSegment(origin)}/${this.plannerPathSegment(destination)}`)
-        .then(response => {
-          this.results = response.data || {}
-
-          let earliestTime = undefined
-          this.earliestArrivalJourneyID = 0
-          for (let index = 0; index < this.journeyPlans.length; index++) {
-            const element = this.journeyPlans[index]
-            const datetime = new Date(element.ArrivalTime)
-
-            if ((earliestTime === undefined) || (datetime < earliestTime)) {
-              earliestTime = datetime
-              this.earliestArrivalJourneyID = index
-            }
-          }
-
-          return this.hydratePlannerStopNames()
-        })
-        .catch(error => {
-          console.log(error)
-          this.error = error
-        })
-        .finally(() => this.loadingResults = false)
-    },
-    departureDayChange(index) {
-      let comparisonDateTime
-
-      if (index === 0) {
-        comparisonDateTime = new Date(Date.now())
-      } else {
-        comparisonDateTime = new Date(Date.parse(this.journeyPlans[index - 1].StartTime))
+      if (this.queryValue(this.$route.query.originType) !== 'location' && origin === destination) {
+        this.loadingResults = false
+        this.error = 'Choose two different stops for this journey.'
+        return
       }
 
-      const currentDateTime = new Date(Date.parse(this.journeyPlans[index].StartTime))
+      this.requestController?.abort()
+      this.requestController = new AbortController()
+      const token = ++this.requestToken
+      this.loadingResults = true
+      this.searchStartedAt = Date.now()
+      this.currentTime = Date.now()
+      this.error = undefined
+      this.results = {}
+      this.stopNameCache = {}
+      this.journeyDetailCache = {}
+      this.closeJourneyPlanModal()
 
-      return comparisonDateTime.getDate() !== currentDateTime.getDate()
+      axios.get(`${API.URL}/core/planner/${this.plannerPathSegment(origin)}/${this.plannerPathSegment(destination)}`, {
+        params: this.plannerRequestParams(),
+        signal: this.requestController.signal,
+        timeout: 12000
+      }).then(response => {
+        if (token !== this.requestToken) return
+        this.results = response.data || {}
+        this.loadingResults = false
+        this.hydratePlannerDetails(token)
+      }).catch(error => {
+        if (token !== this.requestToken || axios.isCancel(error) || error?.code === 'ERR_CANCELED') return
+        console.log(error)
+        this.error = error
+        this.loadingResults = false
+      })
+    },
+    unwrapStop(result) {
+      if (Array.isArray(result)) return undefined
+      return result?.Stop || result?.stop || result?.Station || result?.station || result?.Data?.Stop || result?.data?.Stop || result?.Data || result?.data || result?.Result || result?.result || result
+    },
+    seedStopName(stop) {
+      const id = this.stopIdentifier(stop)
+      const name = this.stopName(stop)
+      if (id && name) this.stopNameCache = { ...this.stopNameCache, [id]: name }
+    },
+    collectPlannerStopRefs() {
+      const refs = new Set()
+      this.journeyPlans.forEach(plan => this.routeItems(plan).forEach(item => {
+        if (this.itemOriginStopRef(item)) refs.add(this.itemOriginStopRef(item))
+        if (this.itemDestinationStopRef(item)) refs.add(this.itemDestinationStopRef(item))
+      }))
+      return [...refs].filter(ref => !this.stopNameCache[ref])
+    },
+    hydratePlannerStopNames(token) {
+      this.seedStopName(this.results?.OriginStop || this.results?.originStop)
+      this.seedStopName(this.results?.DestinationStop || this.results?.destinationStop)
+      const refs = this.collectPlannerStopRefs()
+      if (!refs.length) return
+      Promise.allSettled(refs.map(ref => axios.get(`${API.URL}/core/stops/${encodeURIComponent(ref)}`))).then(results => {
+        if (token !== this.requestToken) return
+        const next = { ...this.stopNameCache }
+        results.forEach((result, index) => {
+          if (result.status !== 'fulfilled') return
+          const stop = this.unwrapStop(result.value.data)
+          const name = this.stopName(stop)
+          const id = this.stopIdentifier(stop)
+          if (name) next[refs[index]] = name
+          if (id && name) next[id] = name
+        })
+        this.stopNameCache = next
+      })
+    },
+    hydratePlannerJourneys(token) {
+      const journeys = this.journeyPlans.flatMap(plan => this.journeyLegs(plan).map(item => this.rawItemJourney(item))).filter(Boolean)
+      const identifiers = [...new Set(journeys.map(journey => this.journeyIdentifier(journey)).filter(Boolean))]
+      if (!identifiers.length) return
+
+      Promise.allSettled(identifiers.map(identifier => axios.get(`${API.URL}/core/journeys/${identifier}`))).then(results => {
+        if (token !== this.requestToken) return
+        const next = { ...this.journeyDetailCache }
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value.data) next[identifiers[index]] = result.value.data
+        })
+        this.journeyDetailCache = next
+      })
+    },
+    hydratePlannerDetails(token) {
+      this.hydratePlannerStopNames(token)
+      this.hydratePlannerJourneys(token)
+    },
+    departureDayChange(index) {
+      const plans = this.sortedJourneyPlans
+      if (index === 0) return true
+      const previous = DateTime.fromISO(plans[index - 1].StartTime).setZone(this.originTimezone)
+      const current = DateTime.fromISO(plans[index].StartTime).setZone(this.originTimezone)
+      return !previous.hasSame(current, 'day')
     }
-  },
-  mounted () {
-    this.getJourneyPlan()
   }
 }
 </script>

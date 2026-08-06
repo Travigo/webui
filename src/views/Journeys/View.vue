@@ -69,7 +69,7 @@
         </span>
         <button
           type="button"
-          class="ml-auto inline-flex min-h-8 items-center gap-1 rounded-xl px-1 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10"
+          class="ml-auto inline-flex min-h-11 items-center gap-1 rounded-xl px-2 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10 sm:min-h-8 sm:px-1"
           @click="changeTab('details')"
         >
           Onboard details
@@ -110,7 +110,7 @@
             v-if="hasHiddenStops"
             @click="toggleInactiveStops()"
             type="button"
-            class="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+            class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
           >
             <span class="material-symbols-outlined text-[19px]">{{ expandInactiveStops ? 'unfold_less' : 'history' }}</span>
             {{ expandInactiveStops ? 'Collapse previous stops' : 'Show previous stops' }}
@@ -1192,11 +1192,17 @@ export default {
         return
       }
 
-      // TODO get correct date - this might be wrong when looking at future journey or on journeys that span 2 days
-      let yourDate = new Date()
-      const offset = yourDate.getTimezoneOffset()
-      yourDate = new Date(yourDate.getTime() - (offset*60*1000))
-      let journeyRunDate = yourDate.toISOString().split('T')[0]
+      const requestedDate = Array.isArray(this.$route.query.date)
+        ? this.$route.query.date[0]
+        : this.$route.query.date
+      const journeyRunDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate || '')
+        ? requestedDate
+        : new Intl.DateTimeFormat('en-CA', {
+          timeZone: this.journey?.DepartureTimezone || 'UTC',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(new Date())
 
       let dayinstanceof = 'DAYINSTANCEOF:' + journeyRunDate + ':' + this.$route.params.id
       axios

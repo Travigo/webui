@@ -1,160 +1,170 @@
 <template>
-  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
-
   <LoadingState
     v-if="loadingService"
     title="Loading service"
-    subtitle="Fetching service details and datasource attribution."
+    subtitle="Fetching route and operator details."
     :show-tabs="false"
   />
 
-  <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
-    <PageHeader
-      :title="serviceTitle"
-      :subtitle="serviceDescription"
-    >
+  <section v-else-if="error && !service" class="mt-4 rounded-2xl border border-red-100 bg-white p-5 shadow-sm dark:border-red-500/20 dark:bg-slate-900">
+    <div class="flex items-start gap-3">
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
+        <span class="material-symbols-outlined">route</span>
+      </span>
+      <div>
+        <h1 class="font-extrabold text-slate-950 dark:text-slate-100">Service unavailable</h1>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Service details could not be loaded.</p>
+      </div>
+    </div>
+    <button type="button" class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-4 text-sm font-extrabold text-white" @click="getService">
+      Try again
+    </button>
+  </section>
+
+  <div v-else-if="service" class="space-y-4 pb-16 pt-2 sm:pb-20">
+    <PageHeader :title="serviceTitle" :subtitle="serviceDescription">
       <template #meta>
         <div class="mb-2 flex flex-wrap items-center gap-2">
           <ServiceIcon
-            v-if="service !== undefined"
-            class="h-8 rounded-md px-2 text-sm font-bold shadow-sm"
-            style="line-height: 32px"
+            class="h-9 rounded-lg px-3 text-base font-extrabold shadow-sm"
+            style="line-height: 36px"
             :service="service"
+            :short="false"
           />
           <span class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
             <span class="material-symbols-outlined text-[17px]">{{ transportIcon }}</span>
-            {{ service.TransportType || 'Service' }}
+            {{ serviceKindLabel }}
           </span>
         </div>
       </template>
     </PageHeader>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div class="border-b border-slate-100 px-4 py-3 sm:px-5">
-        <h2 class="text-sm font-extrabold text-slate-950">Service information</h2>
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
+        <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">At a glance</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">The useful details for identifying this service.</p>
       </div>
 
-      <div class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
-        <div class="rounded-2xl bg-slate-50 p-3">
-          <p class="text-xs font-semibold text-slate-500">Operator</p>
-          <router-link
-            v-if="operatorRoute"
-            :to="operatorRoute"
-            class="mt-1 inline-flex items-center gap-1 text-base font-extrabold text-blue-600 transition hover:text-blue-700"
-          >
-            {{ operatorName }}
-            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-          </router-link>
-          <p v-else class="mt-1 text-base font-extrabold text-slate-950">
-            {{ operatorName }}
-          </p>
+      <dl class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
+        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+          <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <span class="material-symbols-outlined text-[18px]">business</span>
+            Operator
+          </dt>
+          <dd class="mt-2">
+            <router-link v-if="operatorRoute" :to="operatorRoute" class="inline-flex min-h-11 items-center gap-1 text-base font-extrabold text-blue-600 hover:text-blue-700 dark:text-blue-300">
+              {{ operatorName }}
+              <span class="material-symbols-outlined text-[19px]">chevron_right</span>
+            </router-link>
+            <span v-else class="text-base font-extrabold text-slate-950 dark:text-slate-100">{{ operatorName }}</span>
+          </dd>
         </div>
 
-        <div class="rounded-2xl bg-slate-50 p-3">
-          <p class="text-xs font-semibold text-slate-500">Transport type</p>
-          <p class="mt-1 flex items-center gap-2 text-base font-extrabold text-slate-950">
-            <span class="material-symbols-outlined text-[20px] text-slate-500">{{ transportIcon }}</span>
-            {{ service.TransportType || 'Unknown' }}
-          </p>
+        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+          <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <span class="material-symbols-outlined text-[18px]">{{ transportIcon }}</span>
+            Mode
+          </dt>
+          <dd class="mt-2 text-base font-extrabold text-slate-950 dark:text-slate-100">{{ serviceKindLabel }}</dd>
         </div>
 
-        <div class="rounded-2xl bg-slate-50 p-3">
-          <p class="text-xs font-semibold text-slate-500">Service name</p>
-          <p class="mt-1 text-base font-extrabold text-slate-950">{{ service.ServiceName || service.PrimaryName || 'Unnamed service' }}</p>
+        <div v-if="publicName" class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70 sm:col-span-2">
+          <dt class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Route name</dt>
+          <dd class="mt-2 text-base font-extrabold text-slate-950 dark:text-slate-100">{{ publicName }}</dd>
         </div>
-
-        <div class="rounded-2xl bg-slate-50 p-3">
-          <p class="text-xs font-semibold text-slate-500">Identifier</p>
-          <p class="mt-1 break-all text-sm font-bold text-slate-950">{{ service.PrimaryIdentifier || this.$route.params.id }}</p>
-        </div>
-      </div>
+      </dl>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" v-if="brandDetails.length > 0">
-      <div class="border-b border-slate-100 px-4 py-3 sm:px-5">
-        <h2 class="text-sm font-extrabold text-slate-950">Branding</h2>
+    <section v-if="hasBranding" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
+        <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">How to recognise it</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Colours and route badge used across Travigo.</p>
       </div>
-
-      <div class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
-        <div
-          v-for="detail in brandDetails"
-          v-bind:key="detail.label"
-          class="rounded-2xl bg-slate-50 p-3"
-        >
-          <p class="text-xs font-semibold text-slate-500">{{ detail.label }}</p>
-          <div class="mt-2 flex items-center gap-2">
-            <span
-              v-if="detail.colour"
-              class="h-6 w-6 rounded-full border border-slate-200"
-              :style="{ background: detail.value }"
-            ></span>
-            <span class="break-all text-sm font-bold text-slate-950">{{ detail.value }}</span>
+      <div class="flex items-center gap-4 p-4 sm:p-5">
+        <ServiceIcon class="h-14 min-w-16 rounded-xl px-3 text-xl font-extrabold shadow-sm" style="line-height: 56px" :service="service" :short="false" />
+        <div class="min-w-0 flex-1">
+          <p class="font-extrabold text-slate-950 dark:text-slate-100">{{ serviceTitle }}</p>
+          <div class="mt-2 flex gap-2">
+            <span v-if="service.BrandColour" class="h-5 w-12 rounded-full border border-black/10" :style="{ backgroundColor: service.BrandColour }" title="Primary service colour"></span>
+            <span v-if="service.SecondaryBrandColour" class="h-5 w-12 rounded-full border border-black/10" :style="{ backgroundColor: service.SecondaryBrandColour }" title="Secondary service colour"></span>
           </div>
         </div>
       </div>
     </section>
+
+    <details class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <summary class="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-extrabold text-slate-700 dark:text-slate-200 sm:px-5">
+        Technical details
+        <span class="material-symbols-outlined text-[20px] text-slate-400">expand_more</span>
+      </summary>
+      <dl class="grid gap-3 border-t border-slate-100 p-4 text-sm dark:border-slate-800 sm:grid-cols-2 sm:p-5">
+        <div>
+          <dt class="font-semibold text-slate-500 dark:text-slate-400">Service identifier</dt>
+          <dd class="mt-1 break-all font-bold text-slate-950 dark:text-slate-100">{{ service.PrimaryIdentifier || $route.params.id }}</dd>
+        </div>
+        <div v-if="service.BrandDisplayMode">
+          <dt class="font-semibold text-slate-500 dark:text-slate-400">Badge display</dt>
+          <dd class="mt-1 font-bold capitalize text-slate-950 dark:text-slate-100">{{ service.BrandDisplayMode }}</dd>
+        </div>
+      </dl>
+    </details>
 
     <DatasourceAttributes :datasources="utils.getDatasources(service)" />
   </div>
 </template>
 
 <script>
-import Alert from "@/components/Alert.vue"
-import ServiceIcon from "@/components/ServiceIcon.vue"
-import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
+import ServiceIcon from '@/components/ServiceIcon.vue'
+import DatasourceAttributes from '@/components/DatasourceAttributes.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import PageHeader from '@/components/PageHeader.vue'
-import axios from "axios"
-import API from "@/API"
-import Utils from "@/utils"
+import axios from 'axios'
+import API from '@/API'
+import Utils from '@/utils'
 
 export default {
   name: 'ServicesView',
   components: {
-    Alert,
     ServiceIcon,
     DatasourceAttributes,
     LoadingState,
     PageHeader
   },
-  data(){
+  data() {
     return {
       utils: Utils,
       service: undefined,
+      operator: undefined,
       loadingService: true,
-      error: undefined,
+      error: undefined
     }
   },
   computed: {
     serviceTitle() {
-      return this.service?.PrimaryName || this.service?.ServiceName || 'Service'
+      return this.service?.ServiceName || this.service?.PrimaryName || 'Service'
+    },
+    publicName() {
+      const name = this.service?.PrimaryName
+      return name && name !== this.serviceTitle ? name : ''
     },
     serviceDescription() {
-      if (this.operatorName !== 'Unknown operator') {
-        return `${this.operatorName} ${this.service?.TransportType || 'service'}`
-      }
-
-      return `${this.service?.TransportType || 'Public transport'} service`
+      return `${this.operatorName} · ${this.serviceKindLabel}`
+    },
+    serviceKindLabel() {
+      const type = this.service?.TransportType
+      return type ? `${type} service` : 'Public transport service'
+    },
+    operatorId() {
+      return this.service?.Operator?.PrimaryIdentifier || this.service?.OperatorRef || ''
     },
     operatorName() {
       return this.service?.Operator?.PrimaryName ||
+        this.operator?.PrimaryName ||
         this.service?.OperatorName ||
-        this.service?.OperatorRef ||
-        'Unknown operator'
+        'Operator details unavailable'
     },
     operatorRoute() {
-      const operatorId = this.service?.Operator?.PrimaryIdentifier || this.service?.OperatorRef
-
-      if (!operatorId) {
-        return null
-      }
-
-      return {
-        name: 'operators/view',
-        params: {
-          id: operatorId
-        }
-      }
+      return this.operatorId ? { name: 'operators/view', params: { id: this.operatorId } } : null
     },
     transportIcon() {
       return {
@@ -167,40 +177,40 @@ export default {
         Air: 'flight'
       }[this.service?.TransportType] || 'route'
     },
-    brandDetails() {
-      return [
-        {
-          label: 'Brand colour',
-          value: this.service?.BrandColour,
-          colour: true
-        },
-        {
-          label: 'Secondary colour',
-          value: this.service?.SecondaryBrandColour,
-          colour: true
-        },
-        {
-          label: 'Brand display',
-          value: this.service?.BrandDisplayMode
-        }
-      ].filter(detail => detail.value)
+    hasBranding() {
+      return Boolean(this.service?.BrandColour || this.service?.SecondaryBrandColour || this.service?.ServiceName)
     }
   },
   methods: {
-    getService() {
-      axios
-        .get(`${API.URL}/core/services/${this.$route.params.id}`)
-        .then(response => {
-          this.service = response.data
-        })
-        .catch(error => {
-          console.log(error)
-          this.error = error
-        })
-        .finally(() => this.loadingService = false)
+    async getService() {
+      this.loadingService = true
+      this.error = undefined
+
+      try {
+        const response = await axios.get(`${API.URL}/core/services/${this.$route.params.id}`)
+        this.service = response.data
+        await this.getOperator()
+      } catch (error) {
+        console.log(error)
+        this.error = error
+      } finally {
+        this.loadingService = false
+      }
     },
+    async getOperator() {
+      if (!this.operatorId || this.service?.Operator?.PrimaryName) {
+        return
+      }
+
+      try {
+        const response = await axios.get(`${API.URL}/core/operators/${this.operatorId}`)
+        this.operator = response.data
+      } catch (error) {
+        console.log(error)
+      }
+    }
   },
-  mounted () {
+  mounted() {
     this.getService()
   }
 }

@@ -19,7 +19,16 @@
         :rows="4"
         :show-tabs="false"
       />
-      <DeparturesList v-else :stop="stop" :departures="departures || []" variant="compact"/>
+      <div v-else-if="departuresError && (!departures || departures.length === 0)" class="p-4">
+        <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+          <p class="font-extrabold">Departures unavailable</p>
+          <p class="mt-1">The latest departure board could not be loaded.</p>
+          <button type="button" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="$emit('retry-departures')">
+            Try again
+          </button>
+        </div>
+      </div>
+      <DeparturesList v-else :stop="stop" :departures="departures || []" :board-reference-time="boardReferenceTime" variant="compact"/>
     </div>
 
     <div v-else-if="activeTab === 'arrivals'">
@@ -32,7 +41,16 @@
         :rows="4"
         :show-tabs="false"
       />
-      <DeparturesList v-else :stop="stop" :departures="arrivals || []" board-type="arrivals" variant="compact" />
+      <div v-else-if="arrivalsError && (!arrivals || arrivals.length === 0)" class="p-4">
+        <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+          <p class="font-extrabold">Arrivals unavailable</p>
+          <p class="mt-1">The latest arrival board could not be loaded.</p>
+          <button type="button" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="$emit('retry-arrivals')">
+            Try again
+          </button>
+        </div>
+      </div>
+      <DeparturesList v-else :stop="stop" :departures="arrivals || []" :board-reference-time="boardReferenceTime" board-type="arrivals" variant="compact" />
     </div>
 
     <div v-else-if="activeTab === 'map'">
@@ -66,12 +84,24 @@ export default {
       type: Boolean,
       default: false
     },
+    departuresError: {
+      type: Boolean,
+      default: false
+    },
     arrivals: {
       default: null
     },
     loadingArrivals: {
       type: Boolean,
       default: false
+    },
+    arrivalsError: {
+      type: Boolean,
+      default: false
+    },
+    boardReferenceTime: {
+      type: [String, Number, Date],
+      default: () => new Date()
     },
     modelValue: {
       type: String,
@@ -90,7 +120,7 @@ export default {
       default: false
     }
   },
-  emits: ['update:modelValue', 'tab-change'],
+  emits: ['update:modelValue', 'tab-change', 'retry-departures', 'retry-arrivals'],
   computed: {
     activeTab() {
       return this.showTabs ? this.modelValue : 'departures'

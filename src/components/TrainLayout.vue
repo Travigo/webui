@@ -2,7 +2,8 @@
   <section v-if="normalisedCarriages.length > 0" class="mt-2 space-y-2">
     <div class="flex items-center justify-between gap-3">
       <div class="min-w-0">
-        <p class="mt-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">{{ layoutSummary }}</p>
+        <p class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Train formation</p>
+        <p class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ formationSummary }}</p>
       </div>
       <span
         v-if="layoutStatus"
@@ -13,58 +14,50 @@
       </span>
     </div>
 
+    <div v-if="formationDetails.length > 0" class="flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+      <span v-for="detail in formationDetails" :key="detail" class="rounded-lg bg-slate-100 px-2 py-1 dark:bg-slate-800">{{ detail }}</span>
+    </div>
+
     <div class="-mx-1 overflow-x-auto px-1">
       <div class="min-w-max">
-        <ol class="flex items-stretch gap-1">
+        <ol class="flex items-end gap-2">
           <li
-            v-for="carriage in normalisedCarriages"
-            v-bind:key="carriage.key"
+            v-for="unit in normalisedUnits"
+            v-bind:key="unit.key"
             class="shrink-0"
-            :class="[carriageShellClasses(carriage), { 'ml-2 border-l-2 border-slate-200 pl-2 dark:border-slate-700': carriage.startsTrain && carriage.trainIndex > 0 }]"
           >
-            <button
-              type="button"
-              class="relative flex w-full flex-col overflow-hidden border text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-500/20"
-              :class="[carriageShapeClasses(carriage), carriage.occupancyClasses, carriageButtonSizeClasses(carriage)]"
-              :title="carriageTitle(carriage)"
-              :aria-label="`Open details for ${carriage.label}`"
-              @click="openCarriageModal(carriage)"
-            >
-              <div v-if="carriage.isPowerCar" class="flex min-h-[2rem] flex-col items-center justify-center gap-0.5 text-center">
-                <span class="material-symbols-outlined text-[18px] leading-none text-slate-700 dark:text-slate-100">electric_bolt</span>
-                <p class="text-[9px] font-black uppercase leading-none text-slate-600 dark:text-slate-200">Power Car</p>
-              </div>
-              <template v-else>
-                <div class="min-w-0">
-                  <p class="truncate text-[11px] font-extrabold text-slate-950 dark:text-slate-100">{{ carriage.label }}</p>
-                  <p
-                    v-if="carriage.hasOccupancy"
-                    class="mt-0.5 truncate text-[10px] font-bold"
-                    :class="carriage.occupancyTextClass"
-                  >
-                    {{ carriage.occupancyLabel }}
-                  </p>
-                  <span
-                    v-if="carriage.id"
-                    class="sr-only"
-                  >
-                    {{ carriage.id }}
-                  </span>
-                </div>
+            <p v-if="normalisedUnits.length > 1" class="mb-1 text-center text-[10px] font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ unit.label }}</p>
+            <ol class="flex items-stretch gap-1 rounded-xl border border-slate-200 bg-slate-50/70 p-1 dark:border-slate-700 dark:bg-slate-800/40">
+              <li v-for="carriage in unit.carriages" v-bind:key="carriage.key" class="shrink-0" :class="carriageShellClasses(carriage)">
+                <button
+                  type="button"
+                  class="relative flex w-full flex-col overflow-hidden border text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-500/20"
+                  :class="[carriageShapeClasses(carriage), carriage.occupancyClasses, carriageButtonSizeClasses(carriage)]"
+                  :title="carriageTitle(carriage)"
+                  :aria-label="`Open details for ${carriage.locationLabel}`"
+                  @click="openCarriageModal(carriage)"
+                >
+                  <div v-if="carriage.isPowerCar" class="flex min-h-[2rem] flex-col items-center justify-center gap-0.5 text-center">
+                    <span class="material-symbols-outlined text-[18px] leading-none text-slate-700 dark:text-slate-100">electric_bolt</span>
+                    <p class="text-[9px] font-black uppercase leading-none text-slate-600 dark:text-slate-200">Power Car</p>
+                  </div>
+                  <template v-else>
+                    <div class="min-w-0">
+                      <p class="truncate text-[11px] font-extrabold text-slate-950 dark:text-slate-100">{{ carriage.label }}</p>
+                      <p v-if="carriage.hasOccupancy" class="mt-0.5 truncate text-[10px] font-bold" :class="carriage.occupancyTextClass">{{ carriage.occupancyLabel }}</p>
+                      <span v-if="carriage.id" class="sr-only">{{ carriage.id }}</span>
+                    </div>
 
-                <div v-if="carriage.features.length > 0" class="mt-1.5 flex min-h-5 flex-wrap items-center gap-1">
-                  <span
-                    v-for="feature in carriage.features"
-                    v-bind:key="feature.key"
-                    class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white/80 text-slate-700 shadow-sm dark:bg-slate-950/80 dark:text-slate-200"
-                    :title="feature.label"
-                  >
-                    <span v-if="feature.text" class="text-[9px] font-black leading-none">{{ feature.text }}</span>
-                    <span v-else class="material-symbols-outlined text-[14px] leading-none">{{ feature.icon }}</span>
-                  </span>
-                </div>
-              </template>
-            </button>
+                    <div v-if="carriage.features.length > 0" class="mt-1.5 flex min-h-5 flex-wrap items-center gap-1">
+                      <span v-for="feature in carriage.features" v-bind:key="feature.key" class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white/80 text-slate-700 shadow-sm dark:bg-slate-950/80 dark:text-slate-200" :title="feature.label">
+                        <span v-if="feature.text" class="text-[9px] font-black leading-none">{{ feature.text }}</span>
+                        <span v-else class="material-symbols-outlined text-[14px] leading-none">{{ feature.icon }}</span>
+                      </span>
+                    </div>
+                  </template>
+                </button>
+              </li>
+            </ol>
           </li>
         </ol>
       </div>
@@ -231,6 +224,7 @@ export default {
             isPowerCar,
             isPassengerCarriage,
             label: this.coachLabel(carriage, carriage.displayPassengerNumber ?? passengerIndex),
+            locationLabel: this.carriageLocationLabel(carriage, carriage.displayPassengerNumber ?? passengerIndex, train, trainIndex),
             features: this.carriageFeatures(carriage),
             occupancy,
             hasOccupancy: occupancy >= 0,
@@ -253,35 +247,34 @@ export default {
     powerCarriages() {
       return this.normalisedCarriages.filter(carriage => carriage.isPowerCar)
     },
-    layoutSummary() {
-      const coachCount = this.formatCoachCount(this.passengerCarriages.length)
+    normalisedUnits() {
+      return this.orderedTrains.map((train, trainIndex) => ({
+        key: train.ID || `unit-${trainIndex}`,
+        label: this.unitLabel(train, trainIndex),
+        carriages: this.normalisedCarriages.filter(carriage => carriage.trainIndex === trainIndex)
+      }))
+    },
+    formationSummary() {
+      const unitCount = this.orderedTrains.length
+      return `${unitCount} unit${unitCount === 1 ? '' : 's'} · ${this.formatCoachCount(this.passengerCarriages.length)}`
+    },
+    formationDetails() {
       const powerCarCount = this.powerCarriages.length > 0
         ? `${this.powerCarriages.length} power car${this.powerCarriages.length === 1 ? '' : 's'}`
         : ''
-      const unitCount = this.orderedTrains.length > 1 ? `${this.orderedTrains.length} units · ` : ''
       const seatingClasses = [...new Set(this.passengerCarriages
         .flatMap(carriage => this.normaliseCarriageClasses(carriage.raw.SeatingClasses))
         .filter(seatingClass => seatingClass !== 'unknown'))]
         .map(seatingClass => `${seatingClass.charAt(0).toUpperCase()}${seatingClass.slice(1)} class`)
       const toiletLabels = this.passengerCarriages
         .filter(carriage => carriage.features.some(feature => feature.key === 'toilet' || feature.key === 'accessible-toilet'))
-        .map(carriage => carriage.label)
+        .map(carriage => carriage.locationLabel)
 
-      const summaryParts = [`${unitCount}${coachCount}`]
-
-      if (powerCarCount) {
-        summaryParts.push(powerCarCount)
-      }
-
-      if (seatingClasses.length > 0) {
-        summaryParts.push(seatingClasses.join(' & '))
-      }
-
-      if (toiletLabels.length > 0) {
-        summaryParts.push(`Toilets in ${toiletLabels.join(', ')}`)
-      }
-
-      return summaryParts.join(' · ')
+      return [
+        powerCarCount,
+        seatingClasses.length > 0 ? seatingClasses.join(' & ') : '',
+        toiletLabels.length > 0 ? `Toilets: ${toiletLabels.join(', ')}` : ''
+      ].filter(Boolean)
     },
     layoutStatus() {
       const knownOccupancies = this.passengerCarriages
@@ -359,6 +352,15 @@ export default {
       }
 
       return carriage.Label || carriage.Name || `Coach ${passengerIndex + 1}`
+    },
+    unitLabel(train, trainIndex) {
+      return `Unit ${train?.ID || trainIndex + 1}`
+    },
+    carriageLocationLabel(carriage, passengerIndex, train, trainIndex) {
+      const coach = this.coachLabel(carriage, passengerIndex)
+      return this.orderedTrains.length > 1 && !this.isPowerCarriage(carriage)
+        ? `${coach} of ${this.unitLabel(train, trainIndex)}`
+        : coach
     },
     carriageTitle(carriage) {
       if (carriage.isPowerCar) {
