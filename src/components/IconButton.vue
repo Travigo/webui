@@ -53,7 +53,7 @@ export default {
   },
   computed: {
     shapeClass() {
-      return this.shape === 'circle' ? 'rounded-full' : 'rounded-2xl'
+      return this.shape === 'circle' ? 'rounded-full' : 'rounded-xl'
     }
   }
 }

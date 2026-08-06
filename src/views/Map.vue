@@ -51,11 +51,11 @@
 
     <div class="map-status-panel">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">Map</p>
-        <h1 class="text-lg font-extrabold text-slate-950 dark:text-slate-100">Nearby network</h1>
+        <p class="text-xs font-bold uppercase tracking-wide text-brand-blue dark:text-brand-blue-light">Map</p>
+        <h1 class="text-lg font-bold text-slate-950 dark:text-slate-100">Nearby network</h1>
       </div>
       <div class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-        <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
+        <span class="inline-flex items-center gap-1 rounded-full bg-brand-blue/10 px-2.5 py-1 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
           <span class="material-symbols-outlined text-[15px]">pin_drop</span>
           {{ stops.length }}
         </span>
@@ -74,7 +74,7 @@
     <div v-if="mapDataError" class="map-error-panel" role="alert">
       <span class="material-symbols-outlined text-[19px]">cloud_off</span>
       <span class="min-w-0 flex-1">Map data could not be refreshed.</span>
-      <button type="button" class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="refreshData()">Retry</button>
+      <button type="button" class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="refreshData()">Retry</button>
     </div>
 
     <button
@@ -100,10 +100,10 @@
             <section>
               <div class="mb-2 flex items-end justify-between gap-3">
                 <div>
-                  <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Map layers</h3>
+                  <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">Map layers</h3>
                   <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Stops load when zoomed in. Vehicles refresh automatically.</p>
                 </div>
-                <span class="shrink-0 text-xs font-bold text-blue-600 dark:text-blue-300" v-if="activeMapLayerCount > 0">
+                <span class="shrink-0 text-xs font-bold text-brand-blue dark:text-brand-blue-light" v-if="activeMapLayerCount > 0">
                   {{ activeMapLayerCount }} selected
                 </span>
               </div>
@@ -113,10 +113,10 @@
                   v-for="layer in mapLayerFilters"
                   v-bind:key="layer.id"
                   type="button"
-                  class="flex min-h-16 items-center gap-3 rounded-2xl border px-3 py-3 text-left transition"
+                  class="flex min-h-16 items-center gap-3 rounded-xl border px-3 py-3 text-left transition"
                   :class="isMapLayerEnabled(layer.id)
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-blue-100 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10'"
+                    ? 'border-brand-blue/40 bg-brand-blue/10 text-brand-blue shadow-sm dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-brand-blue/20 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-blue/40 dark:hover:bg-brand-blue/100/10'"
                   @click="toggleMapLayer(layer.id)"
                 >
                   <span
@@ -126,11 +126,11 @@
                     <span class="material-symbols-outlined text-[21px] leading-none">{{ layer.icon }}</span>
                   </span>
                   <span class="min-w-0 flex-1">
-                    <span class="block text-sm font-extrabold leading-tight">{{ layer.label }}</span>
+                    <span class="block text-sm font-bold leading-tight">{{ layer.label }}</span>
                   </span>
                   <span
                     class="material-symbols-outlined text-[20px]"
-                    :class="isMapLayerEnabled(layer.id) ? 'text-blue-600 dark:text-blue-300' : 'text-slate-300 dark:text-slate-600'"
+                    :class="isMapLayerEnabled(layer.id) ? 'text-brand-blue dark:text-brand-blue-light' : 'text-slate-300 dark:text-slate-600'"
                   >
                     {{ isMapLayerEnabled(layer.id) ? 'check_circle' : 'radio_button_unchecked' }}
                   </span>
@@ -166,7 +166,7 @@
     body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
   >
           <div v-if="currentViewedStop !== undefined" class="space-y-4">
-            <div class="rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10">
+            <div class="rounded-xl bg-brand-blue/10 p-4 dark:bg-brand-blue/100/10">
               <StopStatus :currentViewedStop="currentViewedStop" />
             </div>
 
@@ -195,7 +195,7 @@
             </div>
           </div>
 
-          <div v-else class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
+          <div v-else class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
             Select a stop on the map to view departures.
           </div>
   </Modal>

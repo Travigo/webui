@@ -10,11 +10,11 @@
       :show-tabs="false"
     />
 
-    <div v-else-if="services.length === 0" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+    <div v-else-if="services.length === 0" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
       No services are listed for this operator.
     </div>
 
-    <div v-else class="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
+    <div v-else class="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-100 bg-white">
       <router-link
         v-for="service in services"
         v-bind:key="service.PrimaryIdentifier"
@@ -28,7 +28,7 @@
           :short="service.BrandDisplayMode=='short'"
         />
         <div class="min-w-0">
-          <h3 class="truncate text-[15px] font-extrabold leading-tight text-slate-950 sm:text-base">
+          <h3 class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
             {{ service.PrimaryName || service.ServiceName || 'Unnamed service' }}
           </h3>
           <p class="mt-1 flex items-center gap-1 text-xs font-semibold text-slate-500">

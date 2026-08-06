@@ -10,7 +10,7 @@
       <template #actions>
         <button
           type="button"
-          class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-xl"
           :disabled="!isAuthenticated || loadingRunner || refreshingRunner"
           @click="loadBatchRunner"
         >
@@ -50,7 +50,7 @@
             <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-xl"
                 @click="selectAllPlanTasks"
               >
                 <span class="material-symbols-outlined text-[20px]">select_all</span>
@@ -59,7 +59,7 @@
 
               <button
                 type="button"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-2xl"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:rounded-xl"
                 @click="selectNoPlanTasks"
               >
                 <span class="material-symbols-outlined text-[20px]">deselect</span>
@@ -79,7 +79,7 @@
               >
                 <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">
+                    <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">
                       {{ groupLabel(group) }}
                     </h3>
                     <p class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -89,7 +89,7 @@
 
                   <button
                     type="button"
-                    class="inline-flex h-8 items-center justify-center rounded-lg bg-slate-100 px-2 text-xs font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    class="inline-flex h-8 items-center justify-center rounded-lg bg-slate-100 px-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     @click="toggleGroupSelection(group)"
                   >
                     {{ isGroupFullySelected(group) ? 'Clear' : 'Select' }}
@@ -108,7 +108,7 @@
                   >
                     <input
                       type="checkbox"
-                      class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                      class="mt-1 h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue dark:border-slate-600 dark:bg-slate-900"
                       :checked="isPlanTaskSelected(item.identifier)"
                       @change="togglePlanTask(item.identifier, $event.target.checked)"
                     >
@@ -126,13 +126,13 @@
             </div>
           </div>
 
-          <aside class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800 lg:sticky lg:top-4">
+          <aside class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 lg:sticky lg:top-4">
             <div class="space-y-3">
               <label class="flex min-h-10 items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200">
                 <input
                   v-model="forceImport"
                   type="checkbox"
-                  class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                  class="h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue dark:border-slate-600 dark:bg-slate-900"
                 >
                 Force import
               </label>
@@ -141,7 +141,7 @@
                 <input
                   v-model="continueOnFailure"
                   type="checkbox"
-                  class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                  class="h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue dark:border-slate-600 dark:bg-slate-900"
                 >
                 Continue after failures
               </label>
@@ -159,7 +159,7 @@
 
               <button
                 type="button"
-                class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-brand-blue px-4 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-70"
+                class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-70"
                 :disabled="startingRun || selectedPlanTasks.size === 0"
                 @click="startRun"
               >
@@ -185,13 +185,13 @@
             v-for="run in runs"
             v-bind:key="run.id"
             type="button"
-            class="rounded-2xl border p-3 text-left transition hover:border-blue-100 hover:bg-blue-50 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10"
-            :class="run.id === selectedRunId ? 'border-blue-200 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10' : 'border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800'"
+            class="rounded-xl border p-3 text-left transition hover:border-brand-blue/20 hover:bg-brand-blue/10 dark:hover:border-brand-blue/40 dark:hover:bg-brand-blue/100/10"
+            :class="run.id === selectedRunId ? 'border-brand-blue/40 bg-brand-blue/10 dark:border-brand-blue/40 dark:bg-brand-blue/100/10' : 'border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800'"
             @click="selectRun(run.id)"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h2 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">
+                <h2 class="truncate text-sm font-bold text-slate-950 dark:text-slate-100">
                   {{ run.id }}
                 </h2>
                 <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -210,7 +210,7 @@
           <template #actions>
             <button
               type="button"
-              class="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-red-50 px-3 text-sm font-extrabold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
+              class="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-red-50 px-3 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
               :disabled="!canCancelSelectedRun || cancellingRun"
               @click="cancelRun"
             >
@@ -269,8 +269,8 @@
                   v-for="stage in workflowStages"
                   v-bind:key="stage.key"
                   type="button"
-                  class="inline-flex min-h-10 max-w-72 shrink-0 items-center gap-2 rounded-xl border px-3 text-left text-xs font-extrabold transition"
-                  :class="stage.key === selectedStageKey ? 'border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
+                  class="inline-flex min-h-10 max-w-72 shrink-0 items-center gap-2 rounded-xl border px-3 text-left text-xs font-bold transition"
+                  :class="stage.key === selectedStageKey ? 'border-brand-blue/20 bg-brand-blue/10 text-brand-blue dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
                   @click="selectStage(stage.key)"
                 >
                   <span :class="['h-2 w-2 rounded-full', statusDotClass(stage.status)]"></span>
@@ -287,7 +287,7 @@
                 <div class="overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-800">
                   <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
                     <div class="flex flex-wrap items-center gap-2">
-                      <h3 class="text-base font-extrabold text-slate-950 dark:text-slate-100">{{ selectedWorkflowStage.name }}</h3>
+                      <h3 class="text-base font-bold text-slate-950 dark:text-slate-100">{{ selectedWorkflowStage.name }}</h3>
                       <span :class="statusClass(selectedWorkflowStage.status, true)">
                         {{ formatStatus(selectedWorkflowStage.status) }}
                       </span>
@@ -302,13 +302,13 @@
                       v-for="task in selectedStageTasks"
                       v-bind:key="task.id"
                       type="button"
-                      class="block w-full px-4 py-3 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10"
-                      :class="{ 'bg-blue-50 dark:bg-blue-500/10': task.id === selectedTaskId }"
+                      class="block w-full px-4 py-3 text-left transition hover:bg-brand-blue/10 dark:hover:bg-brand-blue/100/10"
+                      :class="{ 'bg-brand-blue/10 dark:bg-brand-blue/100/10': task.id === selectedTaskId }"
                       @click="selectTask(task.id)"
                     >
                       <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                          <h4 class="break-words text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
+                          <h4 class="break-words text-sm font-bold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
                           <p class="mt-1 break-words text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
                         </div>
                         <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
@@ -317,7 +317,7 @@
                           </span>
                           <span
                             v-if="task.podStatus"
-                            class="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-extrabold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                            class="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
                           >
                             Pod {{ formatStatus(task.podStatus) }}
                           </span>
@@ -342,13 +342,13 @@
                       v-for="task in selectedStageTasks"
                       v-bind:key="task.id"
                       type="button"
-                      class="block w-full px-4 py-3 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10"
-                      :class="{ 'bg-blue-50 dark:bg-blue-500/10': task.id === selectedTaskId }"
+                      class="block w-full px-4 py-3 text-left transition hover:bg-brand-blue/10 dark:hover:bg-brand-blue/100/10"
+                      :class="{ 'bg-brand-blue/10 dark:bg-brand-blue/100/10': task.id === selectedTaskId }"
                       @click="selectTask(task.id)"
                     >
                       <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                          <h4 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
+                          <h4 class="truncate text-sm font-bold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
                           <p class="mt-1 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
                         </div>
                         <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
@@ -357,7 +357,7 @@
                           </span>
                           <span
                             v-if="task.podStatus"
-                            class="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-extrabold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                            class="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
                           >
                             Pod {{ formatStatus(task.podStatus) }}
                           </span>
@@ -370,7 +370,7 @@
                 <div class="overflow-hidden rounded-xl bg-slate-950">
                   <div class="flex items-start justify-between gap-3 border-b border-slate-800 px-4 py-3">
                     <div class="min-w-0">
-                      <h3 class="text-sm font-extrabold text-white">Log</h3>
+                      <h3 class="text-sm font-bold text-white">Log</h3>
                       <p class="mt-0.5 truncate text-xs font-semibold text-slate-400">
                         {{ selectedTask?.name || 'Select a task' }}
                       </p>
@@ -378,7 +378,7 @@
 
                     <button
                       type="button"
-                      class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-800 px-3 text-xs font-extrabold text-slate-100 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-800 px-3 text-xs font-bold text-slate-100 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
                       :disabled="loadingLog || !selectedLog"
                       title="Jump to bottom"
                       aria-label="Jump to bottom of log"
@@ -1024,13 +1024,13 @@ export default {
     },
     statusClass(status, compact = false) {
       const base = compact
-        ? 'inline-flex h-7 shrink-0 items-center rounded-lg border px-2 text-xs font-extrabold'
-        : 'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-xs font-extrabold'
+        ? 'inline-flex h-7 shrink-0 items-center rounded-lg border px-2 text-xs font-bold'
+        : 'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold'
       const tone = {
         succeeded: 'border-green-100 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-100',
         failed: 'border-red-100 bg-red-50 text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100',
         running: 'border-amber-100 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100',
-        pending: 'border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100',
+        pending: 'border-brand-blue/20 bg-brand-blue/10 text-brand-blue dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light',
         cancelled: 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
         skipped: 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
       }[String(status || '').toLowerCase()] || 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
@@ -1042,7 +1042,7 @@ export default {
         succeeded: 'bg-green-500',
         failed: 'bg-red-500',
         running: 'bg-amber-500',
-        pending: 'bg-blue-500',
+        pending: 'bg-brand-blue/100',
         cancelled: 'bg-slate-400',
         skipped: 'bg-slate-400'
       }[String(status || '').toLowerCase()] || 'bg-slate-400'

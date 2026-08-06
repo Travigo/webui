@@ -5,7 +5,7 @@
     subtitle="Fetching stop details, services, amenities, and departures."
   />
 
-  <div v-else-if="stop" class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else-if="stop" class="ui-page ui-page-stack">
     <PageHeader
       :title="stop.PrimaryName"
       :subtitle="stop.OtherNames?.Descriptor || ''"
@@ -94,7 +94,7 @@
       <div class="grid grid-cols-2 gap-2">
         <router-link
           :to="{ name: 'journeyplanner/home' }"
-          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-blue-700 sm:rounded-2xl"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-bold text-brand-blue sm:rounded-xl"
         >
           <span class="material-symbols-outlined text-[21px]">route</span>
           <span>Plan a journey</span>
@@ -102,35 +102,35 @@
 
         <button
           type="button"
-          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 sm:rounded-2xl"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 sm:rounded-xl"
           :disabled="boardLoading"
           @click="refreshView()"
         >
           <span class="material-symbols-outlined text-[24px]" :class="{'animate-spin': boardLoading}">refresh</span>
           <span class="leading-tight">
             Refresh now
-            <span class="block text-[10px] font-semibold text-blue-100">{{ lastUpdatedLabel }}</span>
+            <span class="block text-[11px] font-semibold text-brand-blue-light">{{ lastUpdatedLabel }}</span>
           </span>
         </button>
       </div>
     </Teleport>
   </div>
 
-  <section v-else-if="error" class="mt-4 rounded-2xl border border-red-100 bg-white p-5 shadow-sm dark:border-red-500/20 dark:bg-slate-900">
+  <section v-else-if="error" class="ui-panel mt-4 p-5">
     <div class="flex items-start gap-3">
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
         <span class="material-symbols-outlined">location_off</span>
       </span>
       <div>
-        <h1 class="font-extrabold text-slate-950 dark:text-slate-100">Stop unavailable</h1>
+        <h1 class="ui-section-title">Stop unavailable</h1>
         <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ error }}</p>
       </div>
     </div>
     <div class="mt-4 flex flex-wrap gap-2">
-      <button type="button" class="inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-4 text-sm font-extrabold text-white" @click="retryStop">
+      <button type="button" class="ui-button-primary" @click="retryStop">
         Try again
       </button>
-      <router-link :to="{ name: 'home' }" class="inline-flex min-h-11 items-center rounded-xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+      <router-link :to="{ name: 'home' }" class="ui-button-secondary">
         Search for another stop
       </router-link>
     </div>
@@ -153,21 +153,21 @@
               <article
                 v-for="item in selectedAmenity.items"
                 v-bind:key="amenityItemKey(item)"
-                class="flex gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm"
+                class="flex gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm"
               >
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-slate-500">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-slate-500">
                   <img
                     v-if="amenityLogo(item)"
                     :src="amenityLogo(item)"
                     :alt="`${item.PrimaryName} logo`"
                     class="h-full w-full object-cover"
                   >
-                  <span v-else class="text-sm font-extrabold text-slate-500">{{ amenityInitials(item.PrimaryName) }}</span>
+                  <span v-else class="text-sm font-bold text-slate-500">{{ amenityInitials(item.PrimaryName) }}</span>
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <h3 class="truncate text-sm font-extrabold text-slate-950 sm:text-base">{{ item.PrimaryName }}</h3>
+                      <h3 class="truncate text-sm font-bold text-slate-950 sm:text-base">{{ item.PrimaryName }}</h3>
                       <p class="mt-0.5 text-xs font-semibold text-slate-500">{{ formatAmenityType(item.Type) }}</p>
                     </div>
                     <span
@@ -182,7 +182,7 @@
                       :href="item.Website"
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition hover:bg-blue-100"
+                      class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue transition hover:bg-brand-blue/20"
                       :aria-label="`Open ${item.PrimaryName} website`"
                     >
                       <span class="material-symbols-outlined text-[18px]">open_in_new</span>
@@ -200,16 +200,16 @@
               <article
                 v-for="(item, index) in selectedAmenity.items"
                 v-bind:key="amenityItemKey(item, index)"
-                class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+                class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm"
               >
                 <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
                     <span class="material-symbols-outlined text-[22px]">{{ selectedAmenity.icon }}</span>
                   </span>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-3">
                       <div class="min-w-0">
-                        <h3 class="text-sm font-extrabold text-slate-950 sm:text-base">
+                        <h3 class="text-sm font-bold text-slate-950 sm:text-base">
                           {{ item.PrimaryName || `${selectedAmenity.itemLabel} ${index + 1}` }}
                         </h3>
                         <p class="mt-0.5 text-xs font-semibold text-slate-500">{{ formatAmenityType(item.Type) }}</p>
@@ -224,21 +224,21 @@
                     </div>
 
                     <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Capacity</p>
-                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ formatCapacity(item.Capacity) }}</p>
+                      <div class="rounded-xl bg-slate-50 px-3 py-2">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Capacity</p>
+                        <p class="mt-0.5 text-sm font-bold text-slate-950">{{ formatCapacity(item.Capacity) }}</p>
                       </div>
-                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Distance</p>
-                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ formatAmenityDistance(item.DistanceMetres) || 'At stop' }}</p>
+                      <div class="rounded-xl bg-slate-50 px-3 py-2">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Distance</p>
+                        <p class="mt-0.5 text-sm font-bold text-slate-950">{{ formatAmenityDistance(item.DistanceMetres) || 'At stop' }}</p>
                       </div>
-                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Cost</p>
-                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ item.Cost ? 'Paid' : 'Free' }}</p>
+                      <div class="rounded-xl bg-slate-50 px-3 py-2">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Cost</p>
+                        <p class="mt-0.5 text-sm font-bold text-slate-950">{{ item.Cost ? 'Paid' : 'Free' }}</p>
                       </div>
-                      <div class="rounded-2xl bg-slate-50 px-3 py-2">
-                        <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Cover</p>
-                        <p class="mt-0.5 text-sm font-extrabold text-slate-950">{{ item.Covered ? 'Covered' : 'Uncovered' }}</p>
+                      <div class="rounded-xl bg-slate-50 px-3 py-2">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Cover</p>
+                        <p class="mt-0.5 text-sm font-bold text-slate-950">{{ item.Covered ? 'Covered' : 'Uncovered' }}</p>
                       </div>
                     </div>
 
@@ -246,7 +246,7 @@
                       <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="item.Accessible ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
                         {{ item.Accessible ? 'Accessible' : 'Not marked accessible' }}
                       </span>
-                      <span v-if="item.OperatorName" class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+                      <span v-if="item.OperatorName" class="rounded-full bg-brand-blue/10 px-2.5 py-1 text-xs font-bold text-brand-blue">
                         {{ item.OperatorName }}
                       </span>
                     </div>
@@ -259,14 +259,14 @@
               <article
                 v-for="(toilet, index) in selectedAmenity.items"
                 v-bind:key="amenityItemKey(toilet, index)"
-                class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+                class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm"
               >
                 <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
                     <span class="material-symbols-outlined text-[22px]">wc</span>
                   </span>
                   <div class="min-w-0 flex-1">
-                    <h3 class="text-sm font-extrabold text-slate-950 sm:text-base">Toilet {{ index + 1 }}</h3>
+                    <h3 class="text-sm font-bold text-slate-950 sm:text-base">Toilet {{ index + 1 }}</h3>
                     <p class="mt-1 text-sm text-slate-600" v-if="toilet.LocationDescription">{{ toilet.LocationDescription }}</p>
                     <div class="mt-3 flex flex-wrap gap-2" v-if="toilet.Association || formatAmenityDistance(toilet.DistanceMetres)">
                       <span
@@ -290,7 +290,7 @@
                       <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.CustomerOnly ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'">
                         {{ toilet.CustomerOnly ? 'Customers only' : 'Public access' }}
                       </span>
-                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Male ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'">
+                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Male ? 'bg-brand-blue/10 text-brand-blue' : 'bg-slate-100 text-slate-500'">
                         {{ toilet.Male ? 'Male toilets' : 'No male toilets listed' }}
                       </span>
                       <span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="toilet.Female ? 'bg-brand-pink/10 text-brand-pink' : 'bg-slate-100 text-slate-500'">
@@ -299,7 +299,7 @@
                     </div>
                     <div
                       v-if="toilet.OpenHoursDescription"
-                      class="mt-3 flex gap-2 rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-600"
+                      class="mt-3 flex gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600"
                     >
                       <span class="material-symbols-outlined mt-0.5 text-[18px] text-slate-400">schedule</span>
                       <span>{{ toilet.OpenHoursDescription }}</span>
@@ -313,7 +313,7 @@
               <article
                 v-for="(item, index) in selectedAmenity?.items || []"
                 v-bind:key="amenityItemKey(item, index)"
-                class="rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-700 shadow-sm"
+                class="rounded-xl border border-slate-100 bg-white p-4 text-sm text-slate-700 shadow-sm"
               >
                 {{ item.PrimaryName || item.Type || item.LocationDescription || `Item ${index + 1}` }}
               </article>
@@ -571,7 +571,7 @@ export default {
     associationClass(association) {
       return String(association || '').toLowerCase() === 'inside'
         ? 'bg-green-50 text-green-700'
-        : 'bg-blue-50 text-blue-700'
+        : 'bg-brand-blue/10 text-brand-blue'
     },
     formatAmenityDistance(distance) {
       if (typeof distance !== 'number') {

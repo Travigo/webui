@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <PageHeader
       eyebrow="Account"
       title="Settings"
@@ -8,10 +8,10 @@
       variant="panel"
     />
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
+    <section class="ui-panel p-4 sm:p-5">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Notifications</h2>
+          <h2 class="ui-section-title">Notifications</h2>
           <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Set up push notifications for service changes and saved stop updates.
           </p>
@@ -19,7 +19,7 @@
 
         <button
           type="button"
-          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-60 sm:rounded-2xl"
+          class="ui-button-primary"
           :disabled="!auth0.isAuthenticated || settingUpNotifications"
           @click.stop.prevent="setupNotifications"
         >
@@ -32,19 +32,19 @@
 
       <div
         v-if="!auth0.isAuthenticated"
-        class="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100"
+        class="mt-4 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100"
       >
         Sign in to set up notification devices.
       </div>
 
       <div
         v-if="notificationTargetsError"
-        class="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100"
+        class="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100"
       >
         {{ notificationTargetsError }}
       </div>
 
-      <div v-if="auth0.isAuthenticated" class="mt-4 overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
+      <div v-if="auth0.isAuthenticated" class="mt-4 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
         <div
           v-if="loadingNotificationTargets"
           class="flex items-center gap-3 px-4 py-4 text-sm font-bold text-slate-500 dark:text-slate-400"
@@ -67,11 +67,11 @@
             class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800"
           >
             <div class="flex min-w-0 items-center gap-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
                 <span class="material-symbols-outlined text-[22px]">{{ notificationTargetIcon(target) }}</span>
               </span>
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">{{ notificationTargetName(target) }}</h3>
+                <h3 class="truncate text-sm font-bold text-slate-950 dark:text-slate-100 sm:text-base">{{ notificationTargetName(target) }}</h3>
                 <p class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ notificationTargetDescription(target) }}</p>
               </div>
             </div>
@@ -105,7 +105,7 @@
               <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  class="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  class="inline-flex h-11 items-center justify-center rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                   :disabled="deletingNotificationToken !== ''"
                   @click="closeDeleteNotificationTargetConfirm"
                 >
@@ -113,7 +113,7 @@
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
                   :disabled="deletingNotificationToken !== ''"
                   @click="confirmDeleteNotificationTarget"
                 >

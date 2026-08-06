@@ -81,7 +81,7 @@ export default {
   <span v-for="icon in this.getUniqueServiceIcons(stop.Services)" class="text-center" :class="[width, height]">
     <span
       v-if="icon['type'] === 'TextIcon'"
-      class="material-symbols-outlined bg-blue-500 rounded-lg text-white font-light"
+      class="material-symbols-outlined bg-brand-blue/100 rounded-lg text-white font-light"
       :class="[width, height]"
       :style="textStyle"
     >
@@ -97,7 +97,7 @@ export default {
     </span>
     <span
       v-else
-      class="material-symbols-outlined rounded-lg bg-blue-500 text-center font-light text-white"
+      class="material-symbols-outlined rounded-lg bg-brand-blue/100 text-center font-light text-white"
       :class="[width, height]"
       :style="textStyle"
     >

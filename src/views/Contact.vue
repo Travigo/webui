@@ -4,7 +4,7 @@ import Panel from '@/components/Panel.vue'
 </script>
 
 <template>
-  <div class="space-y-4 pb-16 pt-3 sm:space-y-5 sm:pb-20 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <PageHeader
       title="Contact us"
       subtitle="Get in touch about Travigo."
@@ -13,7 +13,7 @@ import Panel from '@/components/Panel.vue'
     />
 
     <Panel padded>
-      You can contact me by email at <a href="mailto:aaron@travigo.app" class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600">
+      You can contact me by email at <a href="mailto:aaron@travigo.app" class="underline text-brand-blue hover:text-brand-blue-dark visited:text-purple-600">
         aaron@travigo.app
       </a>
     </Panel>

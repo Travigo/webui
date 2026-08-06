@@ -7,7 +7,7 @@
     :show-tabs="false"
   />
 
-  <div v-else class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else class="ui-page ui-page-stack">
     <PageHeader
       :title="operator.PrimaryName"
       :subtitle="operatorSubtitle"
@@ -22,7 +22,7 @@
       </template>
     </PageHeader>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
 
       <OperatorOverview :operator="operator" v-if="currentTab == 'overview'" />

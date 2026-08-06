@@ -1,15 +1,15 @@
 <template>
-  <div class="pb-16 pt-2 sm:pb-20">
+  <div class="ui-page">
     <main class="mx-auto max-w-3xl">
-      <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <section class="ui-panel">
         <header class="border-b border-slate-100 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:py-6">
           <div class="flex items-start gap-3">
-            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
               <span class="material-symbols-outlined text-[25px]">route</span>
             </span>
             <div>
-              <h1 class="text-xl font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-2xl">Where are you going?</h1>
-              <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Compare public transport journeys and connections.</p>
+              <h1 class="ui-page-title">Where are you going?</h1>
+              <p class="ui-body mt-1">Compare public transport journeys and connections.</p>
             </div>
           </div>
         </header>
@@ -17,14 +17,14 @@
         <form class="space-y-5 p-4 sm:p-6" @submit.prevent="submit">
           <section aria-labelledby="planner-route-heading">
             <h2 id="planner-route-heading" class="sr-only">Route</h2>
-            <div class="relative space-y-3 rounded-3xl bg-slate-50 p-3 dark:bg-slate-800/70 sm:p-4">
+            <div class="ui-subtle relative space-y-3 p-3 sm:p-4">
               <div>
                 <div class="mb-2 flex items-center justify-between gap-3">
-                  <label class="text-xs font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="planner-origin-stop">From</label>
+                  <label class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="planner-origin-stop">From</label>
                   <button
                     type="button"
-                    class="inline-flex min-h-10 items-center gap-1.5 rounded-xl px-2.5 text-xs font-extrabold transition"
-                    :class="originMode === 'location' ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200' : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-900'"
+                    class="inline-flex min-h-10 items-center gap-1.5 rounded-xl px-2.5 text-xs font-bold transition"
+                    :class="originMode === 'location' ? 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light' : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-900'"
                     @click="toggleCurrentLocation"
                   >
                     <span class="material-symbols-outlined text-[18px]">my_location</span>
@@ -38,25 +38,25 @@
                   input-id="planner-origin-stop"
                   label="Origin stop"
                   placeholder="Search for a stop or station"
-                  searchClasses="h-14 rounded-2xl border-slate-200 bg-white px-4 text-base text-slate-950 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  searchClasses="h-14 rounded-xl border-slate-200 bg-white px-4 text-base text-slate-950 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
                   :flush="true"
                   :show-filters="false"
                   v-model="originStop"
                   @selected-result="rememberEndpoint('origin', $event)"
                 />
 
-                <div v-else class="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm dark:border-blue-500/20 dark:bg-slate-950">
+                <div v-else class="rounded-xl border border-brand-blue/20 bg-white p-3 shadow-sm dark:border-brand-blue/20 dark:bg-slate-950">
                   <div class="flex items-center gap-3">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
                       <span class="material-symbols-outlined text-[21px]" :class="{ 'animate-spin': locatingOrigin }">{{ locatingOrigin ? 'progress_activity' : 'near_me' }}</span>
                     </span>
                     <div class="min-w-0 flex-1">
-                      <p class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ originLocationTitle }}</p>
+                      <p class="text-sm font-bold text-slate-950 dark:text-slate-100">{{ originLocationTitle }}</p>
                       <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">{{ originLocationDescription }}</p>
                     </div>
                     <button
                       type="button"
-                      class="min-h-11 shrink-0 rounded-xl bg-blue-50 px-3 text-xs font-extrabold text-blue-700 transition hover:bg-blue-100 disabled:opacity-60 dark:bg-blue-500/10 dark:text-blue-200"
+                      class="min-h-11 shrink-0 rounded-xl bg-brand-blue/10 px-3 text-xs font-bold text-brand-blue transition hover:bg-brand-blue/20 disabled:opacity-60 dark:bg-brand-blue/100/10 dark:text-brand-blue-light"
                       :disabled="locatingOrigin"
                       @click="requestOriginLocation"
                     >
@@ -69,7 +69,7 @@
 
               <button
                 type="button"
-                class="absolute right-5 top-[7.55rem] z-20 flex h-11 w-11 items-center justify-center rounded-full border-4 border-slate-50 bg-white text-blue-700 shadow-md transition hover:scale-105 hover:bg-blue-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:scale-100 dark:border-slate-800 dark:bg-slate-950 dark:text-blue-200 dark:disabled:text-slate-600 sm:right-7"
+                class="absolute right-5 top-[7.55rem] z-20 flex h-11 w-11 items-center justify-center rounded-full border-4 border-slate-50 bg-white text-brand-blue shadow-md transition hover:scale-105 hover:bg-brand-blue/10 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:scale-100 dark:border-slate-800 dark:bg-slate-950 dark:text-brand-blue-light dark:disabled:text-slate-600 sm:right-7"
                 :disabled="originMode !== 'stop' || !originStop || !destinationStop"
                 aria-label="Swap origin and destination"
                 title="Swap origin and destination"
@@ -79,13 +79,13 @@
               </button>
 
               <div class="border-t border-slate-200 pt-3 dark:border-slate-700">
-                <label class="mb-2 block text-xs font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="planner-destination-stop">To</label>
+                <label class="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="planner-destination-stop">To</label>
                 <SearchBar
                   mode="store"
                   input-id="planner-destination-stop"
                   label="Destination stop"
                   placeholder="Search for a stop or station"
-                  searchClasses="h-14 rounded-2xl border-slate-200 bg-white px-4 text-base text-slate-950 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  searchClasses="h-14 rounded-xl border-slate-200 bg-white px-4 text-base text-slate-950 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
                   :flush="true"
                   :show-filters="false"
                   v-model="destinationStop"
@@ -102,14 +102,14 @@
 
           <section class="grid gap-4 sm:grid-cols-2" aria-label="Journey time and preferences">
             <div>
-              <span class="mb-2 block text-xs font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400">When</span>
-              <div class="grid grid-cols-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+              <span class="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">When</span>
+              <div class="grid grid-cols-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
                 <button
                   v-for="option in timeModeOptions"
                   :key="option.value"
                   type="button"
-                  class="min-h-11 rounded-xl px-3 text-sm font-extrabold transition"
-                  :class="timeMode === option.value ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-950 dark:text-blue-200' : 'text-slate-500 dark:text-slate-400'"
+                  class="min-h-11 rounded-xl px-3 text-sm font-bold transition"
+                  :class="timeMode === option.value ? 'bg-white text-brand-blue shadow-sm dark:bg-slate-950 dark:text-brand-blue-light' : 'text-slate-500 dark:text-slate-400'"
                   @click="timeMode = option.value"
                 >
                   {{ option.label }}
@@ -120,13 +120,13 @@
                 id="planner-departure-time"
                 v-model="departureDateTime"
                 type="datetime-local"
-                class="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 shadow-sm focus:border-brand-blue focus:ring-brand-blue dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 aria-label="Departure date and time"
               >
             </div>
 
-            <details class="group rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-              <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-extrabold text-slate-800 dark:text-slate-100">
+            <details class="group rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+              <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-bold text-slate-800 dark:text-slate-100">
                 <span class="flex items-center gap-2">
                   <span class="material-symbols-outlined text-[20px] text-slate-400">tune</span>
                   Preferences
@@ -161,7 +161,7 @@
 
           <button
             type="submit"
-            class="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-brand-blue px-4 text-base font-black text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-50"
+            class="ui-button-primary min-h-14 w-full text-base"
             :disabled="!hasEndpoints"
           >
             Find journeys

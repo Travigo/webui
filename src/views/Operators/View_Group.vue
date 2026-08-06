@@ -8,7 +8,7 @@
     :show-tabs="false"
   />
 
-  <div v-else-if="group" class="space-y-4 pb-16 pt-3 sm:space-y-5 sm:pb-20 sm:pt-4">
+  <div v-else-if="group" class="ui-page ui-page-stack">
     <PageHeader
       :title="group.Name"
       :subtitle="`${group.Operators?.length || 0} operator${group.Operators?.length === 1 ? '' : 's'}`"
@@ -26,9 +26,9 @@
           v-for="operator in group.Operators"
           v-bind:key="operator.PrimaryIdentifier"
           :to="{'name': 'operators/view', params: {'id': operator.PrimaryIdentifier}}"
-          class="flex min-w-0 items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2.5 text-sm transition hover:bg-blue-50 dark:bg-slate-950/70 dark:hover:bg-blue-500/10"
+          class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5 text-sm transition hover:bg-brand-blue/10 dark:bg-slate-950/70 dark:hover:bg-brand-blue/100/10"
         >
-          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-200">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue shadow-sm dark:bg-slate-900 dark:text-brand-blue-light">
             <span class="material-symbols-outlined text-[20px]">business</span>
           </span>
           <span class="min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-200">

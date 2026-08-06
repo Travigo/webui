@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 pb-16 pt-3 sm:space-y-5 sm:pb-20 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <PageHeader
       title="Timetables"
       subtitle="Scheduled transport service timings."

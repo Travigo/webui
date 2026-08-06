@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 pt-3 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <PageHeader
       eyebrow="Account"
       title="Account"

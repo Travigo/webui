@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 pt-3 sm:space-y-5 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <PageHeader
       title="Saved items"
       subtitle="Manage stops and journeys you want quick access to."
@@ -27,7 +27,7 @@
       Showing items saved on this device · {{ savedItemsCacheLabel }}
     </div>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl">
+    <section class="ui-panel">
       <TabBar
         :tabs="savedItemTabs"
         :model-value="savedItemsTab"
@@ -47,19 +47,19 @@
       />
 
       <div v-else-if="savedObjectsError" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+        <div class="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
           {{ savedObjectsError }}
         </div>
       </div>
 
       <div v-else-if="!auth0.isAuthenticated" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100">
+        <div class="rounded-xl border border-brand-blue/20 bg-brand-blue/10 px-4 py-3 text-sm font-medium text-brand-blue-dark dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
           Sign in to see your saved stops.
         </div>
       </div>
 
       <div v-else-if="savedStops.length === 0" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
+        <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
           You do not have any saved stops yet.
         </div>
       </div>
@@ -82,7 +82,7 @@
         <button
           v-if="editing"
           type="button"
-          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
+          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
           @click="removeSavedItem(stop, 'stop')"
           :aria-label="`Remove ${stop.PrimaryName}`"
         >
@@ -103,19 +103,19 @@
       />
 
       <div v-else-if="savedObjectsError" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+        <div class="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
           {{ savedObjectsError }}
         </div>
       </div>
 
       <div v-else-if="!auth0.isAuthenticated" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100">
+        <div class="rounded-xl border border-brand-blue/20 bg-brand-blue/10 px-4 py-3 text-sm font-medium text-brand-blue-dark dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
           Sign in to see your saved journeys.
         </div>
       </div>
 
       <div v-else-if="savedJourneys.length === 0" class="px-4 py-6 sm:px-5">
-        <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
+        <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
           You do not have any saved journeys yet.
         </div>
       </div>
@@ -135,7 +135,7 @@
         <button
           v-if="editing"
           type="button"
-          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
+          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
           @click="removeSavedItem(journey, 'journey')"
           :aria-label="`Remove ${journey.DestinationDisplay || 'saved journey'}`"
         >
@@ -158,7 +158,7 @@
     >
               <div
                 v-if="removeSavedStopError"
-                class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100"
+                class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100"
               >
                 {{ removeSavedStopError }}
               </div>
@@ -166,7 +166,7 @@
               <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  class="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  class="inline-flex h-11 items-center justify-center rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                   :disabled="removingSavedStop"
                   @click="closeRemoveConfirm"
                 >
@@ -174,7 +174,7 @@
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 text-sm font-extrabold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
                   :disabled="removingSavedStop"
                   @click="confirmRemoveSavedStop"
                 >

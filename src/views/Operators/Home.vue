@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 pb-16 pt-3 sm:space-y-5 sm:pb-20 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <Alert type="error" v-if="error">{{ error }}</Alert>
 
     <PageHeader
@@ -30,14 +30,14 @@
         No operators are available yet.
       </Notice>
 
-      <div v-else class="space-y-3">
+      <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
         <section
           v-for="(region, id) in operatorRegions"
           v-bind:key="id"
-          class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950/70"
+          class="py-4 first:pt-0 last:pb-0"
         >
           <div class="mb-2 flex items-center justify-between gap-3">
-            <h3 class="min-w-0 truncate text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">
+            <h3 class="min-w-0 truncate text-sm font-bold text-slate-950 dark:text-slate-100 sm:text-base">
               {{ region.Name }}
             </h3>
             <span class="shrink-0 text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -45,14 +45,14 @@
             </span>
           </div>
 
-          <div class="grid gap-2 md:grid-cols-2">
+          <div class="grid overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800 md:grid-cols-2">
             <router-link
               v-for="operator in region.Operators"
               v-bind:key="operator.PrimaryIdentifier"
               :to="{'name': 'operators/view', params: {'id': operator.PrimaryIdentifier}}"
-              class="flex min-w-0 items-center gap-3 rounded-2xl bg-white px-3 py-2.5 text-sm shadow-sm transition hover:bg-blue-50 dark:bg-slate-900 dark:hover:bg-blue-500/10"
+              class="flex min-w-0 items-center gap-3 border-b border-slate-100 bg-white px-3 py-2.5 text-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/60 md:odd:border-r"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
                 <span class="material-symbols-outlined text-[20px]">business</span>
               </span>
               <span class="min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-200">

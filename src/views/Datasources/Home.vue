@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div class="ui-page ui-page-stack">
     <Alert type="error" v-if="error">{{ error }}</Alert>
 
     <PageHeader
@@ -20,19 +20,19 @@
         <div
           v-for="summary in summaryCards"
           v-bind:key="summary.label"
-          class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4"
+          class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4"
         >
           <div class="flex items-center gap-2">
             <span :class="summary.iconClass" class="material-symbols-outlined text-[22px]">{{ summary.icon }}</span>
-            <span class="text-lg font-extrabold text-slate-950 dark:text-slate-100">{{ summary.value }}</span>
+            <span class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ summary.value }}</span>
           </div>
           <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">{{ summary.label }}</p>
         </div>
       </section>
 
-      <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-          <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Available data</h2>
+          <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Available data</h2>
           <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Object types currently indexed by Travigo.</p>
         </div>
 
@@ -42,18 +42,18 @@
             v-bind:key="item.key"
             class="flex items-center gap-3 px-4 py-3 sm:px-5"
           >
-            <span :class="item.iconClass" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl">
+            <span :class="item.iconClass" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
               <span class="material-symbols-outlined text-[22px]">{{ item.icon }}</span>
             </span>
             <div class="min-w-0 flex-1">
-              <h3 class="truncate text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">{{ item.label }}</h3>
+              <h3 class="truncate text-sm font-bold text-slate-950 dark:text-slate-100 sm:text-base">{{ item.label }}</h3>
               <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">{{ item.description }}</p>
             </div>
-            <span class="shrink-0 text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ item.count }}</span>
+            <span class="shrink-0 text-sm font-bold text-slate-950 dark:text-slate-100">{{ item.count }}</span>
             <router-link
               v-if="item.route"
               :to="item.route"
-              class="hidden h-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-200 dark:hover:bg-blue-500/10 sm:inline-flex"
+              class="hidden h-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:bg-slate-800 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10 sm:inline-flex"
             >
               Browse
             </router-link>
@@ -62,14 +62,14 @@
       </section>
 
       <section class="grid gap-4 lg:grid-cols-2">
-        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
+        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
           <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
             <div class="flex items-start gap-3">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 <span class="material-symbols-outlined text-[21px]">public</span>
               </span>
               <div class="min-w-0 flex-1">
-                <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Coverage and datasources</h2>
+                <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Coverage and datasources</h2>
                 <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Browse datasource records grouped by region. Select one to open the provider detail view.</p>
               </div>
             </div>
@@ -82,7 +82,7 @@
               class="px-4 py-3 sm:px-5"
             >
               <div class="mb-2 flex items-center justify-between gap-3">
-                <h3 class="min-w-0 truncate text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ group.region }}</h3>
+                <h3 class="min-w-0 truncate text-sm font-bold text-slate-950 dark:text-slate-100">{{ group.region }}</h3>
                 <span class="shrink-0 text-xs font-bold text-slate-500 dark:text-slate-400">
                   {{ group.datasources.length }} datasource{{ group.datasources.length === 1 ? '' : 's' }}
                 </span>
@@ -93,9 +93,9 @@
                   v-for="datasource in group.datasources"
                   v-bind:key="datasource.key"
                   :to="datasource.route"
-                  class="flex min-w-0 items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2.5 text-sm transition hover:bg-blue-50 dark:bg-slate-950/70 dark:hover:bg-blue-500/10"
+                  class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5 text-sm transition hover:bg-brand-blue/10 dark:bg-slate-950/70 dark:hover:bg-brand-blue/100/10"
                 >
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-200">
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue shadow-sm dark:bg-slate-900 dark:text-brand-blue-light">
                     <span class="material-symbols-outlined text-[20px]">database</span>
                   </span>
                   <span class="min-w-0 flex-1">
@@ -132,13 +132,13 @@
         />
       </section>
 
-      <section class="rounded-2xl border border-blue-100 bg-blue-50 p-4 shadow-sm dark:border-blue-500/20 dark:bg-blue-500/10 sm:p-5">
+      <section class="rounded-xl border border-brand-blue/20 bg-brand-blue/10 p-4 shadow-sm dark:border-brand-blue/20 dark:bg-brand-blue/100/10 sm:p-5">
         <div class="flex items-start gap-3">
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-200">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue shadow-sm dark:bg-slate-900 dark:text-brand-blue-light">
             <span class="material-symbols-outlined text-[23px]">info</span>
           </span>
           <div>
-            <h2 class="text-base font-extrabold text-slate-950 dark:text-slate-100 sm:text-lg">Provider detail pages</h2>
+            <h2 class="text-base font-bold text-slate-950 dark:text-slate-100 sm:text-lg">Provider detail pages</h2>
             <p class="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300">
               Provider pages show dataset formats and supported object types. They are linked from data attribution sections on stops, journeys, services, and operators.
             </p>
@@ -182,13 +182,13 @@ const DataBreakdown = {
     }
   },
   template: `
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="flex items-start gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           <span class="material-symbols-outlined text-[21px]">{{ icon }}</span>
         </span>
         <div class="min-w-0">
-          <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ title }}</h2>
+          <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">{{ title }}</h2>
           <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{{ subtitle }}</p>
         </div>
       </div>
@@ -200,7 +200,7 @@ const DataBreakdown = {
           class="flex items-center justify-between gap-3 px-4 py-2.5 text-sm sm:px-5"
         >
           <span class="min-w-0 truncate font-bold text-slate-700 dark:text-slate-200">{{ item.name }}</span>
-          <span class="shrink-0 font-extrabold text-slate-950 dark:text-slate-100">{{ item.countLabel }}</span>
+          <span class="shrink-0 font-bold text-slate-950 dark:text-slate-100">{{ item.countLabel }}</span>
         </div>
       </div>
 
@@ -243,7 +243,7 @@ export default {
           label: 'Providers',
           value: this.formatNumber(this.providerCount, '0'),
           icon: 'business',
-          iconClass: 'text-blue-600'
+          iconClass: 'text-brand-blue'
         },
         {
           label: 'Datasets',
@@ -291,7 +291,7 @@ export default {
           description: 'Live journeys currently tracked by realtime feeds.',
           count: this.formatNumber(this.statsByType.realtimejourneys.current, '--'),
           icon: 'rss_feed',
-          iconClass: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200'
+          iconClass: 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light'
         },
         {
           key: 'servicealerts',

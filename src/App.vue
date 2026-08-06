@@ -126,7 +126,7 @@ export default {
         return 'border-amber-100 bg-amber-50 text-amber-800 shadow-amber-900/10 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100'
       }
 
-      return 'border-blue-100 bg-blue-50 text-blue-800 shadow-blue-900/10 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100'
+      return 'border-brand-blue/20 bg-brand-blue/10 text-brand-blue-dark shadow-brand-blue/10 dark:border-brand-blue/40 dark:bg-brand-blue/20 dark:text-brand-blue-light'
     },
     toastIcon(type) {
       if (type === 'success') {
@@ -180,7 +180,7 @@ export default {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#f8fafc] text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100">
+  <div class="min-h-screen bg-[var(--ui-page)] text-slate-950 transition-colors dark:text-slate-100">
     <nav
       v-if="this.showChrome"
       class="relative z-50 mx-auto max-w-5xl px-4 pt-5 sm:px-8 sm:pt-8 lg:max-w-6xl lg:px-10"
@@ -268,7 +268,7 @@ export default {
 
     <nav
       v-if="this.showChrome"
-      class="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-xl shadow-slate-300/60 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:rounded-3xl sm:px-4 sm:py-3 sm:shadow-2xl xl:hidden dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40"
+      class="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg shadow-slate-300/40 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:px-4 sm:py-3 xl:hidden dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30"
       aria-label="Primary"
     >
       <div
@@ -282,10 +282,10 @@ export default {
           v-bind:key="item.name"
           v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
           :to="item.route"
-          class="group flex min-w-0 max-w-20 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-[11px] font-medium text-slate-600 transition hover:text-blue-600 sm:gap-1 sm:rounded-2xl sm:text-xs dark:text-slate-300 dark:hover:text-blue-300"
+          class="group flex min-w-0 max-w-20 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-[11px] font-medium text-slate-600 transition hover:text-brand-blue sm:gap-1 sm:text-xs dark:text-slate-300 dark:hover:text-brand-blue-light"
           active-class="bottom-nav-active"
         >
-          <span class="flex h-8 w-8 items-center justify-center rounded-full transition group-hover:bg-blue-50 sm:h-10 sm:w-10 dark:group-hover:bg-blue-500/10">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg transition group-hover:bg-brand-blue/10 sm:h-10 sm:w-10 dark:group-hover:bg-brand-blue/20">
             <span
               class="material-symbols-outlined [--bottom-nav-icon-size:24px] sm:[--bottom-nav-icon-size:26px]"
               style="font-size: var(--bottom-nav-icon-size); line-height: 1"
@@ -300,7 +300,7 @@ export default {
 
     <nav
       v-if="this.showChrome"
-      class="fixed left-6 top-1/2 z-50 hidden w-24 -translate-y-1/2 rounded-3xl border border-slate-200 bg-white/95 p-2 shadow-2xl shadow-slate-300/60 backdrop-blur xl:flex xl:flex-col xl:gap-1 dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40"
+      class="fixed left-6 top-1/2 z-50 hidden w-20 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-lg shadow-slate-300/40 backdrop-blur xl:flex xl:flex-col xl:gap-1 dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30"
       aria-label="Primary"
     >
       <router-link
@@ -308,10 +308,10 @@ export default {
         v-bind:key="item.name"
         v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
         :to="item.route"
-        class="group flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-xs font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+        class="group flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold text-slate-600 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-300 dark:hover:bg-brand-blue/20 dark:hover:text-brand-blue-light"
         active-class="desktop-nav-active"
       >
-        <span class="flex h-10 w-10 items-center justify-center rounded-2xl transition group-hover:bg-white dark:group-hover:bg-slate-800">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg transition">
           <span class="material-symbols-outlined text-[24px]">{{ item.icon }}</span>
         </span>
         <span class="truncate">{{ item.name }}</span>
@@ -323,7 +323,7 @@ export default {
         <div
           v-for="toast in toasts"
           v-bind:key="toast.id"
-          class="pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-bold shadow-xl backdrop-blur"
+          class="pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 text-sm font-bold shadow-xl backdrop-blur"
           :class="toastClasses(toast.type)"
         >
           <span class="material-symbols-outlined mt-0.5 text-[21px]">{{ toastIcon(toast.type) }}</span>
@@ -356,31 +356,29 @@ export default {
 }
 
 .bottom-nav-active {
-  color: #2563eb;
+  color: #696aad;
 }
 
 :global(.dark) .bottom-nav-active {
-  color: #93c5fd;
+  color: #c4c5e4;
 }
 
 .bottom-nav-active > span:first-child {
-  background: #dbeafe;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.16);
+  background: rgba(105, 106, 173, 0.14);
 }
 
 .desktop-nav-active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: rgba(105, 106, 173, 0.12);
+  color: #696aad;
 }
 
 :global(.dark) .desktop-nav-active {
-  background: rgba(37, 99, 235, 0.16);
-  color: #bfdbfe;
+  background: rgba(105, 106, 173, 0.2);
+  color: #c4c5e4;
 }
 
 :global(.dark) .bottom-nav-active > span:first-child {
-  background: rgba(37, 99, 235, 0.18);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+  background: rgba(105, 106, 173, 0.22);
 }
 
 .toast-enter-active,

@@ -88,7 +88,7 @@ export default {
     },
     indicatorClasses() {
       return {
-        info: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400/30 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20',
+        info: 'border-brand-blue/40 bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 dark:border-blue-400/30 dark:bg-brand-blue/100/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/20',
         warning: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20',
         error: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/20'
       }[this.alertTone]

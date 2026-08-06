@@ -1,5 +1,5 @@
 <template>
-  <section v-if="compact && compactAlertCard" class="overflow-hidden rounded-2xl border shadow-sm" :class="compactAlertCard.classes">
+  <section v-if="compact && compactAlertCard" class="overflow-hidden rounded-xl border shadow-sm" :class="compactAlertCard.classes">
     <button
       type="button"
       class="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/45 dark:hover:bg-slate-900/20"
@@ -9,14 +9,14 @@
         <span class="material-symbols-outlined text-[20px] leading-none">{{ compactAlertCard.icon }}</span>
       </span>
       <span class="min-w-0 flex-1">
-        <span class="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-100">
+        <span class="block truncate text-sm font-bold text-slate-900 dark:text-slate-100">
           {{ compactAlertCard.title }}
         </span>
         <span class="block truncate text-xs font-medium text-slate-600 dark:text-slate-300">
           {{ compactAlertCard.body }}
         </span>
       </span>
-      <span class="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-slate-700 dark:text-slate-200">
+      <span class="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-200">
         {{ alertCards.length > 1 ? `${alertCards.length} updates` : 'View' }}
         <span class="material-symbols-outlined text-[17px]">chevron_right</span>
       </span>
@@ -34,7 +34,7 @@
       <article
         v-for="card in modalAlertCards"
         v-bind:key="`modal-${card.key}`"
-        class="rounded-2xl border"
+        class="rounded-xl border"
         :class="card.classes"
       >
         <ServiceAlertCard :card="card" />
@@ -46,7 +46,7 @@
     <article
       v-for="(card, index) in visibleAlertCards"
       v-bind:key="card.key"
-      class="overflow-hidden rounded-2xl border shadow-sm"
+      class="overflow-hidden rounded-xl border shadow-sm"
       :class="card.classes"
     >
       <ServiceAlertCard
@@ -66,7 +66,7 @@
           <span class="material-symbols-outlined text-[21px] leading-none">campaign</span>
         </span>
         <span class="min-w-0 flex-1">
-          <span class="block text-sm font-extrabold text-slate-950 dark:text-slate-100">
+          <span class="block text-sm font-bold text-slate-950 dark:text-slate-100">
             View {{ hiddenAlertCards.length }} more service update{{ hiddenAlertCards.length === 1 ? '' : 's' }}
           </span>
         </span>
@@ -86,7 +86,7 @@
               <article
                 v-for="card in modalAlertCards"
                 v-bind:key="`modal-${card.key}`"
-                class="rounded-2xl border"
+                class="rounded-xl border"
                 :class="card.classes"
               >
                 <ServiceAlertCard :card="card" />
@@ -233,7 +233,7 @@ export default {
     },
     statusClasses(tone) {
       return {
-        info: 'border-blue-100 bg-blue-50',
+        info: 'border-brand-blue/20 bg-brand-blue/10',
         warning: 'border-amber-100 bg-amber-50',
         error: 'border-red-100 bg-red-50',
         success: 'border-emerald-100 bg-emerald-50'

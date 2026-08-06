@@ -1,78 +1,18 @@
 <template>
-  <div class="space-y-4 pt-3 sm:space-y-6 sm:pt-4">
+  <div class="ui-page ui-page-stack">
     <LocationPicker />
 
     <SearchBar
       input-id="home-stop-search"
       label="Search stops, stations or routes"
       placeholder="Search stops, stations or routes"
-      searchClasses="h-14 rounded-2xl border-slate-200 bg-white px-4 text-base text-slate-900 shadow-md shadow-slate-200/70 placeholder:text-slate-400 sm:h-[4.25rem] sm:rounded-3xl sm:px-5 sm:text-lg lg:h-20 lg:text-xl"
+      searchClasses="h-14 rounded-xl border-slate-200 bg-white px-4 text-base text-slate-900 shadow-sm placeholder:text-slate-400 sm:h-[4.25rem] sm:px-5 sm:text-lg lg:h-20 lg:text-xl"
       :showIcons="true"
     />
 
-    <!-- <section class="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-slate-50 p-4 shadow-sm shadow-slate-200/70 sm:rounded-3xl sm:p-6">
-      <div class="relative z-10 max-w-[62%] sm:max-w-md">
-        <div class="mb-3 inline-flex items-center gap-2 text-sm font-medium text-blue-600 sm:mb-4 sm:text-lg">
-          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 sm:h-7 sm:w-7">
-            <span class="h-2 w-2 rounded-full bg-blue-600 sm:h-3 sm:w-3"></span>
-          </span>
-          Live updates
-        </div>
-        <h1 class="text-2xl font-bold leading-tight text-slate-950 sm:text-3xl">
-          Welcome to Travigo
-        </h1>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600 sm:mt-4 sm:text-lg">
-          Lookup scheduled and real-time information for public transport in the UK, Europe, and beyond, including trains, buses, trams and ferries.
-        </p>
-        <router-link :to="{ name: 'datasources/home' }" class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-blue-600 sm:mt-7 sm:gap-2 sm:text-lg">
-          See supported locations
-          <span class="material-symbols-outlined text-lg sm:text-2xl">chevron_right</span>
-        </router-link>
-      </div>
-
-      <div class="absolute right-2 bottom-3 flex w-[50%] max-w-md items-end justify-end sm:right-8 sm:bottom-4">
-        <div class="relative h-32 w-full sm:h-48">
-          <div class="absolute bottom-8 right-4 h-16 w-28 rounded-[2rem] bg-blue-100/80 blur-2xl sm:bottom-10 sm:right-5 sm:h-24 sm:w-44"></div>
-          <div class="absolute right-16 top-0 hidden text-8xl text-blue-200/80 sm:block">
-            <span class="material-symbols-outlined text-[112px]">account_balance</span>
-          </div>
-          <div class="absolute bottom-6 right-1 rounded-xl bg-blue-600 p-2 text-white shadow-lg shadow-blue-300/60 sm:bottom-7 sm:right-2 sm:rounded-2xl sm:p-3 sm:shadow-xl">
-            <span class="material-symbols-outlined text-3xl sm:text-5xl">directions_bus</span>
-          </div>
-          <div class="absolute bottom-5 right-16 rounded-2xl bg-white/90 px-3 py-2 text-blue-700 shadow-lg shadow-blue-200/80 sm:bottom-7 sm:right-28 sm:rounded-3xl sm:px-5 sm:py-4 sm:shadow-xl">
-            <span class="material-symbols-outlined text-4xl sm:text-6xl">train</span>
-          </div>
-          <div class="absolute right-9 top-10 rounded-full bg-blue-600 p-1.5 text-white shadow-lg shadow-blue-300 sm:right-14 sm:top-14 sm:p-2">
-            <span class="material-symbols-outlined text-3xl sm:text-4xl">location_on</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-green-700 shadow-sm sm:right-6 sm:top-7 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-lg">
-        <span class="material-symbols-outlined text-lg sm:text-2xl">rss_feed</span>
-        Live
-      </div>
-    </section> -->
-
-    <!-- <section class="rounded-2xl border border-slate-200 bg-white px-3 py-4 shadow-md shadow-slate-200/70 sm:rounded-3xl sm:px-4 sm:py-5 sm:shadow-lg">
-      <div class="grid grid-cols-6 gap-1 sm:gap-2">
-        <router-link
-          v-for="action in quickActions"
-          v-bind:key="action.label"
-          :to="action.route"
-          class="flex min-w-0 flex-col items-center gap-1.5 rounded-xl p-0.5 text-center text-[10px] font-medium text-slate-950 transition hover:bg-slate-50 sm:gap-2 sm:rounded-2xl sm:p-1 sm:text-sm"
-        >
-          <span :class="action.bg" class="flex h-10 w-10 items-center justify-center rounded-full border sm:h-16 sm:w-16">
-            <span :class="action.color" class="material-symbols-outlined text-xl sm:text-3xl">{{ action.icon }}</span>
-          </span>
-          <span class="leading-tight">{{ action.label }}</span>
-        </router-link>
-      </div>
-    </section> -->
-
     <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.9fr)] xl:items-start xl:gap-6">
     <section>
-      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/80 sm:rounded-3xl">
+      <div class="ui-panel">
         <TabBar
           :tabs="stopPanelTabs"
           :model-value="stopPanelTab"
@@ -84,8 +24,8 @@
         <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
           <div class="flex items-start justify-between gap-3">
             <div>
-              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Nearby Stops</h2>
-              <p class="text-xs text-slate-500 sm:text-base">{{ nearbyStopsStatus }}</p>
+              <h2 class="ui-section-title">Nearby stops</h2>
+              <p class="ui-body mt-0.5">{{ nearbyStopsStatus }}</p>
             </div>
             <button
               type="button"
@@ -93,7 +33,7 @@
               :disabled="loadingNearbyStops"
               @click="requestNearbyStops"
             >
-              <span class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark sm:rounded-2xl">
+              <span class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark sm:rounded-xl">
                 <span class="material-symbols-outlined text-[19px]" :class="{'animate-spin': loadingNearbyStops}">{{ loadingNearbyStops ? 'progress_activity' : 'near_me' }}</span>
                 <span>{{ nearbyStopsButtonLabel }}</span>
               </span>
@@ -107,7 +47,7 @@
           :current-position="nearbyPosition"
         />
 
-        <div v-if="nearbyStopsError" class="mx-4 mb-4 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 sm:mx-5">
+        <div v-if="nearbyStopsError" class="mx-4 mb-4 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 sm:mx-5">
           {{ nearbyStopsError }}
         </div>
 
@@ -115,7 +55,7 @@
           Enable location to find the closest stops to you.
         </div>
 
-        <router-link :to="{ name: 'map' }" class="flex items-center justify-center gap-1 px-4 py-3 text-base font-medium text-blue-600 sm:gap-2 sm:px-5 sm:py-4 sm:text-lg">
+        <router-link :to="{ name: 'map' }" class="flex items-center justify-center gap-1 px-4 py-3 text-base font-medium text-brand-blue sm:gap-2 sm:px-5 sm:py-4 sm:text-lg">
           See all nearby stops
           <span class="material-symbols-outlined text-xl sm:text-2xl">chevron_right</span>
         </router-link>
@@ -124,12 +64,12 @@
         <template v-else>
           <div class="flex items-center justify-between gap-3 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
             <div>
-              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Saved Stops</h2>
-              <p class="text-xs text-slate-500 sm:text-base">Your quick-access stops</p>
+              <h2 class="ui-section-title">Saved stops</h2>
+              <p class="ui-body mt-0.5">Your quick-access stops</p>
             </div>
             <router-link
               :to="{ name: 'saved/home' }"
-              class="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl px-2 text-sm font-extrabold text-blue-600 transition hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10"
+              class="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl px-2 text-sm font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10"
             >
               Manage
               <span class="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -147,19 +87,19 @@
           />
 
           <div v-else-if="savedStopsError" class="px-4 pb-4 sm:px-5 sm:pb-5">
-            <div class="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+            <div class="rounded-xl border border-amber-100 bg-amber-50 px-3 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
               {{ savedStopsError }}
             </div>
           </div>
 
           <div v-else-if="!auth0.isAuthenticated" class="px-4 pb-4 sm:px-5 sm:pb-5">
-            <div class="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3 text-sm font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-100">
+            <div class="rounded-xl border border-brand-blue/20 bg-brand-blue/10 px-3 py-3 text-sm font-medium text-brand-blue-dark dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
               Sign in to see your saved stops.
             </div>
           </div>
 
           <div v-else-if="savedStops.length === 0" class="px-4 pb-4 sm:px-5 sm:pb-5">
-            <div class="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
+            <div class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
               You do not have any saved stops yet.
             </div>
           </div>
@@ -176,38 +116,35 @@
       </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 sm:rounded-3xl sm:p-5">
+    <section class="ui-panel p-4 sm:p-5">
       <div class="mb-3 sm:mb-4">
-        <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Network summary</h2>
-        <p class="text-sm text-slate-500 sm:text-base">Data currently ingested in Travigo</p>
+        <h2 class="ui-section-title">Network summary</h2>
+        <p class="ui-body mt-0.5">Data currently ingested in Travigo</p>
         <p v-if="statsGeneratedAt" class="mt-1 text-xs font-medium text-slate-400">Generated {{ statsGeneratedAt }}</p>
       </div>
 
       <div v-if="statsLoading" class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4 xl:grid-cols-2" aria-label="Loading network summary">
-        <div v-for="index in 4" :key="index" class="h-32 animate-pulse rounded-xl bg-slate-100 sm:h-36 sm:rounded-2xl dark:bg-slate-800"></div>
+        <div v-for="index in 4" :key="index" class="h-32 animate-pulse rounded-xl bg-slate-100 sm:h-36 sm:rounded-xl dark:bg-slate-800"></div>
       </div>
 
-      <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4 xl:grid-cols-2">
+      <div v-else class="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800 md:grid-cols-4 xl:grid-cols-2">
         <button
           v-for="summary in networkSummary"
           v-bind:key="summary.label"
           @click="openStatsModal(summary.view)"
-          :class="summary.bg"
-          class="rounded-xl p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:rounded-2xl sm:p-4"
+          class="border-b border-r border-slate-100 p-3 text-left transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-800 dark:hover:bg-slate-800/60 sm:p-4"
           :disabled="!stats"
         >
           <div class="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
-            <span :class="summary.iconColor" class="material-symbols-outlined text-xl sm:text-3xl">{{ summary.icon }}</span>
+            <span class="material-symbols-outlined text-xl text-brand-blue dark:text-brand-blue-light sm:text-2xl">{{ summary.icon }}</span>
             <span class="text-lg font-bold text-slate-950 sm:text-xl">{{ summary.value }}</span>
           </div>
-          <p class="text-sm leading-snug text-slate-600 sm:text-base">{{ summary.label }}</p>
-          <span :class="summary.pillClass" class="mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium sm:mt-3 sm:px-3 sm:py-1 sm:text-sm">
-            {{ summary.pill }}
-          </span>
+          <p class="text-sm font-semibold leading-snug text-slate-600 dark:text-slate-300">{{ summary.label }}</p>
+          <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">{{ summary.pill }}</p>
         </button>
       </div>
 
-      <div v-if="statsError" class="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
+      <div v-if="statsError" class="mt-4 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
         <span>{{ statsError }}</span>
         <button type="button" class="shrink-0 rounded-xl bg-white px-3 py-2 text-sm font-bold text-amber-800 shadow-sm dark:bg-slate-900 dark:text-amber-100" @click="getStats">
           Retry
@@ -216,13 +153,13 @@
 
       <router-link
         :to="{ name: 'datasources/home' }"
-        class="mt-4 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-left transition hover:border-blue-100 hover:bg-blue-50 dark:border-slate-800 dark:bg-slate-900/70 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10 sm:px-4"
+        class="mt-4 flex items-center gap-3 border-t border-slate-100 px-1 pt-4 text-left transition hover:text-brand-blue dark:border-slate-800 sm:px-0"
       >
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm dark:bg-slate-950 dark:text-blue-200">
+        <span class="ui-icon">
           <span class="material-symbols-outlined text-[22px]">database</span>
         </span>
         <span class="min-w-0 flex-1">
-          <span class="block text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">Supported data</span>
+          <span class="block text-sm font-bold text-slate-950 dark:text-slate-100 sm:text-base">Supported data</span>
           <span class="mt-0.5 block text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
             View transport data providers, datasets, coverage, and supported object types.
           </span>
@@ -241,7 +178,7 @@
       close-label="Close stats detail"
       body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
     >
-            <div :class="selectedStatsSummary?.bg" class="mb-4 rounded-2xl p-4">
+            <div :class="selectedStatsSummary?.bg" class="mb-4 rounded-xl p-4">
               <div class="flex items-center gap-3">
                 <span :class="selectedStatsSummary?.iconColor" class="material-symbols-outlined text-3xl">{{ selectedStatsSummary?.icon }}</span>
                 <div>
@@ -255,7 +192,7 @@
               <section
                 v-for="section in statsDetailSections"
                 v-bind:key="section.title"
-                class="rounded-2xl border border-slate-100 bg-slate-50 p-3"
+                class="rounded-xl border border-slate-100 bg-slate-50 p-3"
               >
                 <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ section.title }}</h3>
                 <div class="divide-y divide-slate-200 overflow-hidden rounded-xl bg-white">
@@ -271,7 +208,7 @@
               </section>
             </div>
 
-            <div v-else class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
+            <div v-else class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800">
               {{ statsDetailEmptyMessage }}
             </div>
     </Modal>
@@ -332,14 +269,6 @@ export default {
       loadingSavedStops: false,
       savedStopsError: '',
       savedStops: [],
-      quickActions: [
-        { label: 'Nearby', icon: 'near_me', route: { name: 'map' }, bg: 'border-brand-blue/20 bg-brand-blue/10', color: 'text-brand-blue' },
-        { label: 'Departures', icon: 'train', route: { name: 'timetables/home' }, bg: 'border-purple-100 bg-purple-50', color: 'text-purple-600' },
-        { label: 'Journey Planner', icon: 'route', route: { name: 'journeyplanner/home' }, bg: 'border-green-100 bg-green-50', color: 'text-green-700' },
-        { label: 'Operators', icon: 'groups', route: { name: 'operators/home' }, bg: 'border-amber-100 bg-amber-50', color: 'text-amber-600' },
-        { label: 'Saved', icon: 'bookmark', route: { name: 'account/home' }, bg: 'border-brand-pink/20 bg-brand-pink/10', color: 'text-brand-pink' },
-        { label: 'More', icon: 'more_horiz', route: { name: 'about' }, bg: 'border-slate-100 bg-slate-50', color: 'text-slate-700' },
-      ],
       nearbyStops: []
     }
   },
@@ -372,13 +301,13 @@ export default {
       return [
         {
           icon: 'rss_feed',
-          iconColor: 'text-blue-600',
+          iconColor: 'text-brand-blue',
           value: this.formatNumber(this.stats?.realtimejourneys?.stats?.current, '--'),
           label: 'Realtime trips',
           description: 'Realtime trips currently tracked',
           pill: 'Currently tracked',
-          pillClass: 'bg-blue-100 text-blue-700',
-          bg: 'bg-blue-50',
+          pillClass: 'bg-brand-blue/20 text-brand-blue',
+          bg: 'bg-brand-blue/10',
           view: 'realtimejourneys'
         },
         {

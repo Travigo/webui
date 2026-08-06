@@ -1,6 +1,6 @@
 <template>
   <section
-    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+    class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
   >
     <TabBar
       v-if="showTabs"
@@ -20,10 +20,10 @@
         :show-tabs="false"
       />
       <div v-else-if="departuresError && (!departures || departures.length === 0)" class="p-4">
-        <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-          <p class="font-extrabold">Departures unavailable</p>
+        <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+          <p class="font-bold">Departures unavailable</p>
           <p class="mt-1">The latest departure board could not be loaded.</p>
-          <button type="button" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="$emit('retry-departures')">
+          <button type="button" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="$emit('retry-departures')">
             Try again
           </button>
         </div>
@@ -42,10 +42,10 @@
         :show-tabs="false"
       />
       <div v-else-if="arrivalsError && (!arrivals || arrivals.length === 0)" class="p-4">
-        <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-          <p class="font-extrabold">Arrivals unavailable</p>
+        <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+          <p class="font-bold">Arrivals unavailable</p>
           <p class="mt-1">The latest arrival board could not be loaded.</p>
-          <button type="button" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="$emit('retry-arrivals')">
+          <button type="button" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="$emit('retry-arrivals')">
             Try again
           </button>
         </div>

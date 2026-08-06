@@ -6,10 +6,10 @@
     subtitle="Fetching live journey status, stops, and alerts."
   />
 
-  <div v-else-if="journey" class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else-if="journey" class="ui-page ui-page-stack">
     <PageHeader
       :title="journeyHeaderTitle"
-      variant="tinted"
+      variant="panel"
       compact
     >
       <template #meta>
@@ -64,12 +64,12 @@
 
       <div v-if="headerRailOverviewItem" class="flex items-center gap-2 border-t border-slate-100 pt-2 dark:border-slate-800">
         <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
-          <span class="material-symbols-outlined text-[17px] text-blue-600 dark:text-blue-300">{{ headerRailOverviewItem.icon }}</span>
+          <span class="material-symbols-outlined text-[17px] text-brand-blue dark:text-brand-blue-light">{{ headerRailOverviewItem.icon }}</span>
           {{ headerRailOverviewItem.label }}
         </span>
         <button
           type="button"
-          class="ml-auto inline-flex min-h-11 items-center gap-1 rounded-xl px-2 text-xs font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10 sm:min-h-8 sm:px-1"
+          class="ml-auto inline-flex min-h-11 items-center gap-1 rounded-xl px-2 text-xs font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10 sm:min-h-8 sm:px-1"
           @click="changeTab('details')"
         >
           Onboard details
@@ -85,19 +85,19 @@
       compact
     />
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="ui-panel">
       <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
 
       <div v-if="currentTab === 'timeline'" class="xl:grid xl:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside class="hidden border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/70 xl:block">
+        <aside class="hidden border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/30 xl:block">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Journey overview</p>
-          <div class="mt-3 rounded-2xl bg-white p-3 shadow-sm dark:bg-slate-950">
+          <div class="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700">
             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</p>
-            <p class="mt-1 text-sm font-extrabold" :class="journeyStatus.classes">{{ journeyStatus.label }}</p>
+            <p class="mt-1 text-sm font-bold" :class="journeyStatus.classes">{{ journeyStatus.label }}</p>
           </div>
-          <div v-if="nextJourneyPoint" class="mt-3 rounded-2xl bg-white p-3 shadow-sm dark:bg-slate-950">
+          <div v-if="nextJourneyPoint" class="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700">
             <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Next stop</p>
-            <p class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ nextJourneyPoint.stop.PrimaryName }}</p>
+            <p class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">{{ nextJourneyPoint.stop.PrimaryName }}</p>
             <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
               {{ pretty.time(nextJourneyPoint.realtime?.DepartureTime || nextJourneyPoint.departureTime, journey.DepartureTimezone) }}
               <template v-if="nextJourneyPoint.platform"> · Platform {{ nextJourneyPoint.platform }}</template>
@@ -110,7 +110,7 @@
             v-if="hasHiddenStops"
             @click="toggleInactiveStops()"
             type="button"
-            class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+            class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
           >
             <span class="material-symbols-outlined text-[19px]">{{ expandInactiveStops ? 'unfold_less' : 'history' }}</span>
             {{ expandInactiveStops ? 'Collapse previous stops' : 'Show previous stops' }}
@@ -140,7 +140,7 @@
               <div class="min-w-0">
                 <router-link
                   :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
-                  class="block truncate text-[15px] font-extrabold leading-tight text-slate-950 sm:text-base"
+                  class="block truncate text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100 sm:text-base"
                   :class="{'text-slate-600': !point.active}"
                 >
                   {{ point.stop.PrimaryName }}
@@ -160,7 +160,7 @@
                   </span>
                   <span
                     v-if="point.activity?.length == 1"
-                    class="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+                    class="inline-flex items-center gap-1 rounded-md bg-brand-blue/10 px-1.5 py-0.5 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light"
                   >
                     {{ point.activity[0] }} only
                   </span>
@@ -174,7 +174,7 @@
                   </span>
                   <span
                     v-else-if="doorSideByStop[point.stop.PrimaryIdentifier]"
-                    class="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+                    class="inline-flex items-center gap-1 rounded-md bg-brand-blue/10 px-1.5 py-0.5 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light"
                     :title="`Doors open on the ${doorSideByStop[point.stop.PrimaryIdentifier].toLowerCase()} side`"
                   >
                     <span class="material-symbols-outlined text-[14px]">door_open</span>
@@ -186,7 +186,7 @@
               <div class="min-w-[4.75rem] text-right">
                 <div
                   v-if="pointCancelled(point)"
-                  class="inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white"
+                  class="inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
                 >
                   Cancelled
                 </div>
@@ -241,49 +241,49 @@
       <div v-else-if="currentTab === 'details'" class="space-y-4 p-4 sm:p-5">
         <section
           v-if="hasRailFacilities"
-          class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+          class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
         >
           <div class="mb-3 flex items-start justify-between gap-3">
             <div>
-              <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Facilities</h2>
+              <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Facilities</h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Onboard amenities and accessibility information.</p>
             </div>
-            <span class="material-symbols-outlined text-[22px] text-blue-600 dark:text-blue-300">chair</span>
+            <span class="material-symbols-outlined text-[22px] text-brand-blue dark:text-brand-blue-light">chair</span>
           </div>
           <DetailedInformationRail :journey="journey" :show-train-layout="false" />
         </section>
 
         <section
           v-if="hasTrainFormation"
-          class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+          class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
         >
           <div class="mb-3 flex items-start justify-between gap-3">
             <div>
-              <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Train formation</h2>
+              <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Train formation</h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Coach layout, facilities by carriage, and occupancy.</p>
             </div>
-            <span class="material-symbols-outlined text-[22px] text-blue-600 dark:text-blue-300">train</span>
+            <span class="material-symbols-outlined text-[22px] text-brand-blue dark:text-brand-blue-light">train</span>
           </div>
           <DetailedInformationRail :journey="journey" :show-facilities="false" />
         </section>
 
         <section
           v-if="journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable"
-          class="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+          class="rounded-xl border border-slate-100 bg-slate-50 p-4"
         >
-          <h2 class="text-sm font-extrabold text-slate-950">Occupancy</h2>
+          <h2 class="text-sm font-bold text-slate-950">Occupancy</h2>
           <div class="mt-3 grid gap-3 sm:grid-cols-3">
-            <div class="rounded-2xl bg-white p-3">
+            <div class="rounded-xl bg-white p-3">
               <p class="text-xs font-semibold text-slate-500">Overall</p>
-              <p class="mt-1 text-lg font-extrabold text-slate-950">{{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</p>
+              <p class="mt-1 text-lg font-bold text-slate-950">{{ pretty.occupancyDescription(journey?.RealtimeJourney?.Occupancy.TotalPercentageOccupancy) }}</p>
             </div>
-            <div class="rounded-2xl bg-white p-3" v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
+            <div class="rounded-xl bg-white p-3" v-if="journey?.RealtimeJourney?.Occupancy.SeatedInformation">
               <p class="text-xs font-semibold text-slate-500">Seats</p>
-              <p class="mt-1 text-lg font-extrabold text-slate-950">{{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}</p>
+              <p class="mt-1 text-lg font-bold text-slate-950">{{ journey?.RealtimeJourney?.Occupancy.SeatedOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.SeatedCapacity }}</p>
             </div>
-            <div class="rounded-2xl bg-white p-3" v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
+            <div class="rounded-xl bg-white p-3" v-if="journey?.RealtimeJourney?.Occupancy.WheelchairInformation">
               <p class="text-xs font-semibold text-slate-500">Wheelchair</p>
-              <p class="mt-1 text-lg font-extrabold text-slate-950">{{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}</p>
+              <p class="mt-1 text-lg font-bold text-slate-950">{{ journey?.RealtimeJourney?.Occupancy.WheelchairOccupancy }} / {{ journey?.RealtimeJourney?.Occupancy.WheelchairCapacity }}</p>
             </div>
           </div>
         </section>
@@ -292,14 +292,14 @@
           <article
             v-for="(train, index) in detailedRailTrains"
             v-bind:key="train.ID || index"
-            class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+            class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   {{ detailedRailTrains.length > 1 ? `Train ${index + 1}` : 'Train' }}
                 </p>
-                <h2 class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">
+                <h2 class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">
                   {{ train.VehicleTypeName || train.VehicleType || 'Vehicle details' }}
                 </h2>
               </div>
@@ -321,9 +321,9 @@
 
           <article
             v-if="railServiceDetailItems.length > 0"
-            class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+            class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
           >
-            <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Onboard service</h2>
+            <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Onboard service</h2>
             <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
               <div
                 v-for="detail in railServiceDetailItems"
@@ -337,7 +337,7 @@
           </article>
         </section>
 
-        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           No extra journey details are available.
         </section>
       </div>
@@ -356,7 +356,7 @@
               <template v-slot:icon>
                 <span
                   class="block h-4 w-4 rounded-full border-2 border-white shadow-md"
-                  :class="point.active ? 'bg-blue-600' : 'bg-slate-400'"
+                  :class="point.active ? 'bg-brand-blue' : 'bg-slate-400'"
                 ></span>
               </template>
             </mapbox-marker>
@@ -377,7 +377,7 @@
             v-if="journey.RealtimeJourney && journey.RealtimeJourney.VehicleLocation?.coordinates?.length === 2 && !realtimeTooOld"
           >
             <template v-slot:icon>
-              <span class="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 text-white shadow-lg">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-white bg-brand-blue text-white shadow-lg">
                 <span class="material-symbols-outlined text-[24px] leading-none">
                   {{ transportIcon(journey.Service?.TransportType) }}
                 </span>

@@ -3,7 +3,7 @@
 
   <LoadingState v-if="loading" title="Loading datasource" subtitle="Fetching provider details and datasets." />
 
-  <div v-else-if="datasource" class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else-if="datasource" class="ui-page ui-page-stack">
     <PageHeader
       eyebrow="Datasource"
       :title="providerName"
@@ -16,7 +16,7 @@
           :href="datasource.Provider.Website"
           target="_blank"
           rel="noreferrer"
-          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm transition hover:bg-brand-blue/10 hover:text-brand-blue dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
           aria-label="Open provider website"
         >
           <span class="material-symbols-outlined text-[22px]">open_in_new</span>
@@ -24,24 +24,24 @@
       </template>
     </PageHeader>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
         <div class="px-4 py-3 sm:px-5">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Region</p>
-          <p class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ regionLabel }}</p>
+          <p class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">{{ regionLabel }}</p>
         </div>
         <div class="px-4 py-3 sm:px-5">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Website</p>
           <a
             v-if="datasource.Provider?.Website"
-            class="mt-1 block truncate text-sm font-extrabold text-blue-600 transition hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+            class="mt-1 block truncate text-sm font-bold text-brand-blue transition hover:text-brand-blue dark:text-brand-blue-light dark:hover:text-brand-blue-light"
             :href="datasource.Provider.Website"
             target="_blank"
             rel="noreferrer"
           >
             {{ datasource.Provider.Website }}
           </a>
-          <p v-else class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">Not listed</p>
+          <p v-else class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">Not listed</p>
         </div>
       </div>
       <div class="border-t border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
@@ -50,7 +50,7 @@
           <span
             v-for="object in allSupportedObjects"
             v-bind:key="object"
-            class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+            class="inline-flex items-center rounded-full bg-brand-blue/10 px-2.5 py-1 text-xs font-bold text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light"
           >
             {{ capabilityLabel(object) }}
           </span>
@@ -61,9 +61,9 @@
       </div>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Datasets</h2>
+        <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Datasets</h2>
         <span class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ datasetCount }}</span>
       </div>
 
@@ -77,10 +77,10 @@
         class="grid gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:px-5"
       >
         <div class="min-w-0">
-          <h3 class="break-words text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ dataset.Identifier || 'Unnamed dataset' }}</h3>
+          <h3 class="break-words text-sm font-bold text-slate-950 dark:text-slate-100">{{ dataset.Identifier || 'Unnamed dataset' }}</h3>
           <a
             v-if="isHttpUrl(dataset.Source)"
-            class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+            class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-brand-blue transition hover:text-brand-blue dark:text-brand-blue-light dark:hover:text-brand-blue-light"
             :href="dataset.Source"
             target="_blank"
             rel="noreferrer"
@@ -101,7 +101,7 @@
             <span
               v-for="object in supportedObjects(dataset)"
               v-bind:key="object"
-              class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200"
+              class="inline-flex items-center rounded-full bg-brand-blue/10 px-2 py-1 text-xs font-bold text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light"
             >
               {{ capabilityLabel(object) }}
             </span>

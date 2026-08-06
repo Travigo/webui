@@ -22,13 +22,13 @@
     <Transition name="account-menu">
       <div
         v-if="menuOpen"
-        class="absolute right-0 top-11 z-[80] w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 sm:top-12"
+        class="absolute right-0 top-11 z-[80] w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 sm:top-12"
       >
         <div class="border-b border-slate-100 p-4 dark:border-slate-800">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-400">
             Account
           </p>
-          <h2 class="mt-1 truncate text-base font-extrabold text-slate-950 dark:text-slate-100">
+          <h2 class="mt-1 truncate text-base font-bold text-slate-950 dark:text-slate-100">
             {{ isAuthenticated ? `Hi, ${displayName}` : 'Welcome to Travigo' }}
           </h2>
           <p class="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
@@ -41,7 +41,7 @@
             <button
               type="button"
               @click="login"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
             >
               <span class="material-symbols-outlined text-[20px]">login</span>
               Log in
@@ -49,7 +49,7 @@
             <button
               type="button"
               @click="register"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
             >
               <span class="material-symbols-outlined text-[20px]">person_add</span>
               Register
@@ -60,7 +60,7 @@
             <router-link
               :to="{ name: 'account/settings' }"
               @click="closeMenu"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
             >
               <span class="material-symbols-outlined text-[20px]">settings</span>
               Settings
@@ -68,7 +68,7 @@
             <router-link
               :to="{ name: 'account/notifications' }"
               @click="closeMenu"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
             >
               <span class="material-symbols-outlined text-[20px]">notifications_active</span>
               Notifications
@@ -85,7 +85,7 @@
                 <router-link
                   :to="{ name: 'admin/importer' }"
                   @click="closeMenu"
-                  class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
                 >
                   <span class="material-symbols-outlined text-[20px]">manufacturing</span>
                   Data importer

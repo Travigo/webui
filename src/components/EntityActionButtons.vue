@@ -13,12 +13,12 @@
     <Transition name="entity-action-menu">
       <div
         v-if="menuOpen"
-        class="absolute right-0 top-12 z-[80] w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40"
+        class="absolute right-0 top-12 z-[80] w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40"
       >
         <div class="p-2">
           <button
             type="button"
-            class="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+            class="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
             @click="share"
           >
             <span class="material-symbols-outlined" style="font-size: 20px; line-height: 1">ios_share</span>
@@ -30,7 +30,7 @@
             class="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent dark:disabled:text-slate-600"
             :class="saveDisabled
               ? 'text-slate-400 dark:text-slate-600'
-              : 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200'"
+              : 'text-slate-700 hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light'"
             :disabled="saveDisabled"
             :title="saveTitle"
             @click="save"
@@ -43,7 +43,7 @@
             type="button"
             class="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent dark:disabled:text-slate-600"
             :class="supportsNotifications
-              ? 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-200'
+              ? 'text-slate-700 hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light'
               : 'text-slate-400 dark:text-slate-600'"
             :disabled="!supportsNotifications"
             :title="supportsNotifications ? 'Create notification' : 'Notifications are not connected for this yet'"
@@ -56,7 +56,7 @@
 
         <p
           v-if="message"
-          class="mx-2 mb-2 rounded-2xl border px-3 py-2 text-sm font-medium"
+          class="mx-2 mb-2 rounded-xl border px-3 py-2 text-sm font-medium"
           :class="messageType === 'warning'
             ? 'border-amber-100 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100'
             : 'border-brand-blue/20 bg-brand-blue/10 text-brand-blue dark:border-brand-blue/40 dark:bg-brand-blue/20 dark:text-brand-blue-light'"

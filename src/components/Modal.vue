@@ -8,7 +8,7 @@
       >
         <section
           ref="panel"
-          class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900"
+          class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl"
           :class="widthClass"
           role="dialog"
           aria-modal="true"
@@ -23,12 +23,12 @@
             class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5"
           >
             <div class="flex min-w-0 items-start gap-3">
-              <span v-if="icon" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+              <span v-if="icon" class="ui-icon">
                 <span class="material-symbols-outlined text-[24px] leading-none">{{ icon }}</span>
               </span>
               <div class="min-w-0">
                 <slot name="header">
-                  <h2 :id="titleId" class="truncate text-lg font-extrabold text-slate-950 dark:text-slate-100 sm:text-xl">
+                  <h2 :id="titleId" class="truncate text-lg font-bold text-slate-950 dark:text-slate-100 sm:text-xl">
                     {{ title }}
                   </h2>
                   <p v-if="subtitle" :id="subtitleId" class="mt-1 text-sm text-slate-500 dark:text-slate-400">

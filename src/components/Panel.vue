@@ -1,20 +1,20 @@
 <template>
-  <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900" :class="sectionClass">
+  <section class="ui-panel" :class="sectionClass">
     <div
       v-if="title || subtitle || icon || $slots.header || $slots.actions"
-      class="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5"
+      class="ui-panel-header"
       :class="headerClass"
     >
       <div class="flex min-w-0 items-start gap-3">
-        <span v-if="icon" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <span v-if="icon" class="ui-icon h-9 w-9">
           <span class="material-symbols-outlined text-[21px] leading-none">{{ icon }}</span>
         </span>
         <div class="min-w-0">
           <slot name="header">
-            <h2 v-if="title" class="text-sm font-extrabold text-slate-950 dark:text-slate-100 sm:text-base">
+            <h2 v-if="title" class="ui-section-title">
               {{ title }}
             </h2>
-            <p v-if="subtitle" class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+            <p v-if="subtitle" class="ui-body mt-0.5">
               {{ subtitle }}
             </p>
           </slot>

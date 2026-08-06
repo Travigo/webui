@@ -10,17 +10,17 @@
   >
     <section
       v-if="showEntityContext"
-      class="rounded-2xl border border-blue-100 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10"
+      class="rounded-xl border border-brand-blue/20 bg-brand-blue/10 p-3 dark:border-brand-blue/20 dark:bg-brand-blue/100/10"
     >
-      <p class="text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-200">{{ entityType }}</p>
-      <h3 class="mt-1 text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ entityName }}</h3>
+      <p class="text-xs font-bold uppercase tracking-wide text-brand-blue dark:text-brand-blue-light">{{ entityType }}</p>
+      <h3 class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">{{ entityName }}</h3>
     </section>
 
     <label class="block">
-      <span class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Notify me about</span>
+      <span class="text-sm font-bold text-slate-950 dark:text-slate-100">Notify me about</span>
       <select
         v-model="selectedNotificationTypeId"
-        class="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-500/20"
+        class="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-brand-blue focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-brand-blue/20"
       >
         <option value="" disabled>Select what to monitor</option>
         <option
@@ -36,11 +36,11 @@
     <section
       v-for="field in selectedNotificationTypeFields"
       v-bind:key="field.id"
-      class="rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/60"
+      class="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/60"
     >
       <div class="flex items-center justify-between gap-3">
         <div>
-          <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ field.label }}</h3>
+          <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">{{ field.label }}</h3>
           <p v-if="field.description" class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
             {{ field.description }}
           </p>
@@ -50,7 +50,7 @@
       <template v-if="field.type === 'multi-select'">
         <button
           type="button"
-          class="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 text-left text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+          class="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 text-left text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
           :aria-expanded="isFieldDropdownOpen(field.id)"
           @click="toggleFieldDropdown(field.id)"
         >
@@ -62,12 +62,12 @@
 
         <div
           v-if="isFieldDropdownOpen(field.id)"
-          class="mt-2 max-h-56 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900"
+          class="mt-2 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900"
         >
           <button
             v-if="field.selectAll !== false || fieldValue(field.id).length > 0"
             type="button"
-            class="mb-1 flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-sm font-extrabold text-blue-700 transition hover:bg-blue-50 dark:text-blue-200 dark:hover:bg-blue-500/10"
+            class="mb-1 flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-sm font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10"
             @click="toggleAll(field)"
           >
             {{ bulkActionLabel(field) }}
@@ -80,11 +80,11 @@
             class="flex items-start gap-3 rounded-xl px-2.5 py-2 transition"
             :class="isOptionDisabled(field, option)
               ? 'cursor-not-allowed opacity-45'
-              : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-500/10'"
+              : 'cursor-pointer hover:bg-brand-blue/10 dark:hover:bg-brand-blue/100/10'"
           >
             <input
               type="checkbox"
-              class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950"
+              class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue dark:border-slate-700 dark:bg-slate-950"
               :checked="fieldValue(field.id).includes(option.value)"
               :disabled="isOptionDisabled(field, option)"
               @change="toggleOption(field.id, option.value)"
@@ -102,7 +102,7 @@
       <template v-else-if="field.type === 'select'">
         <button
           type="button"
-          class="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 text-left text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+          class="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 text-left text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
           :aria-expanded="isFieldDropdownOpen(field.id)"
           @click="toggleFieldDropdown(field.id)"
         >
@@ -114,13 +114,13 @@
 
         <div
           v-if="isFieldDropdownOpen(field.id)"
-          class="mt-2 max-h-56 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900"
+          class="mt-2 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900"
         >
           <button
             v-for="option in field.options"
             v-bind:key="option.value"
             type="button"
-            class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-left transition hover:bg-blue-50 dark:hover:bg-blue-500/10"
+            class="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-left transition hover:bg-brand-blue/10 dark:hover:bg-brand-blue/100/10"
             @click="selectOption(field.id, option.value)"
           >
             <span class="min-w-0">
@@ -131,7 +131,7 @@
             </span>
             <span
               v-if="fieldValues[field.id] === option.value"
-              class="material-symbols-outlined shrink-0 text-[19px] text-blue-600 dark:text-blue-300"
+              class="material-symbols-outlined shrink-0 text-[19px] text-brand-blue dark:text-brand-blue-light"
             >
               check
             </span>
@@ -140,8 +140,8 @@
       </template>
 
       <template v-else-if="field.type === 'readonly'">
-        <div class="mt-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm dark:border-slate-800 dark:bg-slate-900">
-          <p class="font-extrabold text-slate-950 dark:text-slate-100">{{ readonlyFieldValue(field) }}</p>
+        <div class="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+          <p class="font-bold text-slate-950 dark:text-slate-100">{{ readonlyFieldValue(field) }}</p>
         </div>
       </template>
     </section>
@@ -150,14 +150,14 @@
       <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <button
           type="button"
-          class="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          class="inline-flex h-11 items-center justify-center rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           @click="close"
         >
           Cancel
         </button>
         <button
           type="button"
-          class="inline-flex h-11 items-center justify-center rounded-2xl bg-brand-blue px-4 text-sm font-extrabold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-60"
+          class="inline-flex h-11 items-center justify-center rounded-xl bg-brand-blue px-4 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="!canSave"
           @click="save"
         >

@@ -67,22 +67,22 @@
     <button
       v-if="selectedResult !== undefined && !editingSelection"
       type="button"
-      class="absolute right-1.5 top-1/2 z-[21] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+      class="absolute right-1.5 top-1/2 z-[21] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-blue dark:hover:bg-slate-800 dark:hover:text-slate-200"
       :aria-label="`Clear ${stopName(selectedResult) || 'selected stop'}`"
       @click.stop="clearSelectedResult"
     >
       <span class="material-symbols-outlined text-[20px]">close</span>
     </button>
   </div>
-  <ul :id="resultsListId" role="listbox" class="relative z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70" v-if="searchResults.length > 0">
+  <ul :id="resultsListId" role="listbox" class="relative z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70" v-if="searchResults.length > 0">
     <li v-for="(result, index) in searchResults" v-bind:key="stopIdentifier(result) || index">
       <button
         type="button"
         role="option"
         :id="resultId(index)"
         :aria-selected="index === activeResultIndex"
-        class="block w-full cursor-pointer px-3 py-2 text-left transition hover:bg-slate-50 focus:bg-blue-50 focus:outline-none"
-        :class="{ 'bg-blue-50': index === activeResultIndex }"
+        class="block w-full cursor-pointer px-3 py-2 text-left transition hover:bg-slate-50 focus:bg-brand-blue/10 focus:outline-none"
+        :class="{ 'bg-brand-blue/10': index === activeResultIndex }"
         @click="handleResultClick(result)"
         @mouseenter="activeResultIndex = index"
       >
@@ -104,13 +104,13 @@
     </li>
   </ul>
 
-  <div v-if="loadingResults" class="mt-2 flex min-h-11 items-center gap-2 rounded-xl bg-blue-50 px-3 text-sm font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-200" role="status">
+  <div v-if="loadingResults" class="mt-2 flex min-h-11 items-center gap-2 rounded-xl bg-brand-blue/10 px-3 text-sm font-bold text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light" role="status">
     <span class="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>
     Searching stops…
   </div>
   <div v-else-if="searchError" class="mt-2 flex min-h-11 items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100" role="alert">
     <span class="font-semibold">Stops could not be loaded.</span>
-    <button type="button" class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="searchStops">Retry</button>
+    <button type="button" class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="searchStops">Retry</button>
   </div>
   <div v-else-if="searchAttempted && searchTerm && searchResults.length === 0 && (selectedResult === undefined || editingSelection)" class="mt-2 rounded-xl bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
     No matching stops found. Try a broader name or change the filters.
@@ -123,7 +123,7 @@
     subtitle="Refine which stops and stations appear."
     icon="tune"
     close-label="Close search filters"
-    body-class="p-4 sm:p-5"
+    body-class="max-h-[calc(88dvh-7rem)] overflow-y-auto overscroll-contain p-4 sm:p-5"
   >
           <div class="space-y-5">
             <section
@@ -132,10 +132,10 @@
             >
               <div class="mb-2 flex items-end justify-between gap-3">
                 <div>
-                  <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">{{ section.title }}</h3>
+                  <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">{{ section.title }}</h3>
                   <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400" v-if="section.description">{{ section.description }}</p>
                 </div>
-                <span class="shrink-0 text-xs font-bold text-blue-600 dark:text-blue-300" v-if="selectedSectionCount(section.id) > 0">
+                <span class="shrink-0 text-xs font-bold text-brand-blue dark:text-brand-blue-light" v-if="selectedSectionCount(section.id) > 0">
                   {{ selectedSectionCount(section.id) }} selected
                 </span>
               </div>
@@ -145,10 +145,10 @@
                   v-for="option in section.options"
                   v-bind:key="option.id"
                   type="button"
-                  class="flex min-h-16 items-center gap-3 rounded-2xl border px-3 py-3 text-left transition"
+                  class="flex min-h-16 items-center gap-3 rounded-xl border px-3 py-3 text-left transition"
                   :class="isFilterSelected(section.id, option.id)
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-blue-100 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10'"
+                    ? 'border-brand-blue/40 bg-brand-blue/10 text-brand-blue shadow-sm dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-brand-blue/20 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-blue/40 dark:hover:bg-brand-blue/100/10'"
                   @click="toggleFilter(section.id, option.id)"
                 >
                   <span
@@ -158,11 +158,11 @@
                     <span class="material-symbols-outlined text-[21px] leading-none">{{ option.icon }}</span>
                   </span>
                   <span class="min-w-0 flex-1">
-                    <span class="block text-sm font-extrabold leading-tight">{{ option.label }}</span>
+                    <span class="block text-sm font-bold leading-tight">{{ option.label }}</span>
                   </span>
                   <span
                     class="material-symbols-outlined text-[20px]"
-                    :class="isFilterSelected(section.id, option.id) ? 'text-blue-600 dark:text-blue-300' : 'text-slate-300 dark:text-slate-600'"
+                    :class="isFilterSelected(section.id, option.id) ? 'text-brand-blue dark:text-brand-blue-light' : 'text-slate-300 dark:text-slate-600'"
                   >
                     {{ isFilterSelected(section.id, option.id) ? 'check_circle' : 'radio_button_unchecked' }}
                   </span>
@@ -238,7 +238,7 @@ export default {
       ].filter(Boolean).join(' ')
     },
     inputClass() {
-      let classes = this.searchClasses + ' shadow-md border rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500'
+      let classes = this.searchClasses + ' shadow-md border rounded-xl focus:ring-brand-blue focus:border-brand-blue block w-full dark:placeholder-gray-400 dark:focus:ring-brand-blue dark:focus:border-brand-blue'
 
       if (this.showIcons) {
         classes += ' pl-10 sm:pl-20'
@@ -251,7 +251,7 @@ export default {
       return classes
     },
     selectedResultClass() {
-      return `${this.searchClasses} absolute top-0 left-0 z-20 cursor-text border rounded-2xl block w-full bg-white pr-12 text-left text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100`
+      return `${this.searchClasses} absolute top-0 left-0 z-20 cursor-text border rounded-xl block w-full bg-white pr-12 text-left text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100`
     },
     searchInputId() {
       return this.inputId || `travigo-search-${this.$.uid}`

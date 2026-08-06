@@ -9,7 +9,7 @@
         <div class="min-w-0">
           <slot name="meta"></slot>
 
-          <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-wide text-brand-blue dark:text-brand-blue-light">
+          <p v-if="eyebrow" class="ui-eyebrow">
             {{ eyebrow }}
           </p>
 
@@ -17,7 +17,7 @@
             <slot name="title">{{ title }}</slot>
           </h1>
 
-          <p v-if="subtitle || $slots.subtitle" class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+          <p v-if="subtitle || $slots.subtitle" class="ui-body mt-1">
             <slot name="subtitle">{{ subtitle }}</slot>
           </p>
         </div>
@@ -56,7 +56,7 @@ export default {
     },
     variant: {
       type: String,
-      default: 'tinted',
+      default: 'panel',
       validator: value => ['tinted', 'panel', 'plain'].includes(value)
     },
     compact: {
@@ -66,32 +66,26 @@ export default {
   },
   computed: {
     headerClass() {
-      if (this.variant === 'panel') {
-        return 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5'
+      if (this.variant === 'panel' || this.variant === 'tinted') {
+        return 'ui-panel p-4 sm:p-5'
       }
 
       if (this.variant === 'plain') {
         return 'border-b border-slate-200 pb-3 dark:border-slate-800'
       }
 
-      return this.compact
-        ? 'rounded-2xl bg-blue-50 p-3 dark:bg-blue-500/10 sm:p-4'
-        : 'rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10'
+      return 'ui-panel p-4 sm:p-5'
     },
     titleClass() {
       return this.compact
-        ? 'mt-1 text-xl font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-2xl'
-        : 'mt-1 text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-3xl'
+        ? 'mt-1 text-xl font-[800] leading-tight tracking-tight text-slate-950 dark:text-slate-100 sm:text-2xl'
+        : 'ui-page-title mt-1'
     },
     contentClass() {
       return this.compact ? 'mt-2 space-y-2' : 'mt-3 space-y-3'
     },
     iconClass() {
-      if (this.variant === 'panel') {
-        return 'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200'
-      }
-
-      return 'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-200'
+      return 'ui-icon'
     }
   }
 }

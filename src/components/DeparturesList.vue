@@ -7,7 +7,7 @@
   </Notice>
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
     <div v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
-      <div class="px-3 pt-3 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400" v-if="this.departureDayChange(index)">
+      <div class="px-3 pt-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-400" v-if="this.departureDayChange(index)">
         {{ departureDayLabel(index) }}
       </div>
 
@@ -70,7 +70,7 @@
             >
               {{ this.pretty.time(departure.Time, stop.Timezone) }}
             </div>
-            <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
+            <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
               Cancelled
             </div>
             <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
@@ -136,7 +136,7 @@
           >
             {{ this.pretty.time(departure.Time, stop.Timezone) }}
           </div>
-          <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
+          <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
             Cancelled
           </div>
           <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">

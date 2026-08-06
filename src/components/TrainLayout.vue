@@ -2,12 +2,12 @@
   <section v-if="normalisedCarriages.length > 0" class="mt-2 space-y-2">
     <div class="flex items-center justify-between gap-3">
       <div class="min-w-0">
-        <p class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Train formation</p>
+        <p class="text-sm font-bold text-slate-950 dark:text-slate-100">Train formation</p>
         <p class="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ formationSummary }}</p>
       </div>
       <span
         v-if="layoutStatus"
-        class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-extrabold"
+        class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold"
         :class="layoutStatus.classes"
       >
         {{ layoutStatus.label }}
@@ -26,12 +26,12 @@
             v-bind:key="unit.key"
             class="shrink-0"
           >
-            <p v-if="normalisedUnits.length > 1" class="mb-1 text-center text-[10px] font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ unit.label }}</p>
+            <p v-if="normalisedUnits.length > 1" class="mb-1 text-center text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ unit.label }}</p>
             <ol class="flex items-stretch gap-1 rounded-xl border border-slate-200 bg-slate-50/70 p-1 dark:border-slate-700 dark:bg-slate-800/40">
               <li v-for="carriage in unit.carriages" v-bind:key="carriage.key" class="shrink-0" :class="carriageShellClasses(carriage)">
                 <button
                   type="button"
-                  class="relative flex w-full flex-col overflow-hidden border text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-500/20"
+                  class="relative flex w-full flex-col overflow-hidden border text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-brand-blue/20"
                   :class="[carriageShapeClasses(carriage), carriage.occupancyClasses, carriageButtonSizeClasses(carriage)]"
                   :title="carriageTitle(carriage)"
                   :aria-label="`Open details for ${carriage.locationLabel}`"
@@ -43,7 +43,7 @@
                   </div>
                   <template v-else>
                     <div class="min-w-0">
-                      <p class="truncate text-[11px] font-extrabold text-slate-950 dark:text-slate-100">{{ carriage.label }}</p>
+                      <p class="truncate text-[11px] font-bold text-slate-950 dark:text-slate-100">{{ carriage.label }}</p>
                       <p v-if="carriage.hasOccupancy" class="mt-0.5 truncate text-[10px] font-bold" :class="carriage.occupancyTextClass">{{ carriage.occupancyLabel }}</p>
                       <span v-if="carriage.id" class="sr-only">{{ carriage.id }}</span>
                     </div>
@@ -74,22 +74,22 @@
     <div v-if="selectedCarriage" class="space-y-4">
       <section
         v-if="selectedCarriage.hasOccupancy"
-        class="rounded-2xl p-3"
+        class="rounded-xl p-3"
         :class="selectedCarriage.occupancyClasses"
       >
         <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Occupancy</p>
-        <p class="mt-1 text-base font-extrabold" :class="selectedCarriage.occupancyTextClass">{{ selectedCarriage.occupancyLabel }}</p>
+        <p class="mt-1 text-base font-bold" :class="selectedCarriage.occupancyTextClass">{{ selectedCarriage.occupancyLabel }}</p>
       </section>
 
       <section v-if="selectedCarriage.features.length > 0" class="space-y-2">
-        <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Facilities</h3>
+        <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">Facilities</h3>
         <div class="grid gap-2 sm:grid-cols-2">
           <article
             v-for="feature in selectedCarriage.features"
             v-bind:key="feature.key"
-            class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
+            class="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70"
           >
-            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
               <span v-if="feature.text" class="text-xs font-black leading-none">{{ feature.text }}</span>
               <span v-else class="material-symbols-outlined text-[20px]">{{ feature.icon }}</span>
             </span>
@@ -99,12 +99,12 @@
       </section>
 
       <section v-if="selectedTrainDetails.length > 0" class="space-y-2">
-        <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Train</h3>
+        <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">Train</h3>
         <dl class="grid gap-2 text-sm sm:grid-cols-2">
           <div
             v-for="detail in selectedTrainDetails"
             v-bind:key="detail.label"
-            class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
+            class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70"
           >
             <dt class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
             <dd class="mt-1 break-words font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
@@ -113,15 +113,15 @@
       </section>
 
       <section v-if="selectedCarriageToilets.length > 0" class="space-y-2">
-        <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Toilets</h3>
+        <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">Toilets</h3>
         <div class="space-y-2">
           <article
             v-for="(toilet, index) in selectedCarriageToilets"
             v-bind:key="index"
-            class="rounded-2xl bg-slate-50 p-3 text-sm dark:bg-slate-800/70"
+            class="rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800/70"
           >
             <p class="font-bold text-slate-800 dark:text-slate-100">{{ toilet.Type || 'Toilet available' }}</p>
-            <p v-if="toilet.Accessible || toilet.Type === 'Accessible'" class="mt-1 text-xs font-semibold text-blue-600 dark:text-blue-200">
+            <p v-if="toilet.Accessible || toilet.Type === 'Accessible'" class="mt-1 text-xs font-semibold text-brand-blue dark:text-brand-blue-light">
               Accessible toilet
             </p>
           </article>
@@ -132,7 +132,7 @@
         <div
           v-for="detail in selectedCarriageDetails"
           v-bind:key="detail.label"
-          class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
+          class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70"
         >
           <dt class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
           <dd class="mt-1 break-words font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
@@ -448,7 +448,7 @@ export default {
       }
 
       if (occupancy < 70) {
-        return 'border-blue-100 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10'
+        return 'border-brand-blue/20 bg-brand-blue/10 dark:border-brand-blue/20 dark:bg-brand-blue/100/10'
       }
 
       if (occupancy < 90) {
@@ -467,7 +467,7 @@ export default {
       }
 
       if (occupancy < 70) {
-        return 'text-blue-700 dark:text-blue-200'
+        return 'text-brand-blue dark:text-brand-blue-light'
       }
 
       if (occupancy < 90) {
@@ -482,7 +482,7 @@ export default {
       }
 
       if (occupancy < 70) {
-        return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200'
+        return 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light'
       }
 
       if (occupancy < 90) {

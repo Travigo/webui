@@ -10,9 +10,9 @@
       :show-tabs="false"
     />
 
-    <section v-else class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+    <section v-else class="rounded-xl border border-slate-100 bg-slate-50 p-4">
       <div class="mb-3">
-        <h2 class="text-sm font-extrabold text-slate-950">Journey identification</h2>
+        <h2 class="text-sm font-bold text-slate-950">Journey identification</h2>
         <p class="mt-1 text-sm text-slate-500">Realtime matching performance</p>
       </div>
 
@@ -20,11 +20,11 @@
         <div
           v-for="stat in statsCards"
           v-bind:key="stat.label"
-          class="rounded-2xl bg-white p-3"
+          class="rounded-xl bg-white p-3"
         >
           <div class="mb-2 flex items-center gap-2">
             <span class="material-symbols-outlined text-[22px]" :class="stat.iconClass">{{ stat.icon }}</span>
-            <span class="text-lg font-extrabold text-slate-950">{{ stat.value }}</span>
+            <span class="text-lg font-bold text-slate-950">{{ stat.value }}</span>
           </div>
           <p class="text-sm text-slate-600">{{ stat.label }}</p>
         </div>
@@ -57,7 +57,7 @@ export default {
           label: 'Last day success',
           value: this.formatRate(this.operatorStats?.LastDayRate),
           icon: 'today',
-          iconClass: 'text-blue-600'
+          iconClass: 'text-brand-blue'
         },
         {
           label: 'Last week success',

@@ -8,7 +8,7 @@
     </span>
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-3">
-        <h2 class="min-w-0 flex-1 truncate text-sm font-extrabold text-slate-900 sm:text-base">
+        <h2 class="min-w-0 flex-1 truncate text-sm font-bold text-slate-900 sm:text-base">
           {{ card.title }}
         </h2>
         <span class="shrink-0 text-xs font-medium text-slate-500 sm:text-sm">{{ card.meta }}</span>

@@ -1,23 +1,23 @@
 <template>
-  <div class="pb-16 pt-2 sm:pb-20">
+  <div class="ui-page">
     <main class="mx-auto max-w-6xl space-y-4">
-      <header class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
+      <header class="ui-panel p-4 sm:p-5">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <router-link :to="editRoute" class="mb-3 inline-flex min-h-10 items-center gap-1 rounded-xl bg-slate-100 px-2.5 text-xs font-extrabold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+            <router-link :to="editRoute" class="mb-3 inline-flex min-h-10 items-center gap-1 rounded-xl bg-slate-100 px-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
               <span class="material-symbols-outlined text-[18px]">arrow_back</span>
               Edit journey
             </router-link>
             <div class="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-2xl">
               <span class="truncate">{{ originName }}</span>
-              <span class="material-symbols-outlined shrink-0 text-blue-600 dark:text-blue-300">arrow_forward</span>
+              <span class="material-symbols-outlined shrink-0 text-brand-blue dark:text-brand-blue-light">arrow_forward</span>
               <span class="truncate">{{ destinationName }}</span>
             </div>
             <p class="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ searchDescription }}</p>
           </div>
           <button
             type="button"
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition hover:bg-blue-100 disabled:opacity-60 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition hover:bg-brand-blue/20 disabled:opacity-60 dark:bg-brand-blue/100/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/20"
             :disabled="loadingResults"
             aria-label="Refresh journey results"
             @click="getJourneyPlan"
@@ -28,11 +28,11 @@
       </header>
 
       <div class="grid items-start gap-4 lg:grid-cols-[17rem_minmax(0,1fr)]">
-        <aside class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-4">
+        <aside class="ui-panel p-4 lg:sticky lg:top-4">
           <h2 class="text-sm font-black text-slate-950 dark:text-slate-100">Your search</h2>
           <dl class="mt-3 space-y-3 text-sm">
             <div class="flex gap-2">
-              <span class="material-symbols-outlined mt-0.5 text-[18px] text-blue-600 dark:text-blue-300">schedule</span>
+              <span class="material-symbols-outlined mt-0.5 text-[18px] text-brand-blue dark:text-brand-blue-light">schedule</span>
               <div><dt class="sr-only">When</dt><dd class="font-bold text-slate-700 dark:text-slate-200">{{ searchDescription }}</dd></div>
             </div>
             <div class="flex gap-2">
@@ -40,20 +40,20 @@
               <div><dt class="sr-only">Maximum changes</dt><dd class="font-semibold text-slate-600 dark:text-slate-300">{{ preferenceSummary }}</dd></div>
             </div>
           </dl>
-          <router-link :to="editRoute" class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+          <router-link :to="editRoute" class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
             <span class="material-symbols-outlined text-[18px]">edit</span>
             Change search
           </router-link>
         </aside>
 
-        <section class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900" aria-labelledby="journey-results-heading">
+        <section class="ui-panel min-w-0" aria-labelledby="journey-results-heading">
           <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
             <div class="flex items-center justify-between gap-3">
               <div>
                 <h1 id="journey-results-heading" class="text-base font-black text-slate-950 dark:text-slate-100">Journey options</h1>
                 <p class="mt-0.5 text-sm font-medium text-slate-500 dark:text-slate-400">{{ resultsStatus }}</p>
               </div>
-              <button v-if="loadingResults" type="button" class="min-h-11 rounded-xl px-3 text-sm font-extrabold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" @click="cancelSearch">Cancel</button>
+              <button v-if="loadingResults" type="button" class="min-h-11 rounded-xl px-3 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" @click="cancelSearch">Cancel</button>
             </div>
 
             <div v-if="!loadingResults && journeyPlans.length > 1" class="mt-3 flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Sort journeys">
@@ -63,8 +63,8 @@
                 type="button"
                 role="tab"
                 :aria-selected="sortMode === option.value"
-                class="min-h-10 shrink-0 rounded-lg px-3 text-xs font-extrabold transition sm:flex-1"
-                :class="sortMode === option.value ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-950 dark:text-blue-200' : 'text-slate-500 dark:text-slate-400'"
+                class="min-h-10 shrink-0 rounded-lg px-3 text-xs font-bold transition sm:flex-1"
+                :class="sortMode === option.value ? 'bg-white text-brand-blue shadow-sm dark:bg-slate-950 dark:text-brand-blue-light' : 'text-slate-500 dark:text-slate-400'"
                 @click="sortMode = option.value"
               >
                 {{ option.label }}
@@ -74,52 +74,52 @@
 
           <div v-if="loadingResults" class="p-4 sm:p-5" role="status">
             <LoadingState title="Finding journeys" :subtitle="loadingSubtitle" compact :rows="4" :show-tabs="false" />
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800 dark:bg-blue-500/10 dark:text-blue-100">
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-blue/10 px-3 py-2 text-xs font-semibold text-brand-blue-dark dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
               <span>{{ slowSearch ? 'This search is taking longer than usual. You can keep waiting or edit it.' : 'Checking live and scheduled services…' }}</span>
-              <router-link :to="editRoute" class="min-h-10 rounded-lg px-2.5 py-2 font-extrabold hover:bg-blue-100 dark:hover:bg-blue-500/10">Edit search</router-link>
+              <router-link :to="editRoute" class="min-h-10 rounded-lg px-2.5 py-2 font-bold hover:bg-brand-blue/20 dark:hover:bg-brand-blue/100/10">Edit search</router-link>
             </div>
           </div>
 
           <div v-else-if="error !== undefined" class="p-4 sm:p-5">
-            <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
               <p class="font-black">Journeys unavailable</p>
               <p class="mt-1">{{ errorMessage }}</p>
               <div class="mt-3 flex flex-wrap gap-2">
-                <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
-                <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-extrabold">Edit search</router-link>
+                <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
+                <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-bold">Edit search</router-link>
               </div>
             </div>
           </div>
 
           <div v-else-if="journeyPlans.length === 0" class="p-4 sm:p-5">
-            <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
               <p class="font-black">No journeys found</p>
               <p class="mt-1">Try a later time, allow more changes, or increase the walking distance.</p>
-              <router-link :to="editRoute" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-extrabold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100">Change search</router-link>
+              <router-link :to="editRoute" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100">Change search</router-link>
             </div>
           </div>
 
-          <div v-else class="space-y-3 bg-slate-50/70 p-3 dark:bg-slate-950/30 sm:p-4">
+          <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
             <template v-for="(journeyPlan, index) in sortedJourneyPlans" :key="journeyPlanKey(journeyPlan, index)">
-              <div v-if="departureDayChange(index)" class="px-1 pt-1 text-xs font-extrabold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              <div v-if="departureDayChange(index)" class="bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-400 dark:bg-slate-950/40 dark:text-slate-500 sm:px-5">
                 {{ formatDay(journeyPlan.StartTime) }}
               </div>
 
               <button
                 type="button"
-                class="group block w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500/40 sm:p-5"
+                class="group block w-full bg-white p-4 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-blue dark:bg-slate-900 dark:hover:bg-slate-800/60 sm:p-5"
                 @click="selectJourneyPlan(journeyPlan)"
               >
                 <div class="flex items-start justify-between gap-3">
                   <div class="flex min-w-0 flex-wrap items-center gap-2">
-                    <span v-if="recommendationLabel(journeyPlan)" class="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">{{ recommendationLabel(journeyPlan) }}</span>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <span v-if="recommendationLabel(journeyPlan)" class="ui-status bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">{{ recommendationLabel(journeyPlan) }}</span>
+                    <span class="ui-status bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                       <span class="h-1.5 w-1.5 rounded-full" :class="statusLabel(journeyPlan) === 'Live' ? 'bg-emerald-500' : 'bg-slate-400'"></span>
                       {{ statusLabel(journeyPlan) }}
                     </span>
-                    <span v-if="countdownLabel(journeyPlan.StartTime)" class="text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ countdownLabel(journeyPlan.StartTime) }}</span>
+                    <span v-if="countdownLabel(journeyPlan.StartTime)" class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ countdownLabel(journeyPlan.StartTime) }}</span>
                   </div>
-                  <span class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600">chevron_right</span>
+                  <span class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-blue">chevron_right</span>
                 </div>
 
                 <div class="mt-3 grid grid-cols-[auto_minmax(4rem,1fr)_auto] items-center gap-3">
@@ -130,12 +130,12 @@
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
                       <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
-                      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
+                      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
                         <span class="material-symbols-outlined text-[20px]">{{ transportIcon(primaryMode(journeyPlan)) }}</span>
                       </span>
                       <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
                     </div>
-                    <p class="mt-1 text-center text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ formatDuration(journeyPlan.Duration) || calculatedDuration(journeyPlan) }}</p>
+                    <p class="mt-1 text-center text-xs font-bold text-slate-500 dark:text-slate-400">{{ formatDuration(journeyPlan.Duration) || calculatedDuration(journeyPlan) }}</p>
                   </div>
                   <div class="text-right">
                     <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.ArrivalTime, destinationTimezone) }}</p>
@@ -150,7 +150,7 @@
                       <p class="text-sm font-black text-slate-900 dark:text-slate-100">{{ serviceSummary(journeyPlan) }}</p>
                       <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ itinerarySummary(journeyPlan) }}</p>
                     </div>
-                    <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ transfersLabel(journeyPlan) }}</span>
+                    <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ transfersLabel(journeyPlan) }}</span>
                   </div>
                 </div>
               </button>
@@ -171,21 +171,21 @@
       @close="selectedJourneyPlan = undefined"
     >
       <div v-if="selectedJourneyPlan" class="space-y-4">
-        <div class="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70">
-          <div><p class="text-[11px] font-extrabold uppercase text-slate-500">Depart</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.StartTime, originTimezone) }}</p></div>
-          <div><p class="text-[11px] font-extrabold uppercase text-slate-500">Arrive</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.ArrivalTime, destinationTimezone) }}</p></div>
-          <div><p class="text-[11px] font-extrabold uppercase text-slate-500">Changes</p><p class="mt-1 text-lg font-black">{{ transferCount(selectedJourneyPlan) }}</p></div>
+        <div class="grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
+          <div><p class="text-xs font-bold uppercase text-slate-500">Depart</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.StartTime, originTimezone) }}</p></div>
+          <div><p class="text-xs font-bold uppercase text-slate-500">Arrive</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.ArrivalTime, destinationTimezone) }}</p></div>
+          <div><p class="text-xs font-bold uppercase text-slate-500">Changes</p><p class="mt-1 text-lg font-black">{{ transferCount(selectedJourneyPlan) }}</p></div>
         </div>
 
         <ol class="space-y-3">
           <li v-for="(step, index) in selectedJourneySteps" :key="step.key" class="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3">
             <div class="relative flex justify-center">
               <span v-if="index < selectedJourneySteps.length - 1" class="absolute top-10 h-[calc(100%+0.75rem)] w-px bg-slate-200 dark:bg-slate-700"></span>
-              <span class="relative z-10 flex h-10 w-10 items-center justify-center rounded-2xl" :class="step.isTransfer ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200' : 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200'">
+              <span class="relative z-10 flex h-10 w-10 items-center justify-center rounded-xl" :class="step.isTransfer ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200' : 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light'">
                 <span class="material-symbols-outlined text-[21px]">{{ step.icon }}</span>
               </span>
             </div>
-            <article class="min-w-0 rounded-2xl border p-3" :class="step.isTransfer ? 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-500/10' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'">
+            <article class="min-w-0 rounded-xl border p-3" :class="step.isTransfer ? 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-500/10' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <h3 class="text-sm font-black text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
@@ -194,9 +194,9 @@
                 <div class="shrink-0 text-right"><p class="text-sm font-black">{{ step.startTime }}</p><p v-if="step.arrivalTime !== '--'" class="mt-0.5 text-xs font-bold text-slate-500">{{ step.arrivalTime }}</p></div>
               </div>
               <div v-if="step.chips.length" class="mt-3 flex flex-wrap gap-2">
-                <span v-for="chip in step.chips" :key="chip" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ chip }}</span>
+                <span v-for="chip in step.chips" :key="chip" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ chip }}</span>
               </div>
-              <router-link v-if="step.journeyId" :to="step.journeyRoute" class="mt-3 inline-flex min-h-11 items-center gap-1 rounded-xl bg-brand-blue px-3 text-sm font-extrabold text-white" @click="closeJourneyPlanModal">
+              <router-link v-if="step.journeyId" :to="step.journeyRoute" class="mt-3 inline-flex min-h-11 items-center gap-1 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white" @click="closeJourneyPlanModal">
                 View this service <span class="material-symbols-outlined text-[18px]">chevron_right</span>
               </router-link>
             </article>

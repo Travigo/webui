@@ -6,27 +6,27 @@
     :show-tabs="false"
   />
 
-  <section v-else-if="error && !service" class="mt-4 rounded-2xl border border-red-100 bg-white p-5 shadow-sm dark:border-red-500/20 dark:bg-slate-900">
+  <section v-else-if="error && !service" class="ui-panel mt-4 p-5">
     <div class="flex items-start gap-3">
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
         <span class="material-symbols-outlined">route</span>
       </span>
       <div>
-        <h1 class="font-extrabold text-slate-950 dark:text-slate-100">Service unavailable</h1>
+        <h1 class="ui-section-title">Service unavailable</h1>
         <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Service details could not be loaded.</p>
       </div>
     </div>
-    <button type="button" class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-4 text-sm font-extrabold text-white" @click="getService">
+    <button type="button" class="ui-button-primary mt-4" @click="getService">
       Try again
     </button>
   </section>
 
-  <div v-else-if="service" class="space-y-4 pb-16 pt-2 sm:pb-20">
+  <div v-else-if="service" class="ui-page ui-page-stack">
     <PageHeader :title="serviceTitle" :subtitle="serviceDescription">
       <template #meta>
         <div class="mb-2 flex flex-wrap items-center gap-2">
           <ServiceIcon
-            class="h-9 rounded-lg px-3 text-base font-extrabold shadow-sm"
+            class="h-9 rounded-lg px-3 text-base font-bold shadow-sm"
             style="line-height: 36px"
             :service="service"
             :short="false"
@@ -39,51 +39,51 @@
       </template>
     </PageHeader>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">At a glance</h2>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">The useful details for identifying this service.</p>
+    <section class="ui-panel">
+      <div class="ui-panel-header ui-panel-header--stacked">
+        <h2 class="ui-section-title">At a glance</h2>
+        <p class="ui-body mt-1">The useful details for identifying this service.</p>
       </div>
 
-      <dl class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+      <dl class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+        <div class="p-4 sm:p-5">
           <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <span class="material-symbols-outlined text-[18px]">business</span>
             Operator
           </dt>
           <dd class="mt-2">
-            <router-link v-if="operatorRoute" :to="operatorRoute" class="inline-flex min-h-11 items-center gap-1 text-base font-extrabold text-blue-600 hover:text-blue-700 dark:text-blue-300">
+            <router-link v-if="operatorRoute" :to="operatorRoute" class="inline-flex min-h-11 items-center gap-1 text-base font-bold text-brand-blue hover:text-brand-blue-dark dark:text-brand-blue-light">
               {{ operatorName }}
               <span class="material-symbols-outlined text-[19px]">chevron_right</span>
             </router-link>
-            <span v-else class="text-base font-extrabold text-slate-950 dark:text-slate-100">{{ operatorName }}</span>
+            <span v-else class="text-base font-bold text-slate-950 dark:text-slate-100">{{ operatorName }}</span>
           </dd>
         </div>
 
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+        <div class="p-4 sm:p-5">
           <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <span class="material-symbols-outlined text-[18px]">{{ transportIcon }}</span>
             Mode
           </dt>
-          <dd class="mt-2 text-base font-extrabold text-slate-950 dark:text-slate-100">{{ serviceKindLabel }}</dd>
+          <dd class="mt-2 text-base font-bold text-slate-950 dark:text-slate-100">{{ serviceKindLabel }}</dd>
         </div>
 
-        <div v-if="publicName" class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70 sm:col-span-2">
+        <div v-if="publicName" class="border-t border-slate-100 p-4 dark:border-slate-800 sm:col-span-2 sm:p-5">
           <dt class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Route name</dt>
-          <dd class="mt-2 text-base font-extrabold text-slate-950 dark:text-slate-100">{{ publicName }}</dd>
+          <dd class="mt-2 text-base font-bold text-slate-950 dark:text-slate-100">{{ publicName }}</dd>
         </div>
       </dl>
     </section>
 
-    <section v-if="hasBranding" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-        <h2 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">How to recognise it</h2>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Colours and route badge used across Travigo.</p>
+    <section v-if="hasBranding" class="ui-panel">
+      <div class="ui-panel-header ui-panel-header--stacked">
+        <h2 class="ui-section-title">How to recognise it</h2>
+        <p class="ui-body mt-1">Colours and route badge used across Travigo.</p>
       </div>
       <div class="flex items-center gap-4 p-4 sm:p-5">
-        <ServiceIcon class="h-14 min-w-16 rounded-xl px-3 text-xl font-extrabold shadow-sm" style="line-height: 56px" :service="service" :short="false" />
+        <ServiceIcon class="h-14 min-w-16 rounded-xl px-3 text-xl font-bold shadow-sm" style="line-height: 56px" :service="service" :short="false" />
         <div class="min-w-0 flex-1">
-          <p class="font-extrabold text-slate-950 dark:text-slate-100">{{ serviceTitle }}</p>
+          <p class="font-bold text-slate-950 dark:text-slate-100">{{ serviceTitle }}</p>
           <div class="mt-2 flex gap-2">
             <span v-if="service.BrandColour" class="h-5 w-12 rounded-full border border-black/10" :style="{ backgroundColor: service.BrandColour }" title="Primary service colour"></span>
             <span v-if="service.SecondaryBrandColour" class="h-5 w-12 rounded-full border border-black/10" :style="{ backgroundColor: service.SecondaryBrandColour }" title="Secondary service colour"></span>
@@ -92,8 +92,8 @@
       </div>
     </section>
 
-    <details class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <summary class="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-extrabold text-slate-700 dark:text-slate-200 sm:px-5">
+    <details class="ui-panel">
+      <summary class="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 sm:px-5">
         Technical details
         <span class="material-symbols-outlined text-[20px] text-slate-400">expand_more</span>
       </summary>

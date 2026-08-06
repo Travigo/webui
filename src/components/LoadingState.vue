@@ -5,17 +5,17 @@
   >
     <section
       v-if="!compact"
-      class="space-y-3 rounded-2xl bg-blue-50 p-4 dark:bg-blue-500/10"
+      class="ui-panel space-y-3 p-4"
     >
       <div class="flex items-start gap-3">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-200">
+        <span class="ui-icon">
           <span class="material-symbols-outlined animate-spin text-[23px]">progress_activity</span>
         </span>
         <div class="min-w-0 flex-1">
-          <h1 class="text-[1.5rem] font-extrabold leading-tight tracking-normal text-slate-950 dark:text-slate-100 sm:text-3xl">
+          <h1 class="ui-page-title">
             {{ title }}
           </h1>
-          <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+          <p class="ui-body mt-1">
             {{ subtitle }}
           </p>
         </div>
@@ -50,7 +50,7 @@
           v-bind:key="row"
           class="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-4 sm:grid-cols-[4rem_1fr_auto] sm:px-5"
         >
-          <div class="h-13 w-13 rounded-xl bg-slate-200 dark:bg-slate-700 sm:h-16 sm:w-16 sm:rounded-2xl"></div>
+          <div class="h-13 w-13 rounded-xl bg-slate-200 dark:bg-slate-700 sm:h-16 sm:w-16 sm:rounded-xl"></div>
 
           <div class="min-w-0 space-y-2">
             <div class="h-4 w-2/3 rounded-full bg-slate-200 dark:bg-slate-700"></div>
@@ -113,7 +113,7 @@ export default {
         return 'overflow-hidden'
       }
 
-      return 'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900'
+      return 'ui-panel'
     }
   }
 }

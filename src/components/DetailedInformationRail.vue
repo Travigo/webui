@@ -1,7 +1,7 @@
 <template>
   <div v-if="showFacilities && journey?.Service?.TransportType == 'Rail'">
     <div v-if="railInfo.ReplacementBus">
-      <div class="mb-3 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200">
+      <div class="mb-3 rounded-xl border border-brand-blue/20 bg-brand-blue/10 px-3 py-2 text-sm font-semibold text-brand-blue dark:border-brand-blue/20 dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
         This is a rail replacement bus
       </div>
     </div>
@@ -23,7 +23,7 @@
     close-label="Close facility details"
     body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
   >
-            <div class="rounded-2xl bg-slate-50 px-3 py-3 text-sm leading-relaxed text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
+            <div class="rounded-xl bg-slate-50 px-3 py-3 text-sm leading-relaxed text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
               {{ selectedFacility?.description }}
             </div>
 
@@ -31,14 +31,14 @@
               <article
                 v-for="item in carriageToilets"
                 v-bind:key="`${item.carriage.ID}-${item.index}`"
-                class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800/70"
+                class="rounded-xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800/70"
               >
                 <div class="flex items-start gap-3">
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
                     <span class="material-symbols-outlined text-[20px]">wc</span>
                   </span>
                   <div class="min-w-0">
-                    <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Toilet in {{ item.locationLabel }}</h3>
+                    <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">Toilet in {{ item.locationLabel }}</h3>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.toilet.Type || 'Toilet available' }}</p>
                     <p v-if="item.toilet.Status" class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
                       {{ item.toilet.Status }}
@@ -52,7 +52,7 @@
               <div
                 v-for="detail in selectedFacilityDetails"
                 v-bind:key="detail.label"
-                class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/70"
+                class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70"
               >
                 <dt class="font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
                 <dd class="mt-1 font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>

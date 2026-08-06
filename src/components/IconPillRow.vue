@@ -21,7 +21,7 @@
         v-for="chip in chips"
         v-bind:key="chip.key"
         type="button"
-        class="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-slate-700 shadow-sm transition hover:border-blue-100 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/10 dark:hover:text-blue-200 sm:h-8 sm:px-2"
+        class="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-slate-700 shadow-sm transition hover:border-brand-blue/20 hover:bg-brand-blue/10 hover:text-brand-blue dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-blue/40 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light sm:h-8 sm:px-2"
         :title="chip.label"
         @click="$emit('select', chip.key)"
       >

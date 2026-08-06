@@ -4,7 +4,7 @@
     class="grid grid-cols-[3.25rem_1fr] items-center gap-3 px-4 py-3 sm:grid-cols-[5rem_1fr_auto] sm:gap-4 sm:px-5 sm:py-4"
     :class="bordered ? 'border-b border-slate-200 last:border-b-0 dark:border-slate-800' : ''"
   >
-    <div class="flex h-13 w-13 items-center justify-center rounded-xl bg-blue-50 sm:h-16 sm:w-16 sm:rounded-2xl">
+    <div class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue/10 sm:h-14 sm:w-14 dark:bg-brand-blue/100/10">
       <StopIcon :stop="stop" size="10" />
     </div>
 
@@ -12,10 +12,10 @@
       <div class="flex items-start justify-between gap-2 sm:gap-3">
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <h3 class="truncate text-base font-bold leading-tight text-slate-950 sm:text-xl">{{ stop.PrimaryName }}</h3>
+            <h3 class="truncate text-base font-bold leading-tight text-slate-950 dark:text-slate-100">{{ stop.PrimaryName }}</h3>
           </div>
           <div>
-            <p class="mt-0.5 text-[0.7rem] leading-snug text-slate-500 sm:mt-1 sm:text-base">{{ descriptor }}</p>
+            <p class="mt-0.5 text-xs leading-snug text-slate-500 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
           </div>
           <div class="mt-1 flex max-w-full flex-wrap gap-1">
             <ServiceIcon
@@ -37,7 +37,7 @@
               Stop
             </span>
           </div>
-          <p v-if="metaIcon || distanceLabel" class="mt-1 flex items-center gap-1 text-[0.7rem] text-slate-500 sm:text-base">
+          <p v-if="metaIcon || distanceLabel" class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-sm">
             <span v-if="metaIcon" class="material-symbols-outlined text-base text-[0.7rem]">{{ metaIcon }}</span>
             {{ distanceLabel }}
           </p>

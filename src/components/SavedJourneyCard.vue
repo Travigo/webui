@@ -5,20 +5,20 @@
   >
     <ServiceIcon
       v-if="journey?.Service"
-      class="h-13 min-w-13 rounded-xl text-base shadow-sm sm:h-16 sm:min-w-16 sm:rounded-2xl"
+      class="h-13 min-w-13 rounded-xl text-base shadow-sm sm:h-14 sm:min-w-14"
       style="line-height: 52px"
       :service="journey.Service"
       :short="journey.Service?.BrandDisplayMode === 'short'"
     />
-    <span v-else class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm sm:h-16 sm:w-16 sm:rounded-2xl">
+    <span v-else class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm sm:h-14 sm:w-14">
       <span class="material-symbols-outlined text-[25px]">route</span>
     </span>
 
     <span class="min-w-0">
-      <span class="block truncate text-base font-bold leading-tight text-slate-950 dark:text-slate-100 sm:text-xl">
+      <span class="block truncate text-base font-bold leading-tight text-slate-950 dark:text-slate-100">
         {{ destination }}
       </span>
-      <span v-if="origin" class="mt-0.5 block truncate text-[0.7rem] leading-snug text-slate-500 sm:mt-1 sm:text-base">
+      <span v-if="origin" class="mt-0.5 block truncate text-xs leading-snug text-slate-500 sm:mt-1 sm:text-sm">
         From {{ origin }}
       </span>
       <ServiceIcon

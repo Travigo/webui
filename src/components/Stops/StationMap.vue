@@ -4,10 +4,10 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[20px] text-brand-blue">map</span>
-          <h2 class="text-sm font-extrabold text-slate-950">Map</h2>
+          <h2 class="text-sm font-bold text-slate-950">Map</h2>
           <span
             v-if="isTrainStation"
-            class="rounded-full bg-brand-pink/10 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-brand-pink"
+            class="rounded-full bg-brand-pink/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-pink"
           >
             Station detail
           </span>
@@ -20,7 +20,7 @@
 
     <div
       ref="mapContainer"
-      class="station-map relative h-[430px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-[560px]"
+      class="station-map relative h-[430px] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 sm:h-[560px]"
       :class="{ 'is-fullscreen': isFullscreen }"
     >
         <mapbox-map
@@ -41,7 +41,7 @@
             </template>
             <mapbox-popup>
               <div class="station-popup">
-                <p class="font-extrabold">{{ stop?.PrimaryName || 'Stop location' }}</p>
+                <p class="font-bold">{{ stop?.PrimaryName || 'Stop location' }}</p>
                 <p v-if="stop?.OtherNames?.Descriptor" class="mt-0.5 text-xs text-slate-500">
                   {{ stop.OtherNames.Descriptor }}
                 </p>
@@ -94,7 +94,7 @@
             </template>
             <mapbox-popup>
               <div class="station-popup">
-                <p class="font-extrabold">{{ platform.title }}</p>
+                <p class="font-bold">{{ platform.title }}</p>
                 <p v-if="platform.ref" class="mt-0.5 text-xs text-slate-500">{{ platform.ref }}</p>
               </div>
             </mapbox-popup>
@@ -113,7 +113,7 @@
             </template>
             <mapbox-popup>
               <div class="station-popup">
-                <p class="font-extrabold">{{ entrance.title }}</p>
+                <p class="font-bold">{{ entrance.title }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">Station entrance</p>
               </div>
             </mapbox-popup>
@@ -133,7 +133,7 @@
             </template>
             <mapbox-popup>
               <div class="station-popup">
-                <p class="font-extrabold">{{ amenity.title }}</p>
+                <p class="font-bold">{{ amenity.title }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">{{ amenity.typeLabel }}{{ amenity.nearby ? ' · Nearby' : '' }}</p>
                 <p v-if="amenity.summary" class="mt-1 text-xs text-slate-500">{{ amenity.summary }}</p>
               </div>
@@ -164,42 +164,42 @@
           </button>
         </div>
 
-        <div class="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-7.5rem)] rounded-2xl border border-white/70 bg-white/90 px-3 py-2 shadow-lg shadow-slate-900/10 backdrop-blur sm:left-4 sm:top-4">
-          <p class="text-xs font-extrabold text-slate-900">{{ stop?.PrimaryName || 'Train station' }}</p>
-          <p class="mt-0.5 text-[11px] font-semibold text-slate-500">{{ mapSummary }}</p>
+        <div class="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-7.5rem)] rounded-xl border border-white/70 bg-white/90 px-3 py-2 shadow-lg shadow-slate-900/10 backdrop-blur sm:left-4 sm:top-4">
+          <p class="text-xs font-bold text-slate-900">{{ stop?.PrimaryName || 'Train station' }}</p>
+          <p class="mt-0.5 text-xs font-semibold text-slate-500">{{ mapSummary }}</p>
         </div>
 
     </div>
 
-    <div v-if="loading" class="rounded-2xl bg-blue-50 px-3 py-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:text-blue-100">
+    <div v-if="loading" class="rounded-xl bg-brand-blue/10 px-3 py-3 text-sm text-brand-blue-dark dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
       <div class="flex items-center gap-2">
         <span class="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>
         <span>Loading additional station layout data…</span>
       </div>
     </div>
 
-    <div v-else-if="error" class="rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
+    <div v-else-if="error" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
       <div class="flex items-start gap-2">
         <span class="material-symbols-outlined text-[19px]">warning</span>
         <div>
-          <p class="font-extrabold">Additional station data unavailable</p>
+          <p class="font-bold">Additional station data unavailable</p>
           <p class="mt-1">The stop location is still shown. The OpenStreetMap station layout could not be loaded.</p>
         </div>
       </div>
       <button
         type="button"
-        class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 text-xs font-extrabold text-amber-900 transition hover:bg-amber-200"
+        class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 text-xs font-bold text-amber-900 transition hover:bg-amber-200"
         @click="$emit('retry')"
       >
         Try again
       </button>
     </div>
 
-    <div v-else-if="isTrainStation && osmStop && !hasMappedFeatures" class="rounded-2xl bg-slate-50 px-3 py-4 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+    <div v-else-if="isTrainStation && osmStop && !hasMappedFeatures" class="rounded-xl bg-slate-50 px-3 py-4 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
       <div class="flex items-start gap-2">
         <span class="material-symbols-outlined text-[19px] text-slate-400">map</span>
         <div>
-          <p class="font-extrabold text-slate-800 dark:text-slate-100">No mapped station features yet</p>
+          <p class="font-bold text-slate-800 dark:text-slate-100">No mapped station features yet</p>
           <p class="mt-1">OpenStreetMap does not currently have a usable platform, entrance, or amenity layout for this station.</p>
         </div>
       </div>
@@ -222,10 +222,10 @@
         <section>
           <div class="mb-2 flex items-end justify-between gap-3">
             <div>
-              <h3 class="text-sm font-extrabold text-slate-950 dark:text-slate-100">Station features</h3>
+              <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">Station features</h3>
               <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Choose which mapped features are shown.</p>
             </div>
-            <span v-if="hiddenFilterCount > 0" class="shrink-0 text-xs font-bold text-blue-600 dark:text-blue-300">
+            <span v-if="hiddenFilterCount > 0" class="shrink-0 text-xs font-bold text-brand-blue dark:text-brand-blue-light">
               {{ filterOptions.length - hiddenFilterCount }} selected
             </span>
           </div>
@@ -235,10 +235,10 @@
               v-for="option in filterOptions"
               :key="option.id"
               type="button"
-              class="flex min-h-16 items-center gap-3 rounded-2xl border px-3 py-3 text-left text-slate-700 transition dark:text-slate-300"
+              class="flex min-h-16 items-center gap-3 rounded-xl border px-3 py-3 text-left text-slate-700 transition dark:text-slate-300"
               :class="mapFilters[option.id]
-                ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200'
-                : 'border-slate-200 bg-white hover:border-blue-100 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10'"
+                ? 'border-brand-blue/40 bg-brand-blue/10 text-brand-blue shadow-sm dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light'
+                : 'border-slate-200 bg-white hover:border-brand-blue/20 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-blue/40 dark:hover:bg-brand-blue/100/10'"
               :aria-pressed="mapFilters[option.id]"
               @click="toggleFilter(option.id)"
             >
@@ -249,12 +249,12 @@
                 <span class="material-symbols-outlined text-[21px]">{{ option.icon }}</span>
               </span>
               <span class="min-w-0 flex-1">
-                <span class="block text-sm font-extrabold leading-tight">{{ option.label }}</span>
+                <span class="block text-sm font-bold leading-tight">{{ option.label }}</span>
                 <span class="mt-0.5 block text-[11px] font-semibold text-slate-500 dark:text-slate-400">{{ option.count }} mapped</span>
               </span>
               <span
                 class="material-symbols-outlined shrink-0 text-[20px]"
-                :class="mapFilters[option.id] ? 'text-blue-600 dark:text-blue-300' : 'text-slate-300 dark:text-slate-600'"
+                :class="mapFilters[option.id] ? 'text-brand-blue dark:text-brand-blue-light' : 'text-slate-300 dark:text-slate-600'"
               >
                 {{ mapFilters[option.id] ? 'check_circle' : 'radio_button_unchecked' }}
               </span>
