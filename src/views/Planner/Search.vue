@@ -1,23 +1,23 @@
 <template>
   <div class="pb-16 pt-2 sm:pb-20">
     <main class="mx-auto max-w-6xl space-y-4">
-      <header class="overflow-hidden rounded-3xl bg-gradient-to-br from-brand-blue to-blue-700 p-4 text-white shadow-sm sm:p-5">
+      <header class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/80 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30 sm:rounded-3xl sm:p-5">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <router-link :to="editRoute" class="mb-3 inline-flex min-h-10 items-center gap-1 rounded-xl bg-white/10 px-2.5 text-xs font-extrabold transition hover:bg-white/20">
+            <router-link :to="editRoute" class="mb-3 inline-flex min-h-10 items-center gap-1 rounded-xl bg-slate-100 px-2.5 text-xs font-extrabold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
               <span class="material-symbols-outlined text-[18px]">arrow_back</span>
               Edit journey
             </router-link>
-            <div class="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight sm:text-2xl">
+            <div class="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-2xl">
               <span class="truncate">{{ originName }}</span>
-              <span class="material-symbols-outlined shrink-0 text-blue-200">arrow_forward</span>
+              <span class="material-symbols-outlined shrink-0 text-blue-600 dark:text-blue-300">arrow_forward</span>
               <span class="truncate">{{ destinationName }}</span>
             </div>
-            <p class="mt-1 text-sm font-semibold text-blue-100">{{ searchDescription }}</p>
+            <p class="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ searchDescription }}</p>
           </div>
           <button
             type="button"
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15 transition hover:bg-white/25 disabled:opacity-60"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition hover:bg-blue-100 disabled:opacity-60 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20"
             :disabled="loadingResults"
             aria-label="Refresh journey results"
             @click="getJourneyPlan"

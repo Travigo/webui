@@ -2,14 +2,14 @@
   <div class="pb-16 pt-2 sm:pb-20">
     <main class="mx-auto max-w-3xl">
       <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <header class="bg-gradient-to-br from-brand-blue to-blue-700 px-4 py-5 text-white sm:px-6 sm:py-6">
+        <header class="border-b border-slate-100 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:py-6">
           <div class="flex items-start gap-3">
-            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-200">
               <span class="material-symbols-outlined text-[25px]">route</span>
             </span>
             <div>
-              <h1 class="text-xl font-black tracking-tight sm:text-2xl">Where are you going?</h1>
-              <p class="mt-1 text-sm font-medium text-blue-100">Compare public transport journeys and connections.</p>
+              <h1 class="text-xl font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-2xl">Where are you going?</h1>
+              <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Compare public transport journeys and connections.</p>
             </div>
           </div>
         </header>
