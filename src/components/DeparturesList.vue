@@ -38,7 +38,10 @@
             <p class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
               {{ departure.DestinationDisplay }}
             </p>
-            <DepartureTypeIcon :departure="departure" />
+            <DepartureTypeIcon
+              v-if="departure.Type !== 'Cancelled' && departure.Type !== 'Estimated'"
+              :departure="departure"
+            />
             <JourneyAlertIndicator
               :alerts="alertsFor(departure)"
               :journey-title="departure.DestinationDisplay || 'Journey'"
@@ -103,7 +106,10 @@
             <p class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
               {{ departure.DestinationDisplay }}
             </p>
-            <DepartureTypeIcon :departure="departure" />
+            <DepartureTypeIcon
+              v-if="departure.Type !== 'Cancelled' && departure.Type !== 'Estimated'"
+              :departure="departure"
+            />
             <JourneyAlertIndicator
               :alerts="alertsFor(departure)"
               :journey-title="departure.DestinationDisplay || 'Journey'"

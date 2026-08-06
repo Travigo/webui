@@ -2,9 +2,11 @@
   <button
     v-if="alerts.length > 0"
     type="button"
-    class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition hover:bg-white/70 dark:hover:bg-slate-800/80"
+    class="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900"
     :class="indicatorClasses"
     :aria-label="alertLabel"
+    aria-haspopup="dialog"
+    :aria-expanded="alertsModalOpen"
     :title="alertLabel"
     @click.stop.prevent="alertsModalOpen = true"
   >
@@ -86,9 +88,9 @@ export default {
     },
     indicatorClasses() {
       return {
-        info: 'text-blue-600 dark:text-blue-300',
-        warning: 'text-amber-600 dark:text-amber-300',
-        error: 'text-red-600 dark:text-red-300'
+        info: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400/30 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20',
+        warning: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20',
+        error: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/20'
       }[this.alertTone]
     },
     alertLabel() {
