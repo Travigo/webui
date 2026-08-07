@@ -93,7 +93,14 @@
     <Teleport to="#bottom-nav-extra" defer>
       <div class="grid grid-cols-2 gap-2">
         <router-link
-          :to="{ name: 'journeyplanner/home' }"
+          :to="{
+            name: 'journeyplanner/home',
+            query: {
+              destination: stop.PrimaryIdentifier,
+              destinationName: stop.PrimaryName,
+              destinationTimezone: stop.Timezone
+            }
+          }"
           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-bold text-brand-blue sm:rounded-xl"
         >
           <span class="material-symbols-outlined text-[21px]">route</span>
