@@ -91,6 +91,17 @@
             </div>
           </div>
 
+          <div v-else-if="searchTruncated && journeyPlans.length === 0" class="p-4 sm:p-5">
+            <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+              <p class="font-black">Search took too long</p>
+              <p class="mt-1">We could not finish checking every route, so this does not mean that no journey is possible.</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
+                <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-bold">Edit search</router-link>
+              </div>
+            </div>
+          </div>
+
           <div v-else-if="journeyPlans.length === 0" class="p-4 sm:p-5">
             <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
               <p class="font-black">No journeys found</p>
@@ -100,6 +111,9 @@
           </div>
 
           <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
+            <div v-if="searchTruncated" class="bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-100 sm:px-5">
+              Showing the journeys found before this search reached its limit.
+            </div>
             <template v-for="(journeyPlan, index) in sortedJourneyPlans" :key="journeyPlanKey(journeyPlan, index)">
               <div v-if="departureDayChange(index)" class="bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-400 dark:bg-slate-950/40 dark:text-slate-500 sm:px-5">
                 {{ formatDay(journeyPlan.StartTime) }}
@@ -248,6 +262,9 @@ export default {
         this.results?.Data?.JourneyPlans, this.results?.Data?.journeyPlans, this.results
       ].find(result => Array.isArray(result))
       return resultSet || []
+    },
+    searchTruncated() {
+      return Boolean(this.results?.SearchTruncated || this.results?.searchTruncated || this.results?.data?.SearchTruncated || this.results?.data?.searchTruncated)
     },
     sortedJourneyPlans() {
       const plans = [...this.journeyPlans]
@@ -516,7 +533,7 @@ export default {
     plannerPathSegment(value) { return encodeURIComponent(value).replace(/%2C/g, ',') },
     plannerRequestParams() {
       const params = {
-        count: 8,
+        count: 5,
         max_changes: Number(this.queryValue(this.$route.query.maxChanges) || 3),
         max_transfer_distance_metres: Number(this.queryValue(this.$route.query.maxWalking) || 1000)
       }
