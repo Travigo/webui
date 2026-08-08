@@ -108,7 +108,7 @@ export default {
     },
     getOperator() {
       axios
-      .get(`${API.URL}/core/operators/${this.$route.params.id}`)
+      .get(`${API.URL}/core/operators/${this.$route.params.id}`, { params: { view: 'web' } })
       .then(response => {
         this.operator = response.data
       })

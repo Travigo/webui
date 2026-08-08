@@ -885,7 +885,7 @@ export default {
         const result = await loadCachedResource({
           key: cacheKeys.journey(this.$route.params.id),
           maxAgeMs: CACHE_MAX_AGE.entity,
-          request: () => axios.get(`${API.URL}/core/journeys/${this.$route.params.id}`),
+          request: () => axios.get(`${API.URL}/core/journeys/${this.$route.params.id}`, { params: { view: 'web' } }),
           onCached: record => {
             cachedApplied = true
             this.applyJourney(record.data, record.savedAt, 'cache')
@@ -914,26 +914,28 @@ export default {
         return
       }
 
-      for (let i = 0; i < this.journeyPoints.length; i++) {
-        const journeyPoint = this.journeyPoints[i]
-
-        axios
-          .get(`${API.URL}/core/service_alerts/matching/${journeyPoint.stop.PrimaryIdentifier}`)
-          .then(response => {
-            if (response.data !== null) {
-              for (let index = 0; index < response.data.length; index++) {
-                const serviceAlert = response.data[index];
-                
-                if (serviceAlert.AlertType == "StopClosed") {
-                  this.stopServiceAlerts[journeyPoint.stop.PrimaryIdentifier] = {closed: true}
-                }
-              }
-            }
-          })
-          .catch(error => {
-            console.log(error)
-          })
+      const stopIdentifiers = [...new Set(
+        this.journeyPoints.map(point => point.stop?.PrimaryIdentifier).filter(Boolean)
+      )]
+      if (stopIdentifiers.length === 0) {
+        return
       }
+
+      axios
+        .get(`${API.URL}/core/service_alerts/matching/${stopIdentifiers.join(',')}`, { params: { view: 'web' } })
+        .then(response => {
+          const closedStops = new Set(
+            (response.data || [])
+              .filter(alert => alert.AlertType === 'StopClosed')
+              .flatMap(alert => alert.MatchedIdentifiers || [])
+          )
+          this.stopServiceAlerts = Object.fromEntries(
+            stopIdentifiers.filter(identifier => closedStops.has(identifier)).map(identifier => [identifier, { closed: true }])
+          )
+        })
+        .catch(error => {
+          console.log(error)
+        })
     },
     getDoorSides() {
       if (this.journey == null || this.journey?.Service?.TransportType === 'Bus' || !isConnected()) {
@@ -957,7 +959,7 @@ export default {
         this.doorSideLoading[stopIdentifier] = true
 
         axios
-          .get(`${API.URL}/core/journeys/${this.$route.params.id}/stops/${stopIdentifier}/door-side`)
+          .get(`${API.URL}/core/journeys/${this.$route.params.id}/stops/${stopIdentifier}/door-side`, { params: { view: 'compact' } })
           .then(response => {
             const data = response.data
             const doorSide = typeof data === 'string'
@@ -989,7 +991,7 @@ export default {
       this.loadingRealtime = true
 
       axios
-        .get(`${API.URL}/core/journeys/${this.$route.params.id}?realtime_only=true`)
+        .get(`${API.URL}/core/journeys/${this.$route.params.id}`, { params: { realtime_only: true, view: 'web' } })
         .then((response) => {
           let newRealtimeJourney = response.data
 
@@ -1206,7 +1208,7 @@ export default {
 
       let dayinstanceof = 'DAYINSTANCEOF:' + journeyRunDate + ':' + this.$route.params.id
       axios
-        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id},${dayinstanceof}`)
+        .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id},${dayinstanceof}`, { params: { view: 'web' } })
         .then(response => {
           this.serviceAlerts = response.data
         })

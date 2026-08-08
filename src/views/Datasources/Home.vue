@@ -475,8 +475,8 @@ export default {
       this.error = ''
 
       Promise.allSettled([
-        axios.get(`${API.URL}/stats/calculated`),
-        axios.get(`${API.URL}/core/datasources/`)
+        axios.get(`${API.URL}/stats/calculated`, { params: { view: 'web' } }),
+        axios.get(`${API.URL}/core/datasources/`, { params: { view: 'web' } })
       ])
         .then(([statsResult, datasourcesResult]) => {
           if (statsResult.status === 'fulfilled') {

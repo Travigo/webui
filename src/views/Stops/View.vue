@@ -394,7 +394,6 @@ export default {
       loadingArrivals: true,
       arrivalsError: false,
 
-      operatorStats: undefined,
 
       serviceAlerts: [],
       stopDetails: {},
@@ -670,7 +669,7 @@ export default {
           key: cacheKeys.stop(this.$route.params.id),
           maxAgeMs: CACHE_MAX_AGE.entity,
           revalidateAfterMs: CACHE_REVALIDATE_AFTER.stop,
-          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}`),
+          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}`, { params: { view: 'detail' } }),
           onCached: record => {
             cachedApplied = true
             this.stop = record.data
@@ -712,7 +711,8 @@ export default {
           request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/departures`, {
             params: {
               'count': 25,
-              'datetime': this.$route.query.datetime
+              'datetime': this.$route.query.datetime,
+              view: 'compact'
             }
           }),
           onCached: record => {
@@ -747,7 +747,8 @@ export default {
           request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/arrivals`, {
             params: {
               'count': 25,
-              'datetime': this.$route.query.datetime
+              'datetime': this.$route.query.datetime,
+              view: 'compact'
             }
           }),
           onCached: record => {
@@ -772,7 +773,7 @@ export default {
       }
 
       axios
-        .get(`${API.URL}/core/service_alerts/stop/${this.$route.params.id}`)
+        .get(`${API.URL}/core/service_alerts/stop/${this.$route.params.id}`, { params: { view: 'web' } })
         .then(response => {
           this.serviceAlerts = response.data
         })
@@ -791,7 +792,7 @@ export default {
         const result = await loadCachedResource({
           key: cacheKeys.stopDetails(this.$route.params.id),
           maxAgeMs: CACHE_MAX_AGE.entity,
-          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/detailed`),
+          request: () => axios.get(`${API.URL}/core/stops/${this.$route.params.id}/detailed`, { params: { view: 'web' } }),
           onCached: record => {
             cachedApplied = true
             this.stopDetails = this.normaliseStopDetails(record.data)
@@ -827,7 +828,7 @@ export default {
           key: cacheKeys.stopOSM(this.$route.params.id),
           maxAgeMs: CACHE_MAX_AGE.entity,
           request: () => axios.get(`${API.URL}/core/stops/${encodeURIComponent(this.$route.params.id)}/osm`, {
-            params: forceRefresh ? { force_refresh: true } : undefined
+            params: { view: 'map', ...(forceRefresh ? { force_refresh: true } : {}) }
           }),
           onCached: record => {
             cachedApplied = true
@@ -847,38 +848,6 @@ export default {
       } finally {
         this.loadingOSMStop = false
       }
-    },
-    getOperatorStats() {
-      console.log("Get operator stats")
-
-      let operators = []
-
-      if (this.stop.Services === null) {
-        return
-      }
-
-      for (let index = 0; index < this.stop.Services.length; index++) {
-        const service = this.stop.Services[index]
-        let operatorID = service.OperatorRef
-
-        if (!operators.includes(operatorID)) {
-          operators.push(operatorID)
-        }
-      }
-
-      axios
-        .get(`${API.URL}/stats/identification_rate`, {
-          params: {
-            'operators': operators.join(',')
-          }
-        })
-        .then(response => {
-          this.operatorStats = response.data.Operators
-        })
-        .catch(error => {
-          console.log(error)
-          // this.error = error
-        })
     },
     getData() {
       this.getStop()

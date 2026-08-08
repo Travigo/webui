@@ -75,7 +75,7 @@ export default {
     },
     getServices() {
       axios
-      .get(`${API.URL}/core/operators/${this.operator.PrimaryIdentifier}/services`)
+      .get(`${API.URL}/core/operators/${this.operator.PrimaryIdentifier}/services`, { params: { view: 'web' } })
       .then(response => {
         this.services = response.data
       })

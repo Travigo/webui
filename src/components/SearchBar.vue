@@ -365,7 +365,7 @@ export default {
       const requestToken = ++this.selectedResultRequestToken
 
       axios
-        .get(`${API.URL}/core/stops/${identifier}`)
+        .get(`${API.URL}/core/stops/${identifier}`, { params: { view: 'summary' } })
         .then(response => {
           if (requestToken !== this.selectedResultRequestToken) {
             return
@@ -536,13 +536,14 @@ export default {
       const requestToken = ++this.searchRequestToken
 
       axios
-          .get(`${API.URL}/core/stops/search`, {
-            params: {
-              name: this.searchTerm,
-              transporttype: this.selectedFilters.transportType.join(',')
-            }
-          })
-          .then(response => {
+        .get(`${API.URL}/core/stops/search`, {
+          params: {
+            name: this.searchTerm,
+            transporttype: this.selectedFilters.transportType.join(','),
+            view: 'web'
+          }
+        })
+        .then(response => {
             if (requestToken !== this.searchRequestToken) {
               return
             }

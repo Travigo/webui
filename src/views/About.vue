@@ -50,7 +50,7 @@ async function loadDatasources() {
   datasourcesError.value = ''
 
   try {
-    const response = await axios.get(`${API.URL}/core/datasources/`)
+    const response = await axios.get(`${API.URL}/core/datasources/`, { params: { view: 'web' } })
     datasources.value = Array.isArray(response.data) ? response.data : []
   } catch (error) {
     console.log(error)

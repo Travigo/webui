@@ -231,10 +231,8 @@ import { reportRequestFailure, reportRequestSuccess } from '@/offline/connectivi
 import {
   auth0CacheScope,
   CACHE_MAX_AGE,
-  CACHE_REVALIDATE_AFTER,
   cacheKeys,
   getCachedResource,
-  loadCachedResource,
   putCachedResource
 } from '@/offline/resourceCache'
 
@@ -425,10 +423,11 @@ export default {
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         const response = await axios.get(`${API.URL}/core/saved`, {
-          headers: { Authorization: `Bearer ${auth0token}` }
+          headers: { Authorization: `Bearer ${auth0token}` },
+          params: { view: 'web' }
         })
         reportRequestSuccess()
-        this.savedStops = await this.hydrateSavedStops(this.normaliseSavedObjects(response.data))
+        this.savedStops = this.hydrateSavedStops(this.normaliseSavedObjects(response.data))
 
         if (scope) {
           await putCachedResource(cacheKeys.savedItems, {
@@ -458,39 +457,19 @@ export default {
 
       return resultSet || []
     },
-    async hydrateSavedStops(savedObjects) {
+    hydrateSavedStops(savedObjects) {
       const stopObjects = savedObjects.filter(savedObject => ['stop', 'stops'].includes(String(savedObject.Type || '').toLowerCase()))
-      const hydratedStops = await Promise.all(stopObjects.map(async savedObject => {
-        if (!savedObject.ObjectIdentifier) {
+      const hydratedStops = stopObjects.map(savedObject => {
+        if (!savedObject.Object) {
           return undefined
         }
 
-        try {
-          loadCachedResource({
-            key: cacheKeys.departures(savedObject.ObjectIdentifier),
-            maxAgeMs: CACHE_MAX_AGE.board,
-            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}/departures`, {
-              params: { count: 25 }
-            })
-          }).catch(() => undefined)
-
-          const stopResult = await loadCachedResource({
-            key: cacheKeys.stop(savedObject.ObjectIdentifier),
-            maxAgeMs: CACHE_MAX_AGE.entity,
-            revalidateAfterMs: CACHE_REVALIDATE_AFTER.stop,
-            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
-          })
-
-          return {
-            ...stopResult.data,
-            SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
-            SavedObjectIdentifier: savedObject.ObjectIdentifier
-          }
-        } catch (error) {
-          console.log(error)
-          return undefined
+        return {
+          ...savedObject.Object,
+          SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
+          SavedObjectIdentifier: savedObject.ObjectIdentifier
         }
-      }))
+      })
 
       return hydratedStops.filter(Boolean)
     },
@@ -625,7 +604,8 @@ export default {
       axios
         .get(`${API.URL}/core/stops/`, {
           params: {
-            point
+            point,
+            view: 'map'
           }
         })
         .then(response => {
@@ -673,7 +653,7 @@ export default {
       this.statsError = ''
 
       axios
-        .get(`${API.URL}/stats/calculated`)
+        .get(`${API.URL}/stats/calculated`, { params: { view: 'web' } })
         .then(response => {
           if (!response.data || typeof response.data !== 'object' || Array.isArray(response.data)) {
             throw new Error('Unexpected stats response')

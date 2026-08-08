@@ -9,13 +9,14 @@ import {
 
 const NOTIFICATION_SUBSCRIPTIONS_URL = `${API.URL}/core/notification_subscriptions`
 
-async function authenticatedConfig(auth0) {
+async function authenticatedConfig(auth0, params = undefined) {
   const token = await getApiAccessToken(auth0)
 
   return {
     headers: {
       Authorization: `Bearer ${token}`
-    }
+    },
+    params
   }
 }
 
@@ -42,17 +43,6 @@ export function normaliseNotificationSubscription(subscription) {
     creationDateTime: subscription?.createdAt,
     modificationDateTime: subscription?.updatedAt
   }
-}
-
-const ENTITY_RESOURCES = {
-  Stop: 'stops',
-  Service: 'services',
-  Journey: 'journeys'
-}
-
-function encodeEntityIdentifier(identifier) {
-  // Journey identifiers contain literal colons which must stay in the route.
-  return encodeURIComponent(identifier).replace(/%3A/gi, ':')
 }
 
 function entityDisplayName(entityType, entity) {
@@ -92,42 +82,22 @@ function entityDescription(entityType, entity) {
     : [serviceName, operatorName].filter(Boolean).join(' · ')
 }
 
-async function fetchReferencedEntity(entityType, identifier, entityCache) {
-  const resource = ENTITY_RESOURCES[entityType]
-
-  if (!resource || !identifier) {
-    return null
-  }
-
-  const cacheKey = `${entityType}:${identifier}`
-  if (!entityCache.has(cacheKey)) {
-    entityCache.set(
-      cacheKey,
-      axios
-        .get(`${API.URL}/core/${resource}/${encodeEntityIdentifier(identifier)}`)
-        .then(response => response.data || null)
-        .catch(() => null)
-    )
-  }
-
-  return entityCache.get(cacheKey)
-}
-
-async function hydrateNotificationSubscription(subscription, entityCache = new Map()) {
+function hydrateNotificationSubscription(subscription) {
   const normalised = normaliseNotificationSubscription(subscription)
   const platformStopRefs = normalised.values?.platformStopRefs || []
 
-  const [subject, ...platformStops] = await Promise.all([
-    fetchReferencedEntity(normalised.entityType, normalised.entityIdentifier, entityCache),
-    ...platformStopRefs.map(stopRef => fetchReferencedEntity('Stop', stopRef, entityCache))
-  ])
+  const subject = subscription?.subject || null
+  const platformStopsByIdentifier = new Map((subscription?.platformStops || []).map(stop => [stop?.PrimaryIdentifier, stop]))
 
   const subjectName = entityDisplayName(normalised.entityType, subject)
-  const resolvedPlatformStops = platformStopRefs.map((stopRef, index) => ({
-    value: stopRef,
-    label: entityDisplayName('Stop', platformStops[index]) || `Stop ${index + 1}`,
-    description: entityDescription('Stop', platformStops[index])
-  }))
+  const resolvedPlatformStops = platformStopRefs.map((stopRef, index) => {
+    const stop = platformStopsByIdentifier.get(stopRef)
+    return {
+      value: stopRef,
+      label: entityDisplayName('Stop', stop) || `Stop ${index + 1}`,
+      description: entityDescription('Stop', stop)
+    }
+  })
 
   return {
     ...normalised,
@@ -142,11 +112,10 @@ async function hydrateNotificationSubscription(subscription, entityCache = new M
 
 export default {
   async list(auth0) {
-    const response = await axios.get(NOTIFICATION_SUBSCRIPTIONS_URL, await authenticatedConfig(auth0))
+    const response = await axios.get(NOTIFICATION_SUBSCRIPTIONS_URL, await authenticatedConfig(auth0, { view: 'web' }))
     const subscriptions = Array.isArray(response.data) ? response.data : []
-    const entityCache = new Map()
 
-    return Promise.all(subscriptions.map(subscription => hydrateNotificationSubscription(subscription, entityCache)))
+    return subscriptions.map(subscription => hydrateNotificationSubscription(subscription))
   },
   async quota(auth0) {
     const response = await axios.get(`${NOTIFICATION_SUBSCRIPTIONS_URL}/quota`, await authenticatedConfig(auth0))
@@ -162,7 +131,7 @@ export default {
     const response = await axios.post(
       NOTIFICATION_SUBSCRIPTIONS_URL,
       subscriptionPayload(subscription),
-      await authenticatedConfig(auth0)
+      await authenticatedConfig(auth0, { view: 'web' })
     )
 
     return hydrateNotificationSubscription(response.data)
@@ -171,7 +140,7 @@ export default {
     const response = await axios.put(
       `${NOTIFICATION_SUBSCRIPTIONS_URL}/${encodeURIComponent(subscription.id)}`,
       subscriptionPayload(subscription),
-      await authenticatedConfig(auth0)
+      await authenticatedConfig(auth0, { view: 'web' })
     )
 
     return hydrateNotificationSubscription(response.data)

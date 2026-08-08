@@ -240,7 +240,6 @@ export default {
       selectedJourneyPlan: undefined,
       journeyPlanModalOpen: false,
       stopNameCache: {},
-      journeyDetailCache: {},
       sortMode: 'recommended',
       currentTime: Date.now(),
       searchStartedAt: 0,
@@ -356,11 +355,7 @@ export default {
     },
     rawItemJourney(item) { return item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney || null },
     itemJourney(item) {
-      const journey = this.rawItemJourney(item)
-      const identifier = this.journeyIdentifier(journey)
-      const detail = identifier ? this.journeyDetailCache[identifier] : undefined
-      if (!detail) return journey
-      return { ...journey, ...detail, RealtimeJourney: journey?.RealtimeJourney || detail?.RealtimeJourney }
+      return this.rawItemJourney(item)
     },
     journeyLegs(plan) { return this.routeItems(plan).filter(item => this.itemJourney(item)) },
     primaryRouteItem(plan) { return this.journeyLegs(plan)[0] || this.routeItems(plan)[0] },
@@ -535,7 +530,8 @@ export default {
       const params = {
         count: 5,
         max_changes: Number(this.queryValue(this.$route.query.maxChanges) || 3),
-        max_transfer_distance_metres: Number(this.queryValue(this.$route.query.maxWalking) || 1000)
+        max_transfer_distance_metres: Number(this.queryValue(this.$route.query.maxWalking) || 1000),
+        view: 'web'
       }
       const datetime = this.queryValue(this.$route.query.datetime)
       if (datetime) params.datetime = datetime
@@ -569,7 +565,6 @@ export default {
       this.error = undefined
       this.results = {}
       this.stopNameCache = {}
-      this.journeyDetailCache = {}
       this.closeJourneyPlanModal()
 
       axios.get(`${API.URL}/core/planner/${this.plannerPathSegment(origin)}/${this.plannerPathSegment(destination)}`, {
@@ -580,67 +575,12 @@ export default {
         if (token !== this.requestToken) return
         this.results = response.data || {}
         this.loadingResults = false
-        this.hydratePlannerDetails(token)
       }).catch(error => {
         if (token !== this.requestToken || axios.isCancel(error) || error?.code === 'ERR_CANCELED') return
         console.log(error)
         this.error = error
         this.loadingResults = false
       })
-    },
-    unwrapStop(result) {
-      if (Array.isArray(result)) return undefined
-      return result?.Stop || result?.stop || result?.Station || result?.station || result?.Data?.Stop || result?.data?.Stop || result?.Data || result?.data || result?.Result || result?.result || result
-    },
-    seedStopName(stop) {
-      const id = this.stopIdentifier(stop)
-      const name = this.stopName(stop)
-      if (id && name) this.stopNameCache = { ...this.stopNameCache, [id]: name }
-    },
-    collectPlannerStopRefs() {
-      const refs = new Set()
-      this.journeyPlans.forEach(plan => this.routeItems(plan).forEach(item => {
-        if (this.itemOriginStopRef(item)) refs.add(this.itemOriginStopRef(item))
-        if (this.itemDestinationStopRef(item)) refs.add(this.itemDestinationStopRef(item))
-      }))
-      return [...refs].filter(ref => !this.stopNameCache[ref])
-    },
-    hydratePlannerStopNames(token) {
-      this.seedStopName(this.results?.OriginStop || this.results?.originStop)
-      this.seedStopName(this.results?.DestinationStop || this.results?.destinationStop)
-      const refs = this.collectPlannerStopRefs()
-      if (!refs.length) return
-      Promise.allSettled(refs.map(ref => axios.get(`${API.URL}/core/stops/${encodeURIComponent(ref)}`))).then(results => {
-        if (token !== this.requestToken) return
-        const next = { ...this.stopNameCache }
-        results.forEach((result, index) => {
-          if (result.status !== 'fulfilled') return
-          const stop = this.unwrapStop(result.value.data)
-          const name = this.stopName(stop)
-          const id = this.stopIdentifier(stop)
-          if (name) next[refs[index]] = name
-          if (id && name) next[id] = name
-        })
-        this.stopNameCache = next
-      })
-    },
-    hydratePlannerJourneys(token) {
-      const journeys = this.journeyPlans.flatMap(plan => this.journeyLegs(plan).map(item => this.rawItemJourney(item))).filter(Boolean)
-      const identifiers = [...new Set(journeys.map(journey => this.journeyIdentifier(journey)).filter(Boolean))]
-      if (!identifiers.length) return
-
-      Promise.allSettled(identifiers.map(identifier => axios.get(`${API.URL}/core/journeys/${identifier}`))).then(results => {
-        if (token !== this.requestToken) return
-        const next = { ...this.journeyDetailCache }
-        results.forEach((result, index) => {
-          if (result.status === 'fulfilled' && result.value.data) next[identifiers[index]] = result.value.data
-        })
-        this.journeyDetailCache = next
-      })
-    },
-    hydratePlannerDetails(token) {
-      this.hydratePlannerStopNames(token)
-      this.hydratePlannerJourneys(token)
     },
     departureDayChange(index) {
       const plans = this.sortedJourneyPlans

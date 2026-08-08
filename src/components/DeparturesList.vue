@@ -356,7 +356,8 @@ export default {
         const response = await axios.get(
           // The API route matches Travigo identifiers as supplied; encoding the
           // colons leaves the identifier as a literal "%3A" to the matcher.
-          `${API.URL}/core/service_alerts/matching/${journeyIdentifiers.join(',')}`
+          `${API.URL}/core/service_alerts/matching/${journeyIdentifiers.join(',')}`,
+          { params: { view: 'web' } }
         )
 
         if (this.journeyAlertsRequestKey !== requestKey) {

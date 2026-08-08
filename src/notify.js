@@ -113,7 +113,8 @@ export default {
     const auth0token = await getApiAccessToken(auth0)
 
     const response = await axios.get(`${API.URL}/core/account/notificationtoken`, {
-      headers: { Authorization: `Bearer ${auth0token}` }
+      headers: { Authorization: `Bearer ${auth0token}` },
+      params: { view: 'web' }
     })
 
     return response.data || []

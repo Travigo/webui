@@ -558,7 +558,7 @@ export default {
       if (this.showStops && updateStops && (this.currentZoom >= this.dataLoadMinZoom)) {
         this.stopsError = false
         axios
-          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
+          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}&view=map`)
           .then(response => {
             let newStops = response.data
 
@@ -648,6 +648,7 @@ export default {
         .get(`${API.URL}/core/stops/${this.currentViewedStop.PrimaryIdentifier}/departures`, {
           params: {
             'count': 10,
+            view: 'compact',
             // 'datetime': this.$route.query.datetime
           }
         })

@@ -457,6 +457,7 @@ export default {
       runDetailError: '',
       runs: [],
       selectedLog: '',
+      selectedLogOffset: 0,
       selectedPlanTasks: new Set(),
       selectedRun: undefined,
       selectedRunId: '',
@@ -572,14 +573,18 @@ export default {
 
       return response.data
     },
-    async batchApiText(path, auth0token) {
+    async batchApiText(path, auth0token, offset = 0) {
       const response = await axios.get(this.batchApiUrl(path), {
         headers: this.authHeaders(auth0token),
+        params: { offset },
         responseType: 'text',
         transformResponse: [data => data]
       })
 
-      return response.data
+      return {
+        chunk: response.data,
+        nextOffset: Number(response.headers?.['x-log-next-offset'] || offset)
+      }
     },
     async loadBatchRunner(options = {}) {
       if (!this.isAuthenticated) {
@@ -602,8 +607,8 @@ export default {
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         const [plan, runs] = await Promise.all([
-          this.batchApiGet('/plan', auth0token),
-          this.batchApiGet('/runs', auth0token)
+          this.plan || this.batchApiGet('/plan?view=web', auth0token),
+          this.batchApiGet('/runs?view=summary', auth0token)
         ])
 
         const normalisedRuns = this.normaliseRuns(runs)
@@ -641,6 +646,7 @@ export default {
         this.selectedStageKey = ''
         this.selectedTaskId = ''
         this.selectedLog = ''
+        this.selectedLogOffset = 0
         return
       }
 
@@ -650,7 +656,7 @@ export default {
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
-        const run = await this.batchApiGet(`/runs/${encodeURIComponent(runId)}`, token)
+        const run = await this.batchApiGet(`/runs/${encodeURIComponent(runId)}?view=detail`, token)
         if (requestId !== this.runRequestId || runId !== this.selectedRunId) {
           return
         }
@@ -666,6 +672,7 @@ export default {
         if (!silent && requestId === this.runRequestId && runId === this.selectedRunId) {
           this.selectedRun = undefined
           this.selectedLog = ''
+          this.selectedLogOffset = 0
           this.runDetailError = this.errorMessage(error, 'Run details could not be loaded.')
         }
       } finally {
@@ -686,6 +693,7 @@ export default {
 
       if (!runId || !taskId) {
         this.selectedLog = ''
+        this.selectedLogOffset = 0
         return
       }
 
@@ -695,16 +703,24 @@ export default {
 
       try {
         const token = auth0token || await getApiAccessToken(this.auth0)
-        const log = await this.batchApiText(`/runs/${encodeURIComponent(runId)}/tasks/${encodeURIComponent(taskId)}/log`, token)
+        const log = await this.batchApiText(
+          `/runs/${encodeURIComponent(runId)}/tasks/${encodeURIComponent(taskId)}/log`,
+          token,
+          this.selectedLogOffset
+        )
         if (requestId !== this.logRequestId || runId !== this.selectedRunId || taskId !== this.selectedTaskId) {
           return
         }
 
-        this.selectedLog = log
+        this.selectedLog = this.selectedLogOffset > 0 && log.nextOffset >= this.selectedLogOffset
+          ? `${this.selectedLog}${log.chunk}`
+          : log.chunk
+        this.selectedLogOffset = log.nextOffset
       } catch (error) {
         console.log(error)
         if (!silent && requestId === this.logRequestId && runId === this.selectedRunId && taskId === this.selectedTaskId) {
           this.selectedLog = ''
+          this.selectedLogOffset = 0
           this.logError = this.errorMessage(error, 'Task log could not be loaded.')
         }
       } finally {
@@ -722,7 +738,7 @@ export default {
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
-        const run = await this.batchApiPost('/runs', {
+        const run = await this.batchApiPost('/runs?view=summary', {
           taskIds: Array.from(this.selectedPlanTasks),
           includeAllTasks: false,
           forceImport: this.forceImport,
@@ -770,6 +786,8 @@ export default {
       this.selectedRunId = runId
       this.selectedStageKey = ''
       this.selectedTaskId = ''
+      this.selectedLog = ''
+      this.selectedLogOffset = 0
       await this.loadSelectedRun()
     },
     async selectStage(stageKey) {
@@ -779,6 +797,8 @@ export default {
 
       this.selectedStageKey = stageKey
       this.selectedTaskId = ''
+      this.selectedLog = ''
+      this.selectedLogOffset = 0
       this.reconcileSelectedTask()
       await this.loadSelectedTaskLog()
     },
@@ -788,6 +808,8 @@ export default {
       }
 
       this.selectedTaskId = taskId
+      this.selectedLog = ''
+      this.selectedLogOffset = 0
       await this.loadSelectedTaskLog()
     },
     payloadsMatch(current, next) {
@@ -829,6 +851,7 @@ export default {
       this.planTaskSelectionInitialized = false
       this.runs = []
       this.selectedLog = ''
+      this.selectedLogOffset = 0
       this.selectedPlanTasks = new Set()
       this.selectedRun = undefined
       this.selectedRunId = ''

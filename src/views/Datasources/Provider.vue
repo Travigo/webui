@@ -294,7 +294,7 @@ export default {
           this.reportLoading[datasetIdentifier] = true
 
           return axios
-            .get(`${API.URL}/core/datasources/dataset/${encodeURIComponent(datasetIdentifier)}/import_report`)
+            .get(`${API.URL}/core/datasources/dataset/${encodeURIComponent(datasetIdentifier)}/import_report`, { params: { view: 'web' } })
             .then(response => {
               if (requestId === this.datasourceRequestId) {
                 this.importReports[datasetIdentifier] = response.data
@@ -323,7 +323,7 @@ export default {
       this.error = undefined
 
       axios
-        .get(`${API.URL}/core/datasources/provider/${this.$route.params.id}`)
+        .get(`${API.URL}/core/datasources/provider/${this.$route.params.id}`, { params: { view: 'web' } })
         .then(response => {
           if (requestId !== this.datasourceRequestId) {
             return

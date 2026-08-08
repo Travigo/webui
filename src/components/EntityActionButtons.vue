@@ -249,7 +249,8 @@ export default {
         }, {
           headers: {
             Authorization: `Bearer ${auth0token}`
-          }
+          },
+          params: { view: 'web' }
         })
 
         this.saved = true

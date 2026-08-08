@@ -204,10 +204,8 @@ import {
   auth0CacheScope,
   cacheAgeLabel,
   CACHE_MAX_AGE,
-  CACHE_REVALIDATE_AFTER,
   cacheKeys,
   getCachedResource,
-  loadCachedResource,
   putCachedResource
 } from '@/offline/resourceCache'
 
@@ -335,7 +333,8 @@ export default {
       const config = {
         headers: {
           Authorization: `Bearer ${auth0token}`
-        }
+        },
+        params: { view: 'web' }
       }
 
       try {
@@ -403,7 +402,8 @@ export default {
       const config = {
         headers: {
           Authorization: `Bearer ${auth0token}`
-        }
+        },
+        params: { view: 'web' }
       }
 
       return await axios.get(`${API.URL}/core/saved`, config)
@@ -437,67 +437,35 @@ export default {
       }, { scope })
       this.savedItemsUpdatedAt = new Date(record.savedAt)
     },
-    async hydrateSavedStops(savedObjects) {
+    hydrateSavedStops(savedObjects) {
       const savedStops = savedObjects.filter(savedObject => this.isStopSavedObject(savedObject))
-      const hydratedStops = await Promise.all(savedStops.map(async savedObject => {
-        if (!savedObject.ObjectIdentifier) {
+      const hydratedStops = savedStops.map(savedObject => {
+        if (!savedObject.Object) {
           return undefined
         }
 
-        try {
-          loadCachedResource({
-            key: cacheKeys.departures(savedObject.ObjectIdentifier),
-            maxAgeMs: CACHE_MAX_AGE.board,
-            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}/departures`, {
-              params: { count: 25 }
-            })
-          }).catch(() => undefined)
-
-          const stopResult = await loadCachedResource({
-            key: cacheKeys.stop(savedObject.ObjectIdentifier),
-            maxAgeMs: CACHE_MAX_AGE.entity,
-            revalidateAfterMs: CACHE_REVALIDATE_AFTER.stop,
-            request: () => axios.get(`${API.URL}/core/stops/${savedObject.ObjectIdentifier}`)
-          })
-
-          return {
-            ...stopResult.data,
-            SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
-            SavedObjectIdentifier: savedObject.ObjectIdentifier
-          }
-        } catch (error) {
-          console.log(error)
-
-          return undefined
+        return {
+          ...savedObject.Object,
+          SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
+          SavedObjectIdentifier: savedObject.ObjectIdentifier
         }
-      }))
+      })
 
       return hydratedStops.filter(Boolean)
     },
-    async hydrateSavedJourneys(savedObjects) {
+    hydrateSavedJourneys(savedObjects) {
       const savedJourneys = savedObjects.filter(savedObject => this.isJourneySavedObject(savedObject))
-      const hydratedJourneys = await Promise.all(savedJourneys.map(async savedObject => {
-        if (!savedObject.ObjectIdentifier) {
+      const hydratedJourneys = savedJourneys.map(savedObject => {
+        if (!savedObject.Object) {
           return undefined
         }
 
-        try {
-          const result = await loadCachedResource({
-            key: cacheKeys.journey(savedObject.ObjectIdentifier),
-            maxAgeMs: CACHE_MAX_AGE.entity,
-            request: () => axios.get(`${API.URL}/core/journeys/${savedObject.ObjectIdentifier}`)
-          })
-
-          return {
-            ...result.data,
-            SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
-            SavedObjectIdentifier: savedObject.ObjectIdentifier
-          }
-        } catch (error) {
-          console.log(error)
-          return undefined
+        return {
+          ...savedObject.Object,
+          SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
+          SavedObjectIdentifier: savedObject.ObjectIdentifier
         }
-      }))
+      })
 
       return hydratedJourneys.filter(Boolean)
     },

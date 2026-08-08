@@ -123,7 +123,7 @@ export default {
     },
     getOperators() {
       axios
-      .get(`${API.URL}/core/operators`)
+      .get(`${API.URL}/core/operators`, { params: { view: 'web' } })
       .then(response => {
         this.operatorRegions = response.data
       })

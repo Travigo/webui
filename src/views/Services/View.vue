@@ -187,7 +187,7 @@ export default {
       this.error = undefined
 
       try {
-        const response = await axios.get(`${API.URL}/core/services/${this.$route.params.id}`)
+        const response = await axios.get(`${API.URL}/core/services/${this.$route.params.id}`, { params: { view: 'web' } })
         this.service = response.data
         await this.getOperator()
       } catch (error) {
@@ -203,7 +203,7 @@ export default {
       }
 
       try {
-        const response = await axios.get(`${API.URL}/core/operators/${this.operatorId}`)
+        const response = await axios.get(`${API.URL}/core/operators/${this.operatorId}`, { params: { view: 'web' } })
         this.operator = response.data
       } catch (error) {
         console.log(error)
