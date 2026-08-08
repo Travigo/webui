@@ -36,6 +36,7 @@ export default {
         "Airport": "flight",
         "CableCar": "cell_tower",
         "Funicular": "funicular",
+        "TaxiBus": "directions_bus",
         "UNKNOWN": "pin_drop"
       }
       let serviceIcons = []

@@ -59,7 +59,8 @@ export default {
         Airport: 'flight',
         Air: 'flight',
         CableCar: 'gondola_lift',
-        Funicular: 'funicular'
+        Funicular: 'funicular',
+        TaxiBus: 'directions_bus'
       }[this.service.TransportType] || 'route'
     },
     serviceIconStyle() {
