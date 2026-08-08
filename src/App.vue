@@ -76,6 +76,7 @@ export default {
       this.darkMode = shouldUseDark
       document.documentElement.classList.toggle('dark', shouldUseDark)
       document.documentElement.style.colorScheme = shouldUseDark ? 'dark' : 'light'
+      document.getElementById('theme-color')?.setAttribute('content', shouldUseDark ? '#020617' : '#f8fafc')
     },
     setThemePreference(preference) {
       this.themePreference = preference
