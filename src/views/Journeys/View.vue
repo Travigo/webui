@@ -1,5 +1,4 @@
 <template>
-  <Alert type="error" class="mt-4" v-if="errorJourney !== undefined">{{ errorJourney }}</Alert>
   <LoadingState
     v-if="loadingJourney"
     title="Loading journey"
@@ -391,7 +390,19 @@
     <DatasourceAttributes v-if="!loadingJourney" :datasources="utils.getDatasources(journey, journeyPoints, journey?.Path)" />
   </div>
 
-  <Alert v-else-if="!errorJourney" type="warning" class="mt-4">
+  <div v-else-if="errorJourney" class="ui-page ui-page-stack">
+    <ErrorState
+      :icon="journeyNotFound ? 'route' : 'error_outline'"
+      :title="journeyNotFound ? 'Journey not found' : 'Journey unavailable'"
+      :message="errorJourney"
+      retry
+      :action-to="{ name: 'home' }"
+      action-label="Search for another journey"
+      @retry="retryJourney"
+    />
+  </div>
+
+  <Alert v-else type="warning" class="mt-4">
     This journey is not available offline yet. Open it once while connected to save it on this device.
   </Alert>
 </template>
@@ -403,6 +414,7 @@ import DetailedInformationRail from '@/components/DetailedInformationRail.vue'
 import DepartureTypeIcon from '@/components/DepartureTypeIcon.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import IconButton from '@/components/IconButton.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -431,6 +443,7 @@ export default {
 
       loadingJourney: true,
       errorJourney: undefined,
+      journeyNotFound: false,
 
       loadingRealtime: false,
       errorRealtime: undefined,
@@ -479,6 +492,7 @@ export default {
     DepartureTypeIcon,
     DatasourceAttributes,
     EntityActionButtons,
+    ErrorState,
     IconButton,
     LoadingState,
     PageHeader,
@@ -870,6 +884,12 @@ export default {
       this.getJourney()
       this.getServiceAlerts()
     },
+    retryJourney() {
+      this.loadingJourney = true
+      this.errorJourney = undefined
+      this.journeyNotFound = false
+      this.getJourney()
+    },
     applyJourney(data, savedAt, source) {
       this.hasHiddenStops = false
       this.journeyPoints = this.extractJourneyPoints(data)
@@ -898,12 +918,14 @@ export default {
         }
 
         this.errorJourney = undefined
+        this.journeyNotFound = false
         this.getStopAlerts()
         this.getDoorSides()
       } catch (error) {
         console.log(error)
         if (!this.journey) {
-          this.errorJourney = 'Journey details could not be loaded.'
+          this.journeyNotFound = error.response?.status === 404
+          this.errorJourney = this.journeyNotFound ? 'This journey does not exist, or is no longer available.' : 'Journey details could not be loaded.'
         }
       } finally {
         this.loadingJourney = false

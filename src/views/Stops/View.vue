@@ -64,10 +64,10 @@
     <StopDeparturesTable
       :stop="stop"
       :departures="departures"
-      :loading-departures="loadingDepartures && departures === null"
+      :loading-departures="loadingDepartures && (departures === null || (boardFromCache.departures && departures.length === 0))"
       :departures-error="departuresError"
       :arrivals="arrivals"
-      :loading-arrivals="loadingArrivals && arrivals === null"
+      :loading-arrivals="loadingArrivals && (arrivals === null || (boardFromCache.arrivals && arrivals.length === 0))"
       :arrivals-error="arrivalsError"
       :board-reference-time="boardReferenceTime"
       :show-details="false"
@@ -123,25 +123,17 @@
     </Teleport>
   </div>
 
-  <section v-else-if="error" class="ui-panel mt-4 p-5">
-    <div class="flex items-start gap-3">
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
-        <span class="material-symbols-outlined">location_off</span>
-      </span>
-      <div>
-        <h1 class="ui-section-title">Stop unavailable</h1>
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ error }}</p>
-      </div>
-    </div>
-    <div class="mt-4 flex flex-wrap gap-2">
-      <button type="button" class="ui-button-primary" @click="retryStop">
-        Try again
-      </button>
-      <router-link :to="{ name: 'home' }" class="ui-button-secondary">
-        Search for another stop
-      </router-link>
-    </div>
-  </section>
+  <div v-else-if="error" class="ui-page ui-page-stack">
+    <ErrorState
+      :icon="stopNotFound ? 'location_off' : 'error_outline'"
+      :title="stopNotFound ? 'Stop not found' : 'Stop unavailable'"
+      :message="error"
+      retry
+      :action-to="{ name: 'home' }"
+      action-label="Search for another stop"
+      @retry="retryStop"
+    />
+  </div>
 
   <Alert v-else type="warning" class="mt-4">
     This stop is not available offline yet. Open it once while connected to save it on this device.
@@ -333,6 +325,7 @@ import ServiceIcon from '@/components/ServiceIcon.vue'
 import Alert from '@/components/Alert.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
@@ -405,6 +398,7 @@ export default {
       osmStopError: false,
 
       error: undefined,
+      stopNotFound: false,
 
       refreshTimer: null,
       serviceAlertsRefreshTimer: null,
@@ -428,6 +422,7 @@ export default {
     Alert,
     DatasourceAttributes,
     EntityActionButtons,
+    ErrorState,
     IconPillRow,
     LoadingState,
     Modal,
@@ -681,10 +676,12 @@ export default {
           this.stop = result.data
         }
         this.error = undefined
+        this.stopNotFound = false
       } catch (error) {
         console.log(error)
         if (!this.stop) {
-          this.error = 'Stop details could not be loaded.'
+          this.stopNotFound = error.response?.status === 404
+          this.error = this.stopNotFound ? 'This stop does not exist, or is no longer available.' : 'Stop details could not be loaded.'
         }
       } finally {
         this.loadingStop = false
@@ -693,6 +690,7 @@ export default {
     retryStop() {
       this.loadingStop = true
       this.error = undefined
+      this.stopNotFound = false
       this.getStop()
     },
     async getDepartures() {

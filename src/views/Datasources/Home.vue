@@ -1,7 +1,5 @@
 <template>
   <div class="ui-page ui-page-stack">
-    <Alert type="error" v-if="error">{{ error }}</Alert>
-
     <PageHeader
       eyebrow="Supported data"
       title="Datasources"
@@ -13,6 +11,14 @@
       v-if="loading"
       title="Loading supported data"
       subtitle="Fetching providers, datasets, and coverage."
+    />
+
+    <ErrorState
+      v-else-if="error"
+      title="Supported data unavailable"
+      :message="error"
+      retry
+      @retry="getData"
     />
 
     <template v-else>
@@ -150,7 +156,7 @@
 </template>
 
 <script>
-import Alert from '@/components/Alert.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import axios from 'axios'
@@ -214,7 +220,7 @@ const DataBreakdown = {
 export default {
   name: 'DatasourcesHome',
   components: {
-    Alert,
+    ErrorState,
     LoadingState,
     PageHeader,
     DataBreakdown

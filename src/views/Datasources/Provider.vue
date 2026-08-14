@@ -1,7 +1,16 @@
 <template>
-  <Alert v-if="error" type="error" class="mt-4">{{ error }}</Alert>
-
   <LoadingState v-if="loading" title="Loading datasource" subtitle="Fetching provider details and datasets." />
+
+  <div v-else-if="error || !datasource" class="ui-page ui-page-stack">
+    <ErrorState
+      :title="datasourceNotFound ? 'Datasource not found' : 'Datasource unavailable'"
+      :message="datasourceNotFound ? 'This datasource does not exist, or is no longer available.' : error || 'Datasource details could not be loaded.'"
+      retry
+      :action-to="{ name: 'datasources/home' }"
+      action-label="Browse datasources"
+      @retry="getDatasource"
+    />
+  </div>
 
   <div v-else-if="datasource" class="ui-page ui-page-stack">
     <PageHeader
@@ -125,7 +134,7 @@
 </template>
 
 <script>
-import Alert from '@/components/Alert.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import axios from 'axios'
@@ -135,7 +144,7 @@ import Pretty from '@/pretty'
 export default {
   name: 'DatasourcesProvider',
   components: {
-    Alert,
+    ErrorState,
     LoadingState,
     PageHeader
   },
@@ -147,6 +156,7 @@ export default {
       reportLoading: {},
       loading: true,
       error: undefined,
+      datasourceNotFound: false,
       datasourceRequestId: 0,
     }
   },
@@ -321,6 +331,7 @@ export default {
       this.importReports = {}
       this.reportLoading = {}
       this.error = undefined
+      this.datasourceNotFound = false
 
       axios
         .get(`${API.URL}/core/datasources/provider/${this.$route.params.id}`, { params: { view: 'web' } })
@@ -334,6 +345,7 @@ export default {
         })
         .catch(error => {
           console.log(error)
+          this.datasourceNotFound = error.response?.status === 404
           this.error = error.response?.data?.error || 'Unable to load this datasource.'
         })
         .finally(() => this.loading = false)

@@ -6,20 +6,17 @@
     :show-tabs="false"
   />
 
-  <section v-else-if="error && !service" class="ui-panel mt-4 p-5">
-    <div class="flex items-start gap-3">
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-200">
-        <span class="material-symbols-outlined">route</span>
-      </span>
-      <div>
-        <h1 class="ui-section-title">Service unavailable</h1>
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Service details could not be loaded.</p>
-      </div>
-    </div>
-    <button type="button" class="ui-button-primary mt-4" @click="getService">
-      Try again
-    </button>
-  </section>
+  <div v-else-if="error && !service" class="ui-page ui-page-stack">
+    <ErrorState
+      :icon="serviceNotFound ? 'route' : 'error_outline'"
+      :title="serviceNotFound ? 'Service not found' : 'Service unavailable'"
+      :message="serviceNotFound ? 'This service does not exist, or is no longer available.' : 'Service details could not be loaded.'"
+      retry
+      :action-to="{ name: 'home' }"
+      action-label="Search for another service"
+      @retry="getService"
+    />
+  </div>
 
   <div v-else-if="service" class="ui-page ui-page-stack">
     <PageHeader :title="serviceTitle" :subtitle="serviceDescription">
@@ -117,6 +114,7 @@
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import DatasourceAttributes from '@/components/DatasourceAttributes.vue'
 import LoadingState from '@/components/LoadingState.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import axios from 'axios'
 import API from '@/API'
@@ -128,6 +126,7 @@ export default {
     ServiceIcon,
     DatasourceAttributes,
     LoadingState,
+    ErrorState,
     PageHeader
   },
   data() {
@@ -136,7 +135,8 @@ export default {
       service: undefined,
       operator: undefined,
       loadingService: true,
-      error: undefined
+      error: undefined,
+      serviceNotFound: false
     }
   },
   computed: {
@@ -185,6 +185,7 @@ export default {
     async getService() {
       this.loadingService = true
       this.error = undefined
+      this.serviceNotFound = false
 
       try {
         const response = await axios.get(`${API.URL}/core/services/${this.$route.params.id}`, { params: { view: 'web' } })
@@ -193,6 +194,7 @@ export default {
       } catch (error) {
         console.log(error)
         this.error = error
+        this.serviceNotFound = error.response?.status === 404
       } finally {
         this.loadingService = false
       }

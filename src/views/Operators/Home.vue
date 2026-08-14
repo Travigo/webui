@@ -1,7 +1,5 @@
 <template>
   <div class="ui-page ui-page-stack">
-    <Alert type="error" v-if="error">{{ error }}</Alert>
-
     <PageHeader
       title="Operators"
       subtitle="Browse public transport operators by mode and region."
@@ -18,6 +16,14 @@
       title="Loading operators"
       subtitle="Fetching operators and regions."
       :show-tabs="false"
+    />
+
+    <ErrorState
+      v-else-if="error || !operatorRegions"
+      title="Operators unavailable"
+      message="Operator details could not be loaded. Please try again."
+      retry
+      @retry="getOperators"
     />
 
     <Panel
@@ -68,7 +74,7 @@
 </template>
 
 <script>
-import Alert from '@/components/Alert.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import Notice from '@/components/Notice.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -101,7 +107,7 @@ export default {
     }
   },
   components: {
-    Alert,
+    ErrorState,
     LoadingState,
     Notice,
     PageHeader,
@@ -122,6 +128,8 @@ export default {
       this.currentTab = newTab
     },
     getOperators() {
+      this.loading = true
+      this.error = null
       axios
       .get(`${API.URL}/core/operators`, { params: { view: 'web' } })
       .then(response => {

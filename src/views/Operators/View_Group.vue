@@ -1,6 +1,4 @@
 <template>
-  <Alert type="error" class="mt-4" v-if="error !== undefined">{{ error }}</Alert>
-
   <LoadingState
     v-if="loading"
     title="Loading operator group"
@@ -40,15 +38,20 @@
     </Panel>
   </div>
 
-  <div v-else class="pb-16 pt-3 sm:pb-20 sm:pt-4">
-    <Notice type="error">
-      Operator group could not be loaded.
-    </Notice>
+  <div v-else class="ui-page ui-page-stack">
+    <ErrorState
+      :title="groupNotFound ? 'Operator group not found' : 'Operator group unavailable'"
+      :message="groupNotFound ? 'This operator group does not exist, or is no longer available.' : 'Operator group details could not be loaded.'"
+      retry
+      :action-to="{ name: 'operators/home' }"
+      action-label="Browse operators"
+      @retry="getOperatorGroup"
+    />
   </div>
 </template>
 
 <script>
-import Alert from '@/components/Alert.vue'
+import ErrorState from '@/components/ErrorState.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import Notice from '@/components/Notice.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -62,10 +65,11 @@ export default {
       group: undefined,
       loading: true,
       error: undefined,
+      groupNotFound: false,
     }
   },
   components: {
-    Alert,
+    ErrorState,
     LoadingState,
     Notice,
     PageHeader,
@@ -73,6 +77,9 @@ export default {
   },
   methods: {
     getOperatorGroup() {
+      this.loading = true
+      this.error = undefined
+      this.groupNotFound = false
       axios
       .get(`${API.URL}/core/operator_groups/${this.$route.params.id}`, { params: { view: 'web' } })
       .then(response => {
@@ -81,6 +88,7 @@ export default {
       .catch(error => {
         console.log(error)
         this.error = error
+        this.groupNotFound = error.response?.status === 404
       })
       .finally(() => this.loading = false)
     },
