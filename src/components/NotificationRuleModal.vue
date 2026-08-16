@@ -356,7 +356,9 @@ export default {
         }
 
         if (field.type === 'multi-select') {
-          nextFieldValues[field.id] = this.fieldValue(field.id)
+          nextFieldValues[field.id] = Array.isArray(this.fieldValues[field.id])
+            ? this.fieldValues[field.id]
+            : (Array.isArray(field.defaultValue) ? [...field.defaultValue] : [])
           continue
         }
 

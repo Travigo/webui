@@ -230,7 +230,7 @@ import { useAuth0 } from '@auth0/auth0-vue'
 import Modal from '@/components/Modal.vue'
 import NotificationRuleModal from '@/components/NotificationRuleModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
-import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
+import { NOTIFICATION_DAYS_OF_WEEK, notificationRuleTypesForSubject } from '@/notificationRuleTypes'
 import notificationSubscriptions from '@/notificationSubscriptions'
 
 const REALTIME_JOURNEY_SUMMARIES = {
@@ -454,29 +454,39 @@ export default {
       return REALTIME_JOURNEY_SUMMARIES[eventValue] || 'this journey changes'
     },
     ruleConditions(rule) {
+      const selectedDays = rule.values?.daysOfWeek || NOTIFICATION_DAYS_OF_WEEK
+      const daysCondition = {
+        label: 'Days',
+        values: selectedDays.length === NOTIFICATION_DAYS_OF_WEEK.length
+          ? ['Every day']
+          : selectedDays
+      }
+
       if (rule.notificationType === 'service-alert') {
         const notificationType = this.notificationType(rule.notificationType)
         const alertField = notificationType?.fields.find(field => field.id === 'serviceAlertTypes')
         const selectedAlerts = rule.values?.serviceAlertTypes || []
 
         if (!alertField || selectedAlerts.length === 0) {
-          return []
+          return [daysCondition]
         }
 
         const values = selectedAlerts.length === alertField.options.length
           ? ['All alert types']
           : selectedAlerts.map(value => this.optionLabel(alertField, value))
 
-        return [{ label: 'Alert types', values }]
+        return [{ label: 'Alert types', values }, daysCondition]
       }
 
       const platformStops = rule.resolvedValues?.platformStopRefs || []
-      return platformStops.length > 0
+      const conditions = platformStops.length > 0
         ? [{
             label: platformStops.length === 1 ? 'At this stop' : 'At these stops',
             values: platformStops.map(stop => stop.label)
           }]
         : []
+
+      return [...conditions, daysCondition]
     },
     updatedLabel(rule) {
       const value = rule.modificationDateTime || rule.creationDateTime
