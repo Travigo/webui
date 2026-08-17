@@ -73,6 +73,14 @@
               <span class="material-symbols-outlined text-[20px]">notifications_active</span>
               Notifications
             </router-link>
+            <router-link
+              :to="{ name: 'account/commutes' }"
+              @click="closeMenu"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light"
+            >
+              <span class="material-symbols-outlined text-[20px]">commute</span>
+              Commutes
+            </router-link>
 
             <template v-if="canRunImports">
               <div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>

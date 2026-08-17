@@ -152,6 +152,12 @@ export const routes = [
     component: () => import('./views/Account/Notifications.vue')
   },
   {
+    name: 'account/commutes',
+    path: '/account/commutes',
+    meta: { title: 'Commutes' },
+    component: () => import('./views/Account/Commutes.vue')
+  },
+  {
     name: 'admin/home',
     path: '/admin',
     meta: {
