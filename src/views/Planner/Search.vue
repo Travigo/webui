@@ -229,6 +229,8 @@ import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
 import Pretty from '@/pretty'
 
+const PLANNER_REQUEST_TIMEOUT_MS = 22000
+
 export default {
   name: 'JourneyPlannerSearch',
   components: { LoadingState, Modal },
@@ -244,6 +246,8 @@ export default {
       currentTime: Date.now(),
       searchStartedAt: 0,
       requestController: undefined,
+      alternativesController: undefined,
+      loadingAlternatives: false,
       requestToken: 0,
       clockTimer: undefined,
       sortOptions: [
@@ -315,6 +319,7 @@ export default {
     resultsStatus() {
       if (this.loadingResults) return 'Searching live and scheduled services…'
       if (this.error !== undefined) return 'Results could not be loaded'
+      if (this.loadingAlternatives) return `${this.journeyPlans.length} option${this.journeyPlans.length === 1 ? '' : 's'} found · checking alternatives…`
       return `${this.journeyPlans.length} option${this.journeyPlans.length === 1 ? '' : 's'} found`
     },
     slowSearch() {
@@ -344,6 +349,7 @@ export default {
   },
   beforeUnmount() {
     this.requestController?.abort()
+    this.alternativesController?.abort()
     window.clearInterval(this.clockTimer)
   },
   methods: {
@@ -526,9 +532,9 @@ export default {
     },
     closeJourneyPlanModal() { this.journeyPlanModalOpen = false; this.selectedJourneyPlan = undefined },
     plannerPathSegment(value) { return encodeURIComponent(value).replace(/%2C/g, ',') },
-    plannerRequestParams() {
+    plannerRequestParams(count = 1) {
       const params = {
-        count: 5,
+        count,
         max_changes: Number(this.queryValue(this.$route.query.maxChanges) || 3),
         max_transfer_distance_metres: Number(this.queryValue(this.$route.query.maxWalking) || 1000),
         view: 'web'
@@ -539,6 +545,8 @@ export default {
     },
     cancelSearch() {
       this.requestController?.abort()
+      this.alternativesController?.abort()
+      this.loadingAlternatives = false
       this.loadingResults = false
       this.error = 'Search cancelled. Your route and preferences have been kept.'
     },
@@ -557,9 +565,11 @@ export default {
       }
 
       this.requestController?.abort()
+      this.alternativesController?.abort()
       this.requestController = new AbortController()
       const token = ++this.requestToken
       this.loadingResults = true
+      this.loadingAlternatives = false
       this.searchStartedAt = Date.now()
       this.currentTime = Date.now()
       this.error = undefined
@@ -568,19 +578,45 @@ export default {
       this.closeJourneyPlanModal()
 
       axios.get(`${API.URL}/core/planner/${this.plannerPathSegment(origin)}/${this.plannerPathSegment(destination)}`, {
-        params: this.plannerRequestParams(),
+        params: this.plannerRequestParams(1),
         signal: this.requestController.signal,
-        timeout: 12000
+        timeout: PLANNER_REQUEST_TIMEOUT_MS
       }).then(response => {
         if (token !== this.requestToken) return
         this.results = response.data || {}
         this.loadingResults = false
+        if (this.journeyPlans.length > 0) this.getJourneyAlternatives(origin, destination, token)
       }).catch(error => {
         if (token !== this.requestToken || axios.isCancel(error) || error?.code === 'ERR_CANCELED') return
         console.log(error)
         this.error = error
         this.loadingResults = false
       })
+    },
+    getJourneyAlternatives(origin, destination, token) {
+      this.alternativesController = new AbortController()
+      this.loadingAlternatives = true
+      axios.get(`${API.URL}/core/planner/${this.plannerPathSegment(origin)}/${this.plannerPathSegment(destination)}`, {
+        params: this.plannerRequestParams(3),
+        signal: this.alternativesController.signal,
+        timeout: PLANNER_REQUEST_TIMEOUT_MS
+      }).then(response => {
+        if (token !== this.requestToken) return
+        const nextResults = response.data || {}
+        const nextPlans = this.plansFromResults(nextResults)
+        if (nextPlans.length >= this.journeyPlans.length) this.results = nextResults
+      }).catch(error => {
+        if (!axios.isCancel(error) && error?.code !== 'ERR_CANCELED') console.log(error)
+      }).finally(() => {
+        if (token === this.requestToken) this.loadingAlternatives = false
+      })
+    },
+    plansFromResults(results) {
+      return [
+        results?.JourneyPlans, results?.journeyPlans, results?.Plans, results?.plans,
+        results?.data?.JourneyPlans, results?.data?.journeyPlans,
+        results?.Data?.JourneyPlans, results?.Data?.journeyPlans, results
+      ].find(result => Array.isArray(result)) || []
     },
     departureDayChange(index) {
       const plans = this.sortedJourneyPlans
