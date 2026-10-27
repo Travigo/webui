@@ -180,7 +180,7 @@
           No runs have been recorded yet.
         </div>
 
-        <div v-else class="grid max-h-80 gap-2 overflow-y-auto overscroll-contain p-3 sm:max-h-96 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-else class="grid max-h-80 gap-2 overflow-y-auto overscroll-contain p-3 sm:max-h-96 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           <button
             v-for="run in runs"
             v-bind:key="run.id"
@@ -191,7 +191,7 @@
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h2 class="truncate text-sm font-bold text-slate-950 dark:text-slate-100">
+                <h2 class="break-all text-sm font-bold text-slate-950 dark:text-slate-100">
                   {{ run.id }}
                 </h2>
                 <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -348,7 +348,7 @@
                     >
                       <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                          <h4 class="truncate text-sm font-bold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
+                          <h4 class="break-words text-sm font-bold text-slate-950 dark:text-slate-100">{{ task.name }}</h4>
                           <p class="mt-1 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{{ task.kind }}</p>
                         </div>
                         <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
@@ -367,7 +367,7 @@
                   </div>
                 </div>
 
-                <div class="overflow-hidden rounded-xl bg-slate-950">
+                <div class="flex min-h-[calc(100dvh-25rem)] flex-col overflow-hidden rounded-xl bg-slate-950 lg:min-h-[calc(100dvh-23rem)] 2xl:min-h-[calc(100dvh-20rem)]">
                   <div class="flex items-start justify-between gap-3 border-b border-slate-800 px-4 py-3">
                     <div class="min-w-0">
                       <h3 class="text-sm font-bold text-white">Log</h3>
@@ -389,18 +389,18 @@
                     </button>
                   </div>
 
-                  <div v-if="loadingLog" class="flex items-center gap-3 px-4 py-5 text-sm font-bold text-slate-400 sm:px-5">
+                  <div v-if="loadingLog" class="flex flex-1 items-center gap-3 px-4 py-5 text-sm font-bold text-slate-400 sm:px-5">
                     <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
                     Loading task log
                   </div>
 
-                  <div v-else-if="logError" class="px-4 py-5 sm:px-5">
+                  <div v-else-if="logError" class="flex-1 px-4 py-5 sm:px-5">
                     <Notice type="error">
                       {{ logError }}
                     </Notice>
                   </div>
 
-                  <pre v-else ref="logOutput" class="max-h-[60dvh] min-h-72 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:max-h-[32rem] sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
+                  <pre v-else ref="logOutput" class="min-h-72 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
                 </div>
               </div>
             </div>

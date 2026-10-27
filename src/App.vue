@@ -14,6 +14,7 @@ export default {
   computed: {
     isDev() { return process.env.NODE_ENV === 'development' },
     isFullscreen() { return this.$route.meta.fullscreen === true },
+    isDataImporter() { return this.$route.name === 'admin/importer' },
     showChrome() { return this.$route.meta.hideChrome !== true },
   },
   data () {
@@ -252,7 +253,11 @@ export default {
     <main class="h-full">
       <div 
         class="h-full"
-        v-bind:class="{'max-w-5xl mx-auto px-4 sm:px-8 lg:max-w-6xl lg:px-10 xl:pl-36': !this.isFullscreen}"
+        v-bind:class="{
+          'mx-auto px-4 sm:px-8 lg:px-10 xl:pl-36': !this.isFullscreen,
+          'max-w-5xl lg:max-w-6xl': !this.isFullscreen && !this.isDataImporter,
+          'max-w-5xl lg:max-w-[100rem]': !this.isFullscreen && this.isDataImporter
+        }"
       >
         <router-view />
       </div>
