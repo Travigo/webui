@@ -367,7 +367,7 @@
                   </div>
                 </div>
 
-                <div class="flex min-h-[calc(100dvh-25rem)] flex-col overflow-hidden rounded-xl bg-slate-950 lg:min-h-[calc(100dvh-23rem)] 2xl:min-h-[calc(100dvh-20rem)]">
+                <div class="flex h-[min(72dvh,48rem)] min-h-72 flex-col overflow-hidden rounded-xl bg-slate-950">
                   <div class="flex items-start justify-between gap-3 border-b border-slate-800 px-4 py-3">
                     <div class="min-w-0">
                       <h3 class="text-sm font-bold text-white">Log</h3>
@@ -376,17 +376,30 @@
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-800 px-3 text-xs font-bold text-slate-100 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      :disabled="loadingLog || !selectedLog"
-                      title="Jump to bottom"
-                      aria-label="Jump to bottom of log"
-                      @click="scrollLogToBottom"
-                    >
-                      <span class="material-symbols-outlined text-[18px]">vertical_align_bottom</span>
-                      Bottom
-                    </button>
+                    <div class="flex shrink-0 items-center gap-2">
+                      <button
+                        type="button"
+                        class="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-bold transition"
+                        :class="trackLatest ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' : 'bg-slate-800 text-slate-100 hover:bg-slate-700'"
+                        :aria-pressed="trackLatest"
+                        title="Automatically follow new log output"
+                        @click="toggleTrackLatest"
+                      >
+                        <span class="material-symbols-outlined text-[18px]">{{ trackLatest ? 'vertical_align_bottom' : 'pause' }}</span>
+                        Track latest
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-800 px-3 text-xs font-bold text-slate-100 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        :disabled="loadingLog || !selectedLog"
+                        title="Jump to bottom"
+                        aria-label="Jump to bottom of log"
+                        @click="scrollLogToBottom"
+                      >
+                        <span class="material-symbols-outlined text-[18px]">vertical_align_bottom</span>
+                        Bottom
+                      </button>
+                    </div>
                   </div>
 
                   <div v-if="loadingLog" class="flex flex-1 items-center gap-3 px-4 py-5 text-sm font-bold text-slate-400 sm:px-5">
@@ -400,7 +413,7 @@
                     </Notice>
                   </div>
 
-                  <pre v-else ref="logOutput" class="min-h-72 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
+                  <pre v-else ref="logOutput" class="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-4 text-xs leading-relaxed text-slate-100 sm:px-5">{{ selectedLog || 'No log output yet.' }}</pre>
                 </div>
               </div>
             </div>
@@ -458,6 +471,7 @@ export default {
       runs: [],
       selectedLog: '',
       selectedLogOffset: 0,
+      trackLatest: true,
       selectedPlanTasks: new Set(),
       selectedRun: undefined,
       selectedRunId: '',
@@ -712,10 +726,15 @@ export default {
           return
         }
 
-        this.selectedLog = this.selectedLogOffset > 0 && log.nextOffset >= this.selectedLogOffset
+        const nextLog = this.selectedLogOffset > 0 && log.nextOffset >= this.selectedLogOffset
           ? `${this.selectedLog}${log.chunk}`
           : log.chunk
+        const logChanged = nextLog !== this.selectedLog
+        this.selectedLog = nextLog
         this.selectedLogOffset = log.nextOffset
+        if (logChanged && this.trackLatest) {
+          this.scrollLogToBottom('auto')
+        }
       } catch (error) {
         console.log(error)
         if (!silent && requestId === this.logRequestId && runId === this.selectedRunId && taskId === this.selectedTaskId) {
@@ -818,7 +837,13 @@ export default {
     changeScreen(screen) {
       this.activeScreen = screen
     },
-    scrollLogToBottom() {
+    toggleTrackLatest() {
+      this.trackLatest = !this.trackLatest
+      if (this.trackLatest) {
+        this.scrollLogToBottom('auto')
+      }
+    },
+    scrollLogToBottom(behavior = 'smooth') {
       this.$nextTick(() => {
         const logOutput = this.$refs.logOutput
         if (!logOutput) {
@@ -827,7 +852,7 @@ export default {
 
         logOutput.scrollTo({
           top: logOutput.scrollHeight,
-          behavior: 'smooth'
+          behavior
         })
       })
     },
