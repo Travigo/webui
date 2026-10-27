@@ -61,7 +61,7 @@ html {
 }
 
 .ui-panel {
-  overflow: hidden;
+  /* overflow: hidden; */
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-panel-radius);
   background: var(--ui-panel);

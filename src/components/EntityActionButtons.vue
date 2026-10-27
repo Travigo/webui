@@ -13,7 +13,7 @@
     <Transition name="entity-action-menu">
       <div
         v-if="menuOpen"
-        class="absolute right-0 top-12 z-[80] w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40"
+        class="absolute right-0 top-12 z-[800] w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40"
       >
         <div class="p-2">
           <button
