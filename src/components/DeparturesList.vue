@@ -12,7 +12,7 @@
       </div>
 
       <router-link
-        class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_1fr_auto] dark:hover:bg-slate-800/70"
+        class="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto] dark:hover:bg-slate-800/70"
         :class="{
           'opacity-70': isCancelled(departure)
         }"
@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2 text-right">
+        <div class="flex min-w-0 items-center gap-2 text-right">
           <div>
             <div
               class="text-[15px] font-bold leading-tight"
@@ -73,7 +73,7 @@
             <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
               Cancelled
             </div>
-            <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
+            <div class="mt-1 max-w-full break-words text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
               Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
             </div>
           </div>
@@ -82,7 +82,7 @@
       </router-link>
 
       <div
-        class="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-3 py-3 sm:grid-cols-[3.25rem_1fr_auto]"
+        class="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto]"
         :class="{
           'opacity-70': isCancelled(departure)
         }"
@@ -125,7 +125,7 @@
           />
         </div>
 
-        <div class="text-right">
+        <div class="min-w-0 text-right">
           <div
             class="text-[15px] font-bold leading-tight"
             :class="{
@@ -139,7 +139,7 @@
           <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
             Cancelled
           </div>
-          <div class="mt-1 text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
+          <div class="mt-1 max-w-full break-words text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
             Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
           </div>
         </div>

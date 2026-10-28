@@ -5,7 +5,7 @@
     subtitle="Fetching stop details, services, amenities, and departures."
   />
 
-  <div v-else-if="stop" class="ui-page ui-page-stack">
+  <div v-else-if="stop" class="ui-page ui-page-stack min-w-0">
     <PageHeader
       :title="stop.PrimaryName"
       :subtitle="stop.OtherNames?.Descriptor || ''"
