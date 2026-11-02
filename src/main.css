@@ -52,16 +52,19 @@ html {
 }
 
 .ui-page {
+  min-width: 0;
   padding-block: 0.75rem 5rem;
 }
 
 .ui-page-stack {
   display: grid;
   gap: 1rem;
+  min-width: 0;
 }
 
 .ui-panel {
   /* overflow: hidden; */
+  min-width: 0;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-panel-radius);
   background: var(--ui-panel);
