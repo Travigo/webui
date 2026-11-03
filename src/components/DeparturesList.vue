@@ -6,7 +6,7 @@
     No upcoming {{ boardType }} at this stop
   </Notice>
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
-    <div v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
+    <div v-for="(departure, index) in this.departures" v-bind:key="departure.OccurrenceIdentifier || `${departure.Journey?.PrimaryIdentifier}-${index}`">
       <div class="px-3 pt-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-400" v-if="this.departureDayChange(index)">
         {{ departureDayLabel(index) }}
       </div>
@@ -146,7 +146,7 @@
       </div>
     </div>
   </div>
-  <div v-else class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.PrimaryIdentifier">
+  <div v-else class="mb-4 last:mb-0 " v-for="(departure, index) in this.departures" v-bind:key="departure.OccurrenceIdentifier || `${departure.Journey?.PrimaryIdentifier}-${index}`">
     <div class="block text-center text-xs mb-4 text-gray-400" v-if="this.departureDayChange(index)">
       {{ departureDayLabel(index) }}
     </div>
@@ -244,6 +244,10 @@ export default {
 
       return (this.departures || []).map(departure => {
         const sourceDate = this.validDateTime(departure?.Time)
+        if (departure?.OccurrenceIdentifier && sourceDate) {
+          previousDate = sourceDate
+          return sourceDate
+        }
         const clockDate = sourceDate || referenceDate
         let date
 
@@ -387,16 +391,17 @@ export default {
     },
     departureDayChange(index) {
       const comparisonDateTime = index === 0
-        ? (this.validDateTime(this.boardReferenceTime) || DateTime.now().setZone(this.boardTimezone))
+        ? (this.departures?.[index]?.OccurrenceIdentifier ? DateTime.now().setZone(this.boardTimezone) : (this.validDateTime(this.boardReferenceTime) || DateTime.now().setZone(this.boardTimezone)))
         : this.normalisedDepartureDates[index - 1]
       const currentDateTime = this.normalisedDepartureDates[index]
 
       return comparisonDateTime.toISODate() !== currentDateTime.toISODate()
     },
     departureDayLabel(index) {
-      return this.normalisedDepartureDates[index]?.toFormat('cccc') || ''
+      return this.normalisedDepartureDates[index]?.toFormat('cccc d LLL') || ''
     },
     journeyRunDate(departure, index = -1) {
+      if (departure.ServiceDate) return departure.ServiceDate
       const resolvedIndex = index >= 0 ? index : (this.departures || []).indexOf(departure)
       const date = this.normalisedDepartureDates[resolvedIndex] || this.validDateTime(this.boardReferenceTime) || DateTime.now().setZone(this.boardTimezone)
       return date.toISODate()

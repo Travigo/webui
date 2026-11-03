@@ -9,6 +9,7 @@
       @update:model-value="changeTab"
     />
 
+    <slot v-if="activeTab === 'departures' || activeTab === 'arrivals'" name="controls"></slot>
     <div v-if="activeTab === 'departures'">
       <LoadingState
         v-if="loadingDepartures"
@@ -28,6 +29,7 @@
           </button>
         </div>
       </div>
+      <p v-else-if="boardUnknown && (!departures || departures.length === 0)" class="p-4 text-sm">The search could not be completed.</p>
       <DeparturesList v-else :stop="stop" :departures="departures || []" :board-reference-time="boardReferenceTime" variant="compact"/>
     </div>
 
@@ -50,6 +52,7 @@
           </button>
         </div>
       </div>
+      <p v-else-if="boardUnknown && (!arrivals || arrivals.length === 0)" class="p-4 text-sm">The search could not be completed.</p>
       <DeparturesList v-else :stop="stop" :departures="arrivals || []" :board-reference-time="boardReferenceTime" board-type="arrivals" variant="compact" />
     </div>
 
@@ -60,6 +63,7 @@
     <div v-else>
       <slot name="details"></slot>
     </div>
+    <slot v-if="activeTab === 'departures' || activeTab === 'arrivals'" name="footer"></slot>
   </section>
 </template>
 
@@ -103,6 +107,7 @@ export default {
       type: [String, Number, Date],
       default: () => new Date()
     },
+    boardUnknown: { type: Boolean, default: false },
     modelValue: {
       type: String,
       default: 'departures'
