@@ -18,7 +18,6 @@ export const CACHE_MAX_AGE = {
 }
 
 export const cacheKeys = {
-  boardPage: (identifier, board, datetime, cursor) => `board:v2:${encodeURIComponent(identifier)}:${board}:${encodeURIComponent(datetime || 'now')}:25:compact:${encodeURIComponent(cursor || '')}`,
   arrivals: (identifier, datetime = 'now') => `arrivals:${identifier}:${datetime}`,
   departures: (identifier, datetime = 'now') => `departures:${identifier}:${datetime}`,
   journey: identifier => `journey:${identifier}`,
