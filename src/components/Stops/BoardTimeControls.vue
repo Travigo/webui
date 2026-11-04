@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 p-3 dark:border-slate-800">
-    <div class="text-sm font-semibold">
+  <div class="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-slate-100 p-3 dark:border-slate-800">
+    <div class="min-w-0 flex-1 text-sm font-semibold">
       {{ boardType === 'arrivals' ? 'Arriving' : 'Departing' }} from: {{ label }}
       <span class="block text-xs font-normal text-slate-500">Times shown in {{ timezone }}</span>
     </div>
-    <div class="flex flex-wrap gap-2">
-      <button type="button" class="min-h-11 rounded-xl bg-slate-100 px-3 text-sm font-bold dark:bg-slate-800" @click="openPicker">Change time</button>
-      <button v-if="selected || pending" type="button" class="min-h-11 rounded-xl bg-slate-100 px-3 text-sm font-bold dark:bg-slate-800" @click="$emit('now')">Back to now</button>
+    <div class="ml-auto flex shrink-0 gap-1.5">
+      <button type="button" class="min-h-9 rounded-xl bg-slate-100 px-2.5 text-xs font-bold dark:bg-slate-800 sm:min-h-11 sm:px-3 sm:text-sm" @click="openPicker"><span class="sm:hidden">Change</span><span class="hidden sm:inline">Change time</span></button>
+      <button v-if="selected || pending" type="button" class="min-h-9 rounded-xl bg-slate-100 px-2.5 text-xs font-bold dark:bg-slate-800 sm:min-h-11 sm:px-3 sm:text-sm" @click="$emit('now')"><span class="sm:hidden">Now</span><span class="hidden sm:inline">Back to now</span></button>
     </div>
     <Modal :open="open" title="Change time" @update:open="open = $event">
       <form id="board-time-form" class="space-y-4" @submit.prevent="submit">
