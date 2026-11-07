@@ -239,6 +239,19 @@
 
       <div v-else-if="currentTab === 'details'" class="space-y-4 p-4 sm:p-5">
         <section
+          v-if="journey?.RealtimeJourney?.ActivelyTracked && realtimeLastUpdatedAt"
+          class="rounded-xl border border-green-100 bg-green-50 px-4 py-3 dark:border-green-900/50 dark:bg-green-950/30"
+        >
+          <p class="text-xs font-bold uppercase tracking-wide text-green-800 dark:text-green-300">Last realtime update</p>
+          <p class="mt-1 text-sm font-semibold text-green-950 dark:text-green-100">
+            {{ realtimeUpdateAgeLabel }}
+            <time class="ml-1 font-normal text-green-800 dark:text-green-300" :datetime="realtimeLastUpdatedAt.toISOString()">
+              ({{ realtimeLastUpdatedAt.toLocaleString() }})
+            </time>
+          </p>
+        </section>
+
+        <section
           v-if="hasRailFacilities"
           class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
         >
@@ -555,6 +568,19 @@ export default {
         this.journeyUpdatedAt &&
         this.currentTime - this.journeyUpdatedAt.getTime() > 5 * 60 * 1000
       )
+    },
+    realtimeLastUpdatedAt() {
+      const realtimeJourney = this.journey?.RealtimeJourney
+      const candidates = [realtimeJourney?.ModificationDateTime, realtimeJourney?.VehicleLocationObservedAt]
+        .map(value => value ? new Date(value) : null)
+        .filter(value => value && !Number.isNaN(value.getTime()))
+
+      return candidates.length ? new Date(Math.max(...candidates.map(value => value.getTime()))) : null
+    },
+    realtimeUpdateAgeLabel() {
+      return this.realtimeLastUpdatedAt
+        ? cacheAgeLabel(this.realtimeLastUpdatedAt, this.currentTime)
+        : ''
     },
     journeyDataLabel() {
       if (!this.journeyUpdatedAt) {
