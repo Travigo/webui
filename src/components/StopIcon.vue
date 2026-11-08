@@ -34,7 +34,7 @@ export default {
         "Metro": "subway",
         "Ferry": "directions_boat",
         "Airport": "flight",
-        "CableCar": "cell_tower",
+        "CableCar": "gondola_lift",
         "Funicular": "funicular",
         "TaxiBus": "directions_bus",
         "UNKNOWN": "pin_drop"
