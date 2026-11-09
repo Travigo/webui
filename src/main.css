@@ -163,6 +163,11 @@ html {
   border-top: 0;
 }
 
+.dark .divide-y > :not([hidden]) ~ :not([hidden]),
+.dark .divide-x > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--ui-divider);
+}
+
 .ui-button-primary,
 .ui-button-secondary,
 .ui-button-danger {
