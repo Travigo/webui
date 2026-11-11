@@ -96,7 +96,7 @@
 
               <div class="grid gap-2 md:grid-cols-2">
                 <router-link
-                  v-for="datasource in group.datasources"
+                  v-for="datasource in visibleDatasources(group)"
                   v-bind:key="datasource.key"
                   :to="datasource.route"
                   class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5 text-sm transition hover:bg-brand-blue/10 dark:bg-slate-950/70 dark:hover:bg-brand-blue/100/10"
@@ -111,6 +111,17 @@
                   <span class="material-symbols-outlined shrink-0 text-[19px] text-slate-400">chevron_right</span>
                 </router-link>
               </div>
+
+              <button
+                v-if="group.datasources.length > datasourcePreviewLimit"
+                type="button"
+                class="mt-2 inline-flex min-h-10 items-center gap-1 rounded-lg px-2 text-sm font-bold text-brand-blue transition hover:bg-brand-blue/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10"
+                :aria-expanded="isDatasourceGroupExpanded(group)"
+                @click="toggleDatasourceGroup(group)"
+              >
+                <span>{{ isDatasourceGroupExpanded(group) ? 'Show fewer' : `Show all ${group.datasources.length} datasources` }}</span>
+                <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ isDatasourceGroupExpanded(group) ? 'expand_less' : 'expand_more' }}</span>
+              </button>
             </section>
           </div>
 
@@ -230,6 +241,8 @@ export default {
         pretty: Pretty,
         stats: undefined,
         datasources: [],
+        expandedDatasourceRegions: [],
+        datasourcePreviewLimit: 6,
         loading: true,
         error: ''
       }
@@ -378,6 +391,24 @@ export default {
     }
   },
   methods: {
+    isDatasourceGroupExpanded(group) {
+      return this.expandedDatasourceRegions.includes(group.region)
+    },
+    visibleDatasources(group) {
+      if (group.datasources.length <= this.datasourcePreviewLimit || this.isDatasourceGroupExpanded(group)) {
+        return group.datasources
+      }
+
+      return group.datasources.slice(0, this.datasourcePreviewLimit)
+    },
+    toggleDatasourceGroup(group) {
+      if (this.isDatasourceGroupExpanded(group)) {
+        this.expandedDatasourceRegions = this.expandedDatasourceRegions.filter(region => region !== group.region)
+        return
+      }
+
+      this.expandedDatasourceRegions = [...this.expandedDatasourceRegions, group.region]
+    },
     formatNumber(value, fallback) {
       if (value === undefined || value === null) {
         return fallback
