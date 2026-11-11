@@ -130,6 +130,20 @@
             <div class="space-y-3">
               <label class="flex min-h-10 items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200">
                 <input
+                  v-model="smartMode"
+                  type="checkbox"
+                  class="h-4 w-4 shrink-0 rounded border-slate-300 text-brand-blue focus:ring-brand-blue dark:border-slate-600 dark:bg-slate-900"
+                >
+                <span>
+                  Smart mode
+                  <span class="block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Check feeds before starting import jobs.
+                  </span>
+                </span>
+              </label>
+
+              <label class="flex min-h-10 items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200">
+                <input
                   v-model="forceImport"
                   type="checkbox"
                   class="h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue dark:border-slate-600 dark:bg-slate-900"
@@ -198,8 +212,8 @@
                   {{ formatDate(run.createdAt) }}
                 </p>
               </div>
-              <span :class="statusClass(run.status, true)">
-                {{ formatStatus(run.status) }}
+              <span :class="statusClass(runStatus(run), true)">
+                {{ formatStatus(runStatus(run)) }}
               </span>
             </div>
           </button>
@@ -240,9 +254,9 @@
             <div class="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
               <div class="min-w-0">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span :class="statusClass(selectedRun.status)">
-                    <span class="material-symbols-outlined text-[17px]">{{ statusIcon(selectedRun.status) }}</span>
-                    {{ formatStatus(selectedRun.status) }}
+                  <span :class="statusClass(runStatus(selectedRun))">
+                    <span class="material-symbols-outlined text-[17px]">{{ statusIcon(runStatus(selectedRun)) }}</span>
+                    {{ formatStatus(runStatus(selectedRun)) }}
                   </span>
                   <span class="truncate text-xs font-bold text-slate-500 dark:text-slate-400">
                     {{ selectedRun.id }}
@@ -330,8 +344,8 @@
                           <dd class="mt-0.5 break-words text-sm font-medium text-slate-700 dark:text-slate-200">{{ task.jobName || '-' }}</dd>
                         </div>
                         <div v-if="task.error" class="min-w-0">
-                          <dt>Error</dt>
-                          <dd class="mt-0.5 break-words text-sm font-medium text-red-600 dark:text-red-300">{{ task.error }}</dd>
+                          <dt>{{ task.status === 'failed' ? 'Error' : 'Reason' }}</dt>
+                          <dd class="mt-0.5 break-words text-sm font-medium" :class="task.status === 'failed' ? 'text-red-600 dark:text-red-300' : 'text-slate-700 dark:text-slate-200'">{{ task.error }}</dd>
                         </div>
                       </dl>
                     </button>
@@ -457,6 +471,7 @@ export default {
       cancellingRun: false,
       continueOnFailure: true,
       forceImport: false,
+      smartMode: false,
       loadingDetail: false,
       loadingLog: false,
       loadingRunner: false,
@@ -486,7 +501,7 @@ export default {
       return this.runs.find(run => this.isActiveStatus(run.status))
     },
     canCancelSelectedRun() {
-      return this.isActiveStatus(this.selectedRun?.status)
+      return !this.selectedRun?.cancelRequested && this.isActiveStatus(this.selectedRun?.status)
     },
     isAuthenticated() {
       return auth0Value(this.auth0.isAuthenticated) === true
@@ -761,6 +776,7 @@ export default {
           taskIds: Array.from(this.selectedPlanTasks),
           includeAllTasks: false,
           forceImport: this.forceImport,
+          smartMode: this.smartMode,
           maxActiveTasks: this.normalisedMaxActiveTasks(),
           continueOnFailure: this.continueOnFailure
         }, auth0token)
@@ -1022,6 +1038,10 @@ export default {
         return 'running'
       }
 
+      if (statuses.some(status => status === 'checking')) {
+        return 'checking'
+      }
+
       if (statuses.some(status => status === 'pending')) {
         return 'pending'
       }
@@ -1034,7 +1054,7 @@ export default {
         return 'skipped'
       }
 
-      if (statuses.length > 0 && statuses.every(status => status === 'succeeded')) {
+      if (statuses.some(status => status === 'succeeded') && statuses.every(status => status === 'succeeded' || status === 'skipped')) {
         return 'succeeded'
       }
 
@@ -1046,14 +1066,17 @@ export default {
         result[status] = (result[status] || 0) + 1
         return result
       }, {})
-      const details = ['running', 'pending', 'failed', 'succeeded', 'cancelled', 'skipped']
+      const details = ['running', 'checking', 'pending', 'failed', 'succeeded', 'cancelled', 'skipped']
         .filter(status => counts[status])
         .map(status => `${counts[status]} ${status}`)
 
       return `${stage.tasks.length} task${stage.tasks.length === 1 ? '' : 's'}${details.length ? `: ${details.join(', ')}` : ''}`
     },
+    runStatus(run) {
+      return run.cancelRequested && this.isActiveStatus(run.status) ? 'cancelling' : run.status
+    },
     isActiveStatus(status) {
-      return ['pending', 'running'].includes(String(status || '').toLowerCase())
+      return ['pending', 'checking', 'running', 'cancelling'].includes(String(status || '').toLowerCase())
     },
     formatStatus(status) {
       const value = String(status || 'unknown')
@@ -1065,6 +1088,8 @@ export default {
         succeeded: 'check_circle',
         failed: 'error',
         running: 'progress_activity',
+        checking: 'progress_activity',
+        cancelling: 'progress_activity',
         pending: 'schedule',
         cancelled: 'cancel',
         skipped: 'skip_next'
@@ -1074,6 +1099,7 @@ export default {
       const base = compact
         ? 'inline-flex h-7 shrink-0 items-center rounded-lg border px-2 text-xs font-bold'
         : 'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold'
+      const value = String(status || '').toLowerCase()
       const tone = {
         succeeded: 'border-green-100 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-100',
         failed: 'border-red-100 bg-red-50 text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100',
@@ -1081,7 +1107,7 @@ export default {
         pending: 'border-brand-blue/20 bg-brand-blue/10 text-brand-blue dark:border-brand-blue/40 dark:bg-brand-blue/100/10 dark:text-brand-blue-light',
         cancelled: 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
         skipped: 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
-      }[String(status || '').toLowerCase()] || 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+      }[['checking', 'cancelling'].includes(value) ? 'running' : value] || 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
 
       return `${base} ${tone}`
     },
@@ -1090,6 +1116,8 @@ export default {
         succeeded: 'bg-green-500',
         failed: 'bg-red-500',
         running: 'bg-amber-500',
+        checking: 'bg-amber-500',
+        cancelling: 'bg-amber-500',
         pending: 'bg-brand-blue/100',
         cancelled: 'bg-slate-400',
         skipped: 'bg-slate-400'
