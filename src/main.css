@@ -163,8 +163,8 @@ html {
   border-top: 0;
 }
 
-.dark .divide-y > :not([hidden]) ~ :not([hidden]),
-.dark .divide-x > :not([hidden]) ~ :not([hidden]) {
+.dark .divide-y > :not(:last-child),
+.dark .divide-x > :not(:last-child) {
   border-color: var(--ui-divider);
 }
 

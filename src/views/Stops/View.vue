@@ -64,10 +64,10 @@
     <StopDeparturesTable
       :stop="stop"
       :departures="departures"
-      :loading-departures="loadingDepartures && departures === null"
+      :loading-departures="loadingDepartures"
       :departures-error="departuresError"
       :arrivals="arrivals"
-      :loading-arrivals="loadingArrivals && arrivals === null"
+      :loading-arrivals="loadingArrivals"
       :arrivals-error="arrivalsError"
       :board-reference-time="boardReferenceTime"
       :show-details="false"

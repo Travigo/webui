@@ -12,7 +12,7 @@
     <slot v-if="activeTab === 'departures' || activeTab === 'arrivals'" name="controls"></slot>
     <div v-if="activeTab === 'departures'">
       <LoadingState
-        v-if="loadingDepartures"
+        v-if="loadingDepartures && (!departures || departures.length === 0)"
         title="Loading departures"
         subtitle="Fetching the latest departure board."
         compact
@@ -34,7 +34,7 @@
 
     <div v-else-if="activeTab === 'arrivals'">
       <LoadingState
-        v-if="loadingArrivals"
+        v-if="loadingArrivals && (!arrivals || arrivals.length === 0)"
         title="Loading arrivals"
         subtitle="Fetching the latest arrival board."
         compact

@@ -113,8 +113,8 @@ html.dark .border-indigo-100 {
   border-color: rgb(99 102 241 / 0.35);
 }
 
-html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+html.dark .divide-slate-100 > :not(:last-child),
+html.dark .divide-slate-200 > :not(:last-child) {
   border-color: #334155;
 }
 
