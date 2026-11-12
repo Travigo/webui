@@ -102,7 +102,7 @@
 
                 <div v-else class="grid gap-2 sm:grid-cols-2">
                   <label
-                    v-for="item in groupItems(group)"
+                    v-for="item in visibleGroupItems(group)"
                     v-bind:key="item.identifier"
                     class="flex min-w-0 items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800"
                   >
@@ -122,6 +122,17 @@
                     </span>
                   </label>
                 </div>
+
+                <button
+                  v-if="groupItems(group).length > planTaskPreviewLimit"
+                  type="button"
+                  class="mt-2 inline-flex min-h-10 items-center gap-1 rounded-lg px-2 text-sm font-bold text-brand-blue transition hover:bg-brand-blue/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10"
+                  :aria-expanded="isPlanGroupExpanded(group)"
+                  @click="togglePlanGroupExpanded(group)"
+                >
+                  <span>{{ isPlanGroupExpanded(group) ? 'Show fewer' : `Show all ${groupItems(group).length} tasks` }}</span>
+                  <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ isPlanGroupExpanded(group) ? 'expand_less' : 'expand_more' }}</span>
+                </button>
               </section>
             </div>
           </div>
@@ -470,6 +481,7 @@ export default {
       batchRunnerError: '',
       cancellingRun: false,
       continueOnFailure: true,
+      expandedPlanGroups: [],
       forceImport: false,
       smartMode: false,
       loadingDetail: false,
@@ -479,6 +491,7 @@ export default {
       logRequestId: 0,
       maxActiveTasks: 1,
       plan: undefined,
+      planTaskPreviewLimit: 6,
       planTaskSelectionInitialized: false,
       refreshingRunner: false,
       runRequestId: 0,
@@ -949,6 +962,26 @@ export default {
     },
     groupItems(group) {
       return this.plan?.groups?.[group] || []
+    },
+    isPlanGroupExpanded(group) {
+      return this.expandedPlanGroups.includes(group)
+    },
+    visibleGroupItems(group) {
+      const items = this.groupItems(group)
+
+      if (items.length <= this.planTaskPreviewLimit || this.isPlanGroupExpanded(group)) {
+        return items
+      }
+
+      return items.slice(0, this.planTaskPreviewLimit)
+    },
+    togglePlanGroupExpanded(group) {
+      if (this.isPlanGroupExpanded(group)) {
+        this.expandedPlanGroups = this.expandedPlanGroups.filter(expandedGroup => expandedGroup !== group)
+        return
+      }
+
+      this.expandedPlanGroups = [...this.expandedPlanGroups, group]
     },
     groupLabel(group) {
       return String(group)
