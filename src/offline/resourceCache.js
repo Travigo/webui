@@ -12,7 +12,7 @@ export const CACHE_REVALIDATE_AFTER = {
 }
 
 export const CACHE_MAX_AGE = {
-  board: 6 * HOUR,
+  board: 7 * DAY,
   entity: 7 * DAY,
   savedItems: 7 * DAY
 }

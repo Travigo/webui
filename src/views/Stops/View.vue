@@ -346,6 +346,8 @@ import Utils from '@/utils'
 import { isConnected } from '@/offline/connectivity'
 import { cacheAgeLabel, CACHE_MAX_AGE, CACHE_REVALIDATE_AFTER, cacheKeys, loadCachedResource } from '@/offline/resourceCache'
 
+const CACHED_BOARD_WARNING_AGE = 6 * 60 * 60 * 1000
+
 const AMENITY_SECTIONS = {
   FoodDrink: {
     label: 'Food & drink',
@@ -487,8 +489,11 @@ export default {
     currentBoardFromCache() {
       return this.boardFromCache[this.currentTab] || false
     },
+    cachedBoardIsOld() {
+      return this.currentBoardFromCache && this.lastUpdatedAt !== null && this.currentTime - new Date(this.lastUpdatedAt).getTime() > CACHED_BOARD_WARNING_AGE
+    },
     showingCachedBoard() {
-      return this.currentBoardFromCache && !this.boardLoading
+      return this.cachedBoardIsOld && !this.boardLoading
     },
     lastUpdatedAt() {
       return this.boardUpdatedAt[this.currentTab] || null
