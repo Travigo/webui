@@ -8,8 +8,9 @@
   <div v-else-if="stop" class="ui-page ui-page-stack min-w-0">
     <PageHeader
       :title="stop.PrimaryName"
-      :subtitle="stop.OtherNames?.Descriptor || ''"
+      :subtitle="stop.Descriptor || stop.OtherNames?.Descriptor || stop.LocalityName || ''"
       icon="location_on"
+      compact
     >
       <template #actions>
         <EntityActionButtons
@@ -35,15 +36,24 @@
         </router-link>
       </div>
 
-      <IconPillRow
-        :chips="amenityChips"
-        :loading="loadingStopDetails"
-        :error="stopDetailsError"
-        loading-label="Loading amenities"
-        error-label="Amenities unavailable"
-        empty-label="No amenities listed"
-        @select="openAmenityModal"
-      />
+      <div class="flex flex-wrap items-center justify-between gap-x-3">
+        <IconPillRow
+          :chips="amenityChips"
+          :loading="loadingStopDetails"
+          :error="stopDetailsError"
+          loading-label="Loading amenities"
+          error-label="Amenities unavailable"
+          empty-label="No amenities listed"
+          @select="openAmenityModal"
+        />
+        <router-link
+          :to="{ name: 'journeyplanner/home', query: { destination: stop.PrimaryIdentifier, destinationName: stop.PrimaryName, destinationTimezone: stop.Timezone } }"
+          class="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-blue dark:text-brand-blue-light"
+        >
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">route</span>
+          Plan a journey
+        </router-link>
+      </div>
     </PageHeader>
 
     <ServiceAlertList
@@ -78,8 +88,14 @@
       @retry-arrivals="getArrivals"
     >
       <template #controls>
-        <BoardTimeControls :timezone="stop.Timezone" :board-type="currentTab" :selected="displayedTimes[currentTab] || ''" :pending="!!$route.query.datetime" @time="selectTime" @now="backToNow" />
-        <div v-if="boardLoading" class="px-3 py-2 text-sm text-slate-500" role="status">Loading board…</div>
+        <BoardTimeControls :timezone="stop.Timezone" :board-type="currentTab" :selected="displayedTimes[currentTab] || ''" :pending="!!$route.query.datetime" @time="selectTime" @now="backToNow">
+          <template #updated><span v-if="lastUpdatedAt"> · {{ lastUpdatedLabel }}</span></template>
+          <IconButton icon="refresh" label="Refresh board" shape="square" :disabled="boardLoading" :spinning="boardLoading" @click="refreshView()" />
+        </BoardTimeControls>
+        <div v-if="boardLoading" class="flex flex-wrap items-center gap-x-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300">
+          <span role="status">{{ boardTakingLong ? 'The board is taking longer than expected.' : 'Loading board…' }}</span>
+          <button v-if="boardTakingLong" class="min-h-11 font-bold underline" type="button" @click="refreshView()">Retry now</button>
+        </div>
         <div v-if="boardError" class="px-3 py-2 text-sm text-red-700 dark:text-red-300" role="alert">The selected board could not be loaded. <button class="min-h-11 font-bold underline" type="button" @click="refreshView()">Try again</button></div>
       </template>
       <template #map>
@@ -95,37 +111,6 @@
 
     <DatasourceAttributes :datasources="utils.getDatasources(stop, stop.Services, serviceAlerts, stopDetails)" />
 
-    <Teleport to="#bottom-nav-extra" defer>
-      <div class="grid grid-cols-2 gap-2">
-        <router-link
-          :to="{
-            name: 'journeyplanner/home',
-            query: {
-              destination: stop.PrimaryIdentifier,
-              destinationName: stop.PrimaryName,
-              destinationTimezone: stop.Timezone
-            }
-          }"
-          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 text-sm font-bold text-brand-blue sm:rounded-xl"
-        >
-          <span class="material-symbols-outlined text-[21px]">route</span>
-          <span>Plan a journey</span>
-        </router-link>
-
-        <button
-          type="button"
-          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 dark:text-slate-950 sm:rounded-xl"
-          :disabled="boardLoading"
-          @click="refreshView()"
-        >
-          <span class="material-symbols-outlined text-[24px]" :class="{'animate-spin': boardLoading}">refresh</span>
-          <span class="leading-tight">
-            {{ displayedTimes[currentTab] ? 'Refresh board' : 'Refresh now' }}
-            <span class="block text-[11px] font-semibold text-white/80 dark:text-slate-950">{{ lastUpdatedLabel }}</span>
-          </span>
-        </button>
-      </div>
-    </Teleport>
   </div>
 
   <div v-else-if="error" class="ui-page ui-page-stack">
@@ -332,6 +317,7 @@ import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import ErrorState from '@/components/ErrorState.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
+import IconButton from '@/components/IconButton.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -426,6 +412,8 @@ export default {
       displayedTimes: { departures: '', arrivals: '' },
       boardRequestId: 0,
       boardAbort: null,
+      boardSlowTimer: null,
+      boardTakingLong: false,
     }
   },
   components: {
@@ -434,6 +422,7 @@ export default {
     DatasourceAttributes,
     EntityActionButtons,
     ErrorState,
+    IconButton,
     IconPillRow,
     LoadingState,
     Modal,
@@ -748,6 +737,9 @@ export default {
       this.boardAbort?.abort()
       const controller = new AbortController()
       this.boardAbort = controller
+      clearTimeout(this.boardSlowTimer)
+      this.boardTakingLong = false
+      this.boardSlowTimer = setTimeout(() => { this.boardTakingLong = true }, 8000)
       const loading = boardType === 'arrivals' ? 'loadingArrivals' : 'loadingDepartures'
       const error = boardType === 'arrivals' ? 'arrivalsError' : 'departuresError'
       this.loadingDepartures = false; this.loadingArrivals = false
@@ -765,7 +757,7 @@ export default {
           key: cacheKeys[boardType](id, datetime || 'now'),
           maxAgeMs: CACHE_MAX_AGE.board,
           request: () => axios.get(`${API.URL}/core/stops/${encodeURIComponent(id)}/${boardType}`, {
-            signal: controller.signal, params: { count: 25, view: 'compact', ...(datetime ? { datetime } : {}) }
+            signal: controller.signal, timeout: 60000, params: { count: 25, view: 'compact', ...(datetime ? { datetime } : {}) }
           }),
           onCached: record => { apply(record.data, record.savedAt, 'cache') }
         })
@@ -775,7 +767,10 @@ export default {
       } catch (failure) {
         if (generation === this.boardRequestId && !axios.isCancel(failure)) this[error] = true
       } finally {
-        if (generation === this.boardRequestId) this[loading] = false
+        if (generation === this.boardRequestId) {
+          clearTimeout(this.boardSlowTimer)
+          this[loading] = false
+        }
       }
     },
     getServiceAlerts() {
@@ -883,7 +878,7 @@ export default {
         this[this.currentTab] = this.filterElapsedBoardItems(this[this.currentTab], this.displayedTimes[this.currentTab])
       }
 
-      if (!document.hidden && isConnected() && !this.$route.query.datetime) {
+      if (!document.hidden && isConnected() && !this.$route.query.datetime && !this.boardLoading) {
         this.refreshView()
       }
     },
@@ -894,10 +889,11 @@ export default {
     },
     handleReconnect() { this.refreshView(); this.getServiceAlerts() },
     handleVisibilityChange() {
-      if (!document.hidden && !this.$route.query.datetime) this.refreshView()
+      if (!document.hidden && !this.$route.query.datetime && !this.boardLoading) this.refreshView()
     },
     stopPolling() {
       this.boardRequestId++; this.boardAbort?.abort()
+      clearTimeout(this.boardSlowTimer)
       clearInterval(this.refreshTimer)
       clearInterval(this.serviceAlertsRefreshTimer)
       window.removeEventListener('online', this.handleReconnect)

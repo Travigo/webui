@@ -4,8 +4,8 @@
       class="-m-1.5 inline-flex h-11 w-11 cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden"
       aria-label="Choose appearance"
     >
-      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 sm:h-10 sm:w-10 sm:text-slate-600 sm:hover:text-brand-blue sm:dark:text-slate-200 sm:dark:hover:text-brand-blue-light">
-        <span class="material-symbols-outlined text-xl sm:text-[22px]">{{ icon }}</span>
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition-colors duration-(--motion-feedback) hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 sm:h-10 sm:w-10 sm:text-slate-600 sm:hover:text-brand-blue sm:dark:text-slate-200 sm:dark:hover:text-brand-blue-light">
+        <span class="material-symbols-outlined text-xl sm:text-[22px]" aria-hidden="true">{{ icon }}</span>
       </span>
     </summary>
 

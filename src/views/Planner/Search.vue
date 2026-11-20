@@ -2,19 +2,11 @@
   <div class="ui-page">
     <main class="mx-auto max-w-6xl space-y-4">
       <header class="ui-panel p-4 sm:p-5">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <router-link :to="editRoute" class="mb-3 inline-flex min-h-10 items-center gap-1 rounded-xl bg-slate-100 px-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-              <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-              Edit journey
-            </router-link>
-            <div class="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight text-slate-950 dark:text-slate-100 sm:text-2xl">
-              <span class="truncate">{{ originName }}</span>
-              <span class="material-symbols-outlined shrink-0 text-brand-blue dark:text-brand-blue-light">arrow_forward</span>
-              <span class="truncate">{{ destinationName }}</span>
-            </div>
-            <p class="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ searchDescription }}</p>
-          </div>
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <router-link :to="editRoute" class="inline-flex min-h-11 items-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-bold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
+            Edit search
+          </router-link>
           <button
             type="button"
             class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition hover:bg-brand-blue/20 disabled:opacity-60 dark:bg-brand-blue/100/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/20"
@@ -25,10 +17,21 @@
             <span class="material-symbols-outlined text-[22px]" :class="{ 'animate-spin': loadingResults }">refresh</span>
           </button>
         </div>
+        <h1 class="text-lg font-black tracking-tight text-slate-950 dark:text-slate-100 sm:flex sm:flex-wrap sm:items-baseline sm:gap-x-2 sm:text-2xl">
+          <span class="block wrap-anywhere">{{ originName }}</span>
+          <span class="flex items-baseline gap-2">
+            <span class="material-symbols-outlined shrink-0 self-center text-brand-blue dark:text-brand-blue-light" aria-hidden="true">arrow_forward</span>
+            <span class="sr-only">to</span>
+            <span class="wrap-anywhere">{{ destinationName }}</span>
+          </span>
+        </h1>
+        <p class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
+          {{ searchDescription }}<span class="lg:hidden"> · {{ preferenceSummary }}</span>
+        </p>
       </header>
 
       <div class="grid items-start gap-4 lg:grid-cols-[17rem_minmax(0,1fr)]">
-        <aside class="ui-panel p-4 lg:sticky lg:top-4">
+        <aside class="ui-panel hidden p-4 lg:sticky lg:top-4 lg:block">
           <h2 class="text-sm font-black text-slate-950 dark:text-slate-100">Your search</h2>
           <dl class="mt-3 space-y-3 text-sm">
             <div class="flex gap-2">
@@ -40,35 +43,38 @@
               <div><dt class="sr-only">Maximum changes</dt><dd class="font-semibold text-slate-600 dark:text-slate-300">{{ preferenceSummary }}</dd></div>
             </div>
           </dl>
-          <router-link :to="editRoute" class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-            <span class="material-symbols-outlined text-[18px]">edit</span>
-            Change search
-          </router-link>
         </aside>
 
         <section class="ui-panel min-w-0" aria-labelledby="journey-results-heading">
           <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <h1 id="journey-results-heading" class="text-base font-black text-slate-950 dark:text-slate-100">Journey options</h1>
+                <h2 id="journey-results-heading" class="text-base font-black text-slate-950 dark:text-slate-100">Journey options</h2>
                 <p class="mt-0.5 text-sm font-medium text-slate-500 dark:text-slate-400">{{ resultsStatus }}</p>
               </div>
               <button v-if="loadingResults" type="button" class="min-h-11 rounded-xl px-3 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" @click="cancelSearch">Cancel</button>
             </div>
 
-            <div v-if="!loadingResults && journeyPlans.length > 1" class="mt-3 flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Sort journeys">
+            <div v-if="!loadingResults && journeyPlans.length > 1">
+              <label class="mt-2 flex items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200 sm:hidden">
+                <span class="shrink-0">Sort by</span>
+                <select v-model="sortMode" class="min-h-11 w-full min-w-0 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors duration-(--motion-feedback) dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200" :class="sortMode !== 'recommended' && 'text-brand-blue dark:text-brand-blue-light'">
+                  <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+                </select>
+              </label>
+              <div class="mt-3 hidden gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 sm:flex" role="group" aria-label="Sort journeys">
               <button
                 v-for="option in sortOptions"
                 :key="option.value"
                 type="button"
-                role="tab"
-                :aria-selected="sortMode === option.value"
-                class="min-h-10 shrink-0 rounded-lg px-3 text-xs font-bold transition sm:flex-1"
+                :aria-pressed="sortMode === option.value"
+                class="min-h-10 flex-1 rounded-lg px-2 text-xs font-bold transition-colors duration-(--motion-feedback)"
                 :class="sortMode === option.value ? 'bg-white text-brand-blue shadow-sm dark:bg-slate-950 dark:text-brand-blue-light' : 'text-slate-500 dark:text-slate-400'"
                 @click="sortMode = option.value"
               >
                 {{ option.label }}
               </button>
+              </div>
             </div>
           </div>
 
@@ -110,12 +116,12 @@
             </div>
           </div>
 
-          <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
+          <div v-else class="ui-results-reveal divide-y divide-slate-100 dark:divide-slate-800">
             <div v-if="searchTruncated" class="bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-100 sm:px-5">
               Showing the journeys found before this search reached its limit.
             </div>
             <template v-for="(journeyPlan, index) in sortedJourneyPlans" :key="journeyPlanKey(journeyPlan, index)">
-              <div v-if="departureDayChange(index)" class="bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-400 dark:bg-slate-950/40 dark:text-slate-500 sm:px-5">
+              <div v-if="departureDayChange(index)" class="bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-950/40 dark:text-slate-300 sm:px-5">
                 {{ formatDay(journeyPlan.StartTime) }}
               </div>
 
@@ -136,10 +142,10 @@
                   <span class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-blue">chevron_right</span>
                 </div>
 
-                <div class="mt-3 grid grid-cols-[auto_minmax(4rem,1fr)_auto] items-center gap-3">
-                  <div>
+                <div class="mt-3 grid grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(4rem,1fr)_minmax(0,1fr)] sm:gap-3">
+                  <div class="min-w-0">
                     <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.StartTime, originTimezone) }}</p>
-                    <p class="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">{{ shortPlaceName(originName) }}</p>
+                    <p class="mt-1 wrap-anywhere text-xs font-bold text-slate-600 dark:text-slate-300">{{ originName }}</p>
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
@@ -151,9 +157,9 @@
                     </div>
                     <p class="mt-1 text-center text-xs font-bold text-slate-500 dark:text-slate-400">{{ formatDuration(journeyPlan.Duration) || calculatedDuration(journeyPlan) }}</p>
                   </div>
-                  <div class="text-right">
+                  <div class="min-w-0 text-right">
                     <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.ArrivalTime, destinationTimezone) }}</p>
-                    <p class="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">{{ shortPlaceName(destinationName) }}</p>
+                    <p class="mt-1 wrap-anywhere text-xs font-bold text-slate-600 dark:text-slate-300">{{ destinationName }}</p>
                   </div>
                 </div>
 
@@ -457,7 +463,6 @@ export default {
       const minutes = Math.max(1, Math.ceil(value / 60))
       return minutes >= 60 ? `${Math.floor(minutes / 60)} hr${minutes % 60 ? ` ${minutes % 60} min` : ''}` : `${minutes} min`
     },
-    shortPlaceName(name) { return name.length > 22 ? `${name.slice(0, 20)}…` : name },
     itemOriginStop(item) { return item?.OriginStop || item?.originStop || item?.FromStop || item?.fromStop || item?.StartStop || item?.startStop || null },
     itemOriginStopRef(item) { return item?.OriginStopRef || item?.originStopRef || item?.FromStopRef || item?.fromStopRef || item?.StartStopRef || item?.startStopRef || '' },
     itemDestinationStop(item) { return item?.DestinationStop || item?.destinationStop || item?.ToStop || item?.toStop || item?.EndStop || item?.endStop || null },

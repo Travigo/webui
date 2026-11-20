@@ -8,6 +8,7 @@
   <div v-else-if="journey" class="ui-page ui-page-stack">
     <PageHeader
       :title="journeyHeaderTitle"
+      :subtitle="journeyServiceDateLabel"
       variant="panel"
       compact
     >
@@ -87,19 +88,20 @@
     <section class="ui-panel">
       <TabBar :tabs="tabs" :model-value="currentTab" @update:model-value="changeTab" />
 
-      <div v-if="currentTab === 'timeline'" class="xl:grid xl:grid-cols-[15rem_minmax(0,1fr)]">
+      <Transition name="ui-fade" @leave="(_, remove) => remove()">
+      <div v-if="currentTab === 'timeline'" key="timeline" class="xl:grid xl:grid-cols-[15rem_minmax(0,1fr)]">
         <aside class="hidden border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/30 xl:block">
           <p class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Journey overview</p>
           <div class="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700">
-            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</p>
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Journey information</p>
             <p class="mt-1 text-sm font-bold" :class="journeyStatus.classes">{{ journeyStatus.label }}</p>
           </div>
-          <div v-if="nextJourneyPoint" class="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700">
-            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Next stop</p>
-            <p class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">{{ nextJourneyPoint.stop.PrimaryName }}</p>
+          <div v-if="overviewJourneyPoint" class="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ nextJourneyPoint ? 'Next stop' : 'First stop' }}</p>
+            <p class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">{{ overviewJourneyPoint.stop.PrimaryName }}</p>
             <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {{ pretty.time(nextJourneyPoint.realtime?.DepartureTime || nextJourneyPoint.departureTime, journey.DepartureTimezone) }}
-              <template v-if="nextJourneyPoint.platform"> · Platform {{ nextJourneyPoint.platform }}</template>
+              {{ pointTime(overviewJourneyPoint).display }}
+              <template v-if="overviewJourneyPoint.platform"> · Platform {{ overviewJourneyPoint.platform }}</template>
             </p>
           </div>
         </aside>
@@ -109,21 +111,34 @@
             v-if="hasHiddenStops"
             @click="toggleInactiveStops()"
             type="button"
+            :aria-expanded="expandInactiveStops"
+            aria-controls="journey-stop-timeline"
             class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
           >
-            <span class="material-symbols-outlined text-[19px]">{{ expandInactiveStops ? 'unfold_less' : 'history' }}</span>
+            <span class="material-symbols-outlined text-[19px]" aria-hidden="true">{{ expandInactiveStops ? 'unfold_less' : 'history' }}</span>
             {{ expandInactiveStops ? 'Collapse previous stops' : 'Show previous stops' }}
           </button>
+          <button
+            v-if="hasHiddenStops && expandInactiveStops && nextJourneyPoint"
+            type="button"
+            class="mb-2 min-h-11 rounded-xl px-3 text-sm font-bold text-brand-blue hover:bg-brand-blue/10 dark:text-brand-blue-light"
+            @click="jumpToNextStop"
+          >
+            Jump to next stop
+          </button>
 
-          <ol class="relative space-y-0">
+          <ol id="journey-stop-timeline" class="relative space-y-0">
           <li
             v-for="(point, index) in journeyPoints"
             v-bind:key="index"
           >
+            <Transition name="journey-previous-stop">
             <div
               v-if="showStop(index)"
-              class="relative grid grid-cols-[1.5rem_1fr_auto] gap-3 py-3"
-              :class="{'opacity-65': !point.active}"
+              :id="point === nextJourneyPoint ? 'journey-next-stop' : undefined"
+              :tabindex="point === nextJourneyPoint ? -1 : undefined"
+              class="relative grid scroll-mt-4 grid-cols-[1.5rem_minmax(0,1fr)_auto] gap-x-2 py-3 sm:gap-x-3"
+              :class="{'journey-previous-stop opacity-65': !point.active}"
             >
               <div class="relative flex justify-center">
                 <span
@@ -131,20 +146,23 @@
                   v-if="index < journeyPoints.length - 1"
                 ></span>
                 <span
-                  class="relative z-10 mt-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white shadow-sm"
-                  :class="point.active ? 'bg-brand-blue' : 'bg-slate-300'"
+                  class="relative z-10 mt-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white shadow-sm transition-colors duration-(--motion-feedback)"
+                  :class="point === nextJourneyPoint ? 'bg-brand-blue ring-2 ring-brand-blue/40' : point.active ? 'bg-brand-blue' : 'bg-slate-300'"
                 ></span>
               </div>
 
               <div class="min-w-0">
                 <router-link
                   :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
-                  class="block truncate text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100 sm:text-base"
+                  class="block wrap-break-word text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100 sm:text-base"
                   :class="{'text-slate-600': !point.active}"
                 >
                   {{ point.stop.PrimaryName }}
                 </router-link>
                 <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-slate-500">
+                  <Transition name="ui-fade" @leave="(_, remove) => remove()">
+                    <span v-if="point === nextJourneyPoint" class="rounded-md bg-brand-blue/10 px-1.5 py-0.5 text-brand-blue dark:text-brand-blue-light">Next stop</span>
+                  </Transition>
                   <span
                     v-if="stopServiceAlerts[point.stop.PrimaryIdentifier]?.closed"
                     class="rounded-md bg-red-600 px-1.5 py-0.5 text-white"
@@ -155,7 +173,7 @@
                     v-if="point.platform"
                     class="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                   >
-                    Platform {{ point.platform }} <span v-if="point.platformType !== 'ACTUAL'">(Est.)</span>
+                    {{ point.platformType === 'ACTUAL' ? 'Platform' : 'Est. platform' }} {{ point.platform }}
                   </span>
                   <span
                     v-if="point.activity?.length == 1"
@@ -196,35 +214,17 @@
                   >
                     --:--
                   </div>
-                  <div
-                    v-else-if="point.lastOne && pointRealtimeArrivalChanged(point)"
-                    class="text-[15px] font-bold leading-tight"
-                  >
-                    <span class="mr-1 text-xs text-slate-400 line-through">
-                      {{ pretty.time(point.arrivalTime, journey.DepartureTimezone) }}
-                    </span>
-                    <span class="text-red-500">
-                      {{ pretty.time(point.realtime.ArrivalTime, journey.DepartureTimezone) }}
-                    </span>
-                  </div>
-                  <div
-                    v-else-if="pointRealtimeDepartureChanged(point)"
-                    class="text-[15px] font-bold leading-tight"
-                  >
-                    <span class="mr-1 text-xs text-slate-400 line-through">
-                      {{ pretty.time(point.departureTime, journey.DepartureTimezone) }}
-                    </span>
-                    <span class="text-red-500">
-                      {{ pretty.time(point.realtime.DepartureTime, journey.DepartureTimezone) }}
-                    </span>
-                  </div>
-                  <div
-                    v-else
-                    class="text-[15px] font-bold leading-tight"
-                    :class="(point.lastOne ? pointRealtimeArrivalSame(point) : pointRealtimeDepartureSame(point)) ? 'text-green-700' : 'text-slate-950'"
-                  >
-                    {{ pretty.time(point.lastOne ? point.arrivalTime : point.departureTime, journey.DepartureTimezone) }}
-                  </div>
+                  <template v-else>
+                    <div class="text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100">
+                      {{ timelineTimes[index].display }}
+                    </div>
+                    <div v-if="timelineTimes[index].isRealtime || journey.RealtimeJourney" class="mt-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+                      {{ timelineTimes[index].label }}
+                    </div>
+                    <div v-if="timelineTimes[index].changed && timelineTimes[index].scheduled" class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
+                      Scheduled {{ timelineTimes[index].scheduled }}
+                    </div>
+                  </template>
                 </div>
 
                 <div class="mt-1 text-xs text-slate-500" v-if="pointArrivalSummary(point)">
@@ -232,12 +232,13 @@
                 </div>
               </div>
             </div>
+            </Transition>
           </li>
           </ol>
         </div>
       </div>
 
-      <div v-else-if="currentTab === 'details'" class="space-y-4 p-4 sm:p-5">
+      <div v-else-if="currentTab === 'details'" key="details" class="space-y-4 p-4 sm:p-5">
         <section
           v-if="journey?.RealtimeJourney?.ActivelyTracked && realtimeLastUpdatedAt"
           class="rounded-xl border border-green-100 bg-green-50 px-4 py-3 dark:border-green-900/50 dark:bg-green-950/30"
@@ -354,7 +355,7 @@
         </section>
       </div>
 
-      <div v-else class="h-[420px] overflow-hidden sm:h-[520px]">
+      <div v-else key="map" class="h-[420px] overflow-hidden sm:h-[520px]">
         <mapbox-map
           accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
           mapStyle="mapbox://styles/britbus/cl1177uct008715o8qnee8str"
@@ -398,6 +399,7 @@
           </mapbox-marker>
         </mapbox-map>
       </div>
+      </Transition>
     </section>
 
     <DatasourceAttributes v-if="!loadingJourney" :datasources="utils.getDatasources(journey, journeyPoints, journey?.Path)" />
@@ -436,6 +438,7 @@ import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import axios from "axios"
 import API from "@/API"
 import Pretty from "@/pretty"
+import { DateTime } from 'luxon'
 import Utils from '@/utils'
 import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
 import { isConnected, reportRequestFailure, reportRequestSuccess } from '@/offline/connectivity'
@@ -546,15 +549,30 @@ export default {
 
       if (this.journey?.RealtimeJourney?.ActivelyTracked && !this.realtimeStale) {
         return {
-          label: 'Live',
+          label: 'Live tracking',
           classes: 'bg-green-50 text-green-700'
         }
       }
 
+      const realtime = this.journey?.RealtimeJourney
       return {
-        label: this.journey?.RealtimeJourney?.ActivelyTracked ? 'Last known' : 'Scheduled',
+        label: realtime?.ActivelyTracked || (realtime?.Stops && this.realtimeStale) ? 'Last known times'
+          : Object.keys(realtime?.Stops || {}).length ? 'Estimated times' : 'Timetable times',
         classes: 'bg-slate-100 text-slate-600'
       }
+    },
+    requestedServiceDate() {
+      const date = Array.isArray(this.$route.query.date) ? this.$route.query.date[0] : this.$route.query.date
+      return /^\d{4}-\d{2}-\d{2}$/.test(date || '') && DateTime.fromISO(date).isValid ? date : null
+    },
+    journeyServiceDateLabel() {
+      const runDate = this.journey?.RealtimeJourney?.JourneyRunDate?.slice(0, 10)
+      const departure = DateTime.fromISO(this.journey?.DepartureTime || '', { zone: this.journey?.DepartureTimezone || 'UTC' })
+      const date = this.requestedServiceDate || (runDate >= '1900-01-01' ? runDate : null) || (departure.year >= 1900 ? departure.toISODate() : null)
+      return date ? DateTime.fromISO(date).toFormat('ccc d LLL yyyy') : ''
+    },
+    journeyResourceKey() {
+      return cacheKeys.journey(this.$route.params.id, this.requestedServiceDate)
     },
     realtimeStale() {
       return Boolean(
@@ -719,7 +737,15 @@ export default {
       return this.railOverviewItems.find(item => item.icon === 'train') || this.railOverviewItems[0] || null
     },
     nextJourneyPoint() {
-      return (this.journeyPoints || []).find(point => point.active) || this.journeyPoints?.[0]
+      const realtime = this.journey?.RealtimeJourney
+      if (!realtime?.ActivelyTracked || !realtime.NextStopRef || realtime.Cancelled || this.realtimeTooOld) return null
+      return this.journeyPoints.find(point => point.isNextStop) || null
+    },
+    overviewJourneyPoint() {
+      return this.nextJourneyPoint || this.journeyPoints[0]
+    },
+    timelineTimes() {
+      return this.journeyPoints.map(point => this.pointTime(point))
     },
     showDetailedInformationRail() {
       if (this.journey?.RealtimeJourney?.Cancelled) {
@@ -755,6 +781,21 @@ export default {
       return notificationRuleTypesForSubject('Journey', {
         stopOptions: this.journeyStopOptions
       })
+    }
+  },
+  watch: {
+    journeyResourceKey() {
+      if (this.$route.name !== 'journeys/view') return
+      this.journey = null
+      this.journeyPoints = []
+      this.serviceAlerts = []
+      this.stopServiceAlerts = {}
+      this.doorSideByStop = {}
+      this.doorSideLoading = {}
+      this.expandInactiveStops = false
+      this.loadingRealtime = false
+      this.currentTab = 'timeline'
+      this.retryJourney()
     }
   },
   methods: {
@@ -825,46 +866,28 @@ export default {
     pointSetdownOnly(point) {
       return point.activity?.length == 1 && point.activity[0] == 'Setdown' && !point?.lastOne
     },
-    pointRealtimeDepartureChanged(point) {
-      return point.realtime &&
-        this.pretty.time(point.departureTime, this.journey.DepartureTimezone) !== this.pretty.time(point.realtime.DepartureTime, this.journey.DepartureTimezone) &&
-        point.realtime.DepartureTime !== '0001-01-01T00:00:00Z'
-    },
-    pointRealtimeDepartureSame(point) {
-      return point.realtime &&
-        this.pretty.time(point.departureTime, this.journey.DepartureTimezone) === this.pretty.time(point.realtime.DepartureTime, this.journey.DepartureTimezone)
-    },
-    pointRealtimeArrivalChanged(point) {
-      return point.realtime &&
-        point.realtime.ArrivalTime &&
-        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) !== this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone) &&
-        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
-    },
-    pointRealtimeArrivalSame(point) {
-      return point.lastOne &&
-        point.realtime &&
-        point.realtime.ArrivalTime &&
-        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z' &&
-        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) === this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone)
+    pointTime(point, arrival = point.lastOne) {
+      const timezone = this.journey.DepartureTimezone
+      const formatTime = value => value && value !== '0001-01-01T00:00:00Z' ? this.pretty.time(value, timezone) : ''
+      const scheduled = formatTime(arrival ? point.arrivalTime : point.departureTime)
+      const realtime = formatTime(arrival ? point.realtime?.ArrivalTime : point.realtime?.DepartureTime)
+      const label = !realtime ? 'Scheduled'
+        : this.realtimeStale ? 'Last known'
+        : point.realtime.TimeType === 'Historical' ? 'Recorded' : 'Expected'
+
+      return {
+        display: realtime || scheduled || '—',
+        scheduled,
+        label,
+        isRealtime: Boolean(realtime),
+        changed: Boolean(realtime && realtime !== scheduled)
+      }
     },
     pointArrivalSummary(point) {
-      if (
-        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) === this.pretty.time(point.departureTime, this.journey.DepartureTimezone) ||
-        point.arrivalTime == null ||
-        this.pointCancelled(point)
-      ) {
-        return ''
-      }
-
-      if (
-        point.realtime &&
-        this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone) !== this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone) &&
-        point.realtime.ArrivalTime !== '0001-01-01T00:00:00Z'
-      ) {
-        return `Arrives ${this.pretty.time(point.realtime.ArrivalTime, this.journey.DepartureTimezone)}`
-      }
-
-      return `Arrives ${this.pretty.time(point.arrivalTime, this.journey.DepartureTimezone)}`
+      if (point.lastOne || this.pointCancelled(point)) return ''
+      const arrival = this.pointTime(point, true)
+      if (arrival.display === '—' || arrival.display === this.pointTime(point, false).display) return ''
+      return `${point.realtime?.TimeType === 'Historical' && arrival.isRealtime ? 'Arrived' : 'Arrives'} ${arrival.display}`
     },
     mapLoaded(map) {
       this.mapboxObject = map
@@ -908,7 +931,6 @@ export default {
     },
     getData() {
       this.getJourney()
-      this.getServiceAlerts()
     },
     retryJourney() {
       this.loadingJourney = true
@@ -926,19 +948,24 @@ export default {
     },
     async getJourney() {
       let cachedApplied = false
+      const identifier = this.$route.params.id
+      const key = this.journeyResourceKey
+      const date = this.requestedServiceDate
 
       try {
         const result = await loadCachedResource({
-          key: cacheKeys.journey(this.$route.params.id),
+          key,
           maxAgeMs: CACHE_MAX_AGE.entity,
-          request: () => axios.get(`${API.URL}/core/journeys/${this.$route.params.id}`, { params: { view: 'web' } }),
+          request: () => axios.get(`${API.URL}/core/journeys/${identifier}`, { params: { view: 'web', date } }),
           onCached: record => {
+            if (key !== this.journeyResourceKey) return
             cachedApplied = true
             this.applyJourney(record.data, record.savedAt, 'cache')
             this.loadingJourney = false
           }
         })
 
+        if (key !== this.journeyResourceKey) return
         if (result.source === 'network' || !cachedApplied) {
           this.applyJourney(result.data, result.savedAt, result.source)
         }
@@ -947,14 +974,16 @@ export default {
         this.journeyNotFound = false
         this.getStopAlerts()
         this.getDoorSides()
+        this.getServiceAlerts()
       } catch (error) {
+        if (key !== this.journeyResourceKey) return
         console.log(error)
         if (!this.journey) {
           this.journeyNotFound = error.response?.status === 404
           this.errorJourney = this.journeyNotFound ? 'This journey does not exist, or is no longer available.' : 'Journey details could not be loaded.'
         }
       } finally {
-        this.loadingJourney = false
+        if (key === this.journeyResourceKey) this.loadingJourney = false
       }
     },
     getStopAlerts() {
@@ -969,9 +998,11 @@ export default {
         return
       }
 
+      const key = this.journeyResourceKey
       axios
         .get(`${API.URL}/core/service_alerts/matching/${stopIdentifiers.join(',')}`, { params: { view: 'web' } })
         .then(response => {
+          if (key !== this.journeyResourceKey) return
           const closedStops = new Set(
             (response.data || [])
               .filter(alert => alert.AlertType === 'StopClosed')
@@ -994,6 +1025,7 @@ export default {
       this.doorSideLoading = {}
 
       const requestedStops = new Set()
+      const key = this.journeyResourceKey
 
       for (const [index, journeyPoint] of (this.journeyPoints || []).entries()) {
         const stopIdentifier = journeyPoint.stop?.PrimaryIdentifier
@@ -1009,6 +1041,7 @@ export default {
         axios
           .get(`${API.URL}/core/journeys/${this.$route.params.id}/stops/${stopIdentifier}/door-side`, { params: { view: 'compact' } })
           .then(response => {
+            if (key !== this.journeyResourceKey) return
             const data = response.data
             const doorSide = typeof data === 'string'
               ? data
@@ -1023,7 +1056,7 @@ export default {
             console.log(error)
           })
           .finally(() => {
-            this.doorSideLoading[stopIdentifier] = false
+            if (key === this.journeyResourceKey) this.doorSideLoading[stopIdentifier] = false
           })
       }
     },
@@ -1037,10 +1070,12 @@ export default {
       }
 
       this.loadingRealtime = true
+      const key = this.journeyResourceKey
 
       axios
-        .get(`${API.URL}/core/journeys/${this.$route.params.id}`, { params: { realtime_only: true, view: 'web' } })
+        .get(`${API.URL}/core/journeys/${this.$route.params.id}`, { params: { realtime_only: true, view: 'web', date: this.requestedServiceDate } })
         .then((response) => {
+          if (key !== this.journeyResourceKey) return
           let newRealtimeJourney = response.data
 
           this.journey.RealtimeJourney = newRealtimeJourney
@@ -1051,14 +1086,15 @@ export default {
           this.journeyPoints = this.extractJourneyPoints(this.journey)
 
           this.setBounds()
-          putCachedResource(cacheKeys.journey(this.$route.params.id), this.journey)
+          putCachedResource(key, this.journey)
         })
         .catch((error) => {
+          if (key !== this.journeyResourceKey) return
           console.log(error)
           reportRequestFailure(error)
           this.errorRealtime = error
         })
-        .finally(() => (this.loadingRealtime = false))
+        .finally(() => { if (key === this.journeyResourceKey) this.loadingRealtime = false })
     },
     convertTrackToFeatureCollection(track) {
       return {
@@ -1197,42 +1233,24 @@ export default {
         }
       }
 
-      let activeStop = journey.RealtimeJourney == undefined || journey.RealtimeJourney?.NextStopRef == ""
-
+      const realtime = journey.RealtimeJourney
       let activeStopIndex = -1
-      if (!activeStop) {
-        const nextStopIndex = journey.RealtimeJourney.NextStopIndex
+      if (realtime?.NextStopRef) {
+        const nextStopIndex = realtime.NextStopIndex
+        const matchesNextStop = point => point.stop.PrimaryIdentifier === realtime.NextStopRef ||
+          point.stop.OtherIdentifiers?.includes(realtime.NextStopRef)
         if (Number.isInteger(nextStopIndex) && nextStopIndex > 0 && nextStopIndex < journeyPoints.length) {
           activeStopIndex = nextStopIndex
         } else {
-          activeStopIndex = journeyPoints.findIndex((point) => (
-            point.realtime?.TimeType === 'EstimatedFuture' &&
-            (
-              journey.RealtimeJourney.NextStopRef === point.stop.PrimaryIdentifier ||
-              point.stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
-            )
-          ))
+          activeStopIndex = journeyPoints.findIndex(point => point.realtime?.TimeType === 'EstimatedFuture' && matchesNextStop(point))
+          if (activeStopIndex === -1) activeStopIndex = journeyPoints.findIndex(matchesNextStop)
         }
       }
 
-      if (!activeStop) {
-        this.hasHiddenStops = true
-      }
-
-      for (let index = 0; index < journeyPoints.length; index++) {
-        if (
-          !activeStop &&
-          journey.RealtimeJourney != undefined &&
-          (index === activeStopIndex || (activeStopIndex === -1 &&
-          (
-            journey.RealtimeJourney.NextStopRef === journeyPoints[index].stop.PrimaryIdentifier
-            || journeyPoints[index].stop.OtherIdentifiers.includes(journey.RealtimeJourney.NextStopRef)
-          )))
-        ) {
-          activeStop = true
-        }
-
-        journeyPoints[index]["active"] = activeStop
+      this.hasHiddenStops = activeStopIndex > 0
+      for (const [index, point] of journeyPoints.entries()) {
+        point.active = index >= activeStopIndex
+        point.isNextStop = index === activeStopIndex
       }
 
       return journeyPoints
@@ -1242,12 +1260,8 @@ export default {
         return
       }
 
-      const requestedDate = Array.isArray(this.$route.query.date)
-        ? this.$route.query.date[0]
-        : this.$route.query.date
-      const journeyRunDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate || '')
-        ? requestedDate
-        : new Intl.DateTimeFormat('en-CA', {
+      const key = this.journeyResourceKey
+      const journeyRunDate = this.requestedServiceDate || new Intl.DateTimeFormat('en-CA', {
           timeZone: this.journey?.DepartureTimezone || 'UTC',
           year: 'numeric',
           month: '2-digit',
@@ -1258,6 +1272,7 @@ export default {
       axios
         .get(`${API.URL}/core/service_alerts/matching/${this.$route.params.id},${dayinstanceof}`, { params: { view: 'web' } })
         .then(response => {
+          if (key !== this.journeyResourceKey) return
           this.serviceAlerts = response.data
         })
         .catch(error => {
@@ -1273,6 +1288,14 @@ export default {
     },
     toggleInactiveStops() {
       this.expandInactiveStops = !this.expandInactiveStops
+    },
+    jumpToNextStop() {
+      const nextStop = document.getElementById('journey-next-stop')
+      if (!nextStop) return
+
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      nextStop.focus({ preventScroll: true })
+      nextStop.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'instant' : 'smooth' })
     },
     pollRealtimeJourney() {
       this.currentTime = Date.now()
@@ -1318,3 +1341,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.journey-previous-stop-enter-active.journey-previous-stop {
+  animation: journey-previous-stop-reveal var(--motion-reveal) var(--motion-ease-out);
+}
+
+@keyframes journey-previous-stop-reveal {
+  from { opacity: 0; }
+  to { opacity: 0.65; }
+}
+</style>

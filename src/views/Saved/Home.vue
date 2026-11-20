@@ -2,22 +2,10 @@
   <div class="ui-page ui-page-stack">
     <PageHeader
       title="Saved items"
-      subtitle="Manage stops and journeys you want quick access to."
+      subtitle="Quick access to stops and journeys."
       icon="bookmark"
       variant="panel"
-    >
-      <template #actions>
-        <button
-          v-if="hasSavedItems"
-          type="button"
-          class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          @click="toggleEditing"
-        >
-          <span class="material-symbols-outlined text-[18px]">{{ editing ? 'done' : 'edit' }}</span>
-          {{ editing ? 'Done' : 'Edit items' }}
-        </button>
-      </template>
-    </PageHeader>
+    />
 
     <div
       v-if="savedItemsFromCache"
@@ -28,14 +16,28 @@
     </div>
 
     <section class="ui-panel">
-      <TabBar
-        :tabs="savedItemTabs"
-        :model-value="savedItemsTab"
-        storage-key="travigo_saved_items_tab"
-        @update:model-value="changeSavedItemsTab"
-      />
+      <div class="flex items-center gap-2">
+        <TabBar
+          class="min-w-0 flex-1"
+          :tabs="savedItemTabs"
+          :model-value="savedItemsTab"
+          storage-key="travigo_saved_items_tab"
+          @update:model-value="changeSavedItemsTab"
+        />
+        <button
+          v-if="hasSavedItems"
+          type="button"
+          class="mr-2 inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          :aria-label="editing ? 'Done editing saved items' : 'Edit saved items'"
+          @click="toggleEditing"
+        >
+          <span class="material-symbols-outlined hidden text-[18px] sm:inline-block" aria-hidden="true">{{ editing ? 'done' : 'edit' }}</span>
+          {{ editing ? 'Done' : 'Edit' }}<span v-if="!editing" class="hidden sm:inline">items</span>
+        </button>
+      </div>
 
-      <template v-if="savedItemsTab === 'stops'">
+      <Transition name="ui-fade" @leave="(_, remove) => remove()">
+      <div v-if="savedItemsTab === 'stops'" key="stops">
       <LoadingState
         v-if="loadingSavedObjects"
         title="Loading saved stops"
@@ -73,6 +75,7 @@
           <StopInfo
             :stop="stop"
             :bordered="false"
+            compact-services
             status-label=""
             meta-icon=""
             distance-label-fallback=""
@@ -82,16 +85,16 @@
         <button
           v-if="editing"
           type="button"
-          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
+          class="absolute right-3 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
           @click="removeSavedItem(stop, 'stop')"
           :aria-label="`Remove ${stop.PrimaryName}`"
         >
           <span class="material-symbols-outlined text-[21px]">delete</span>
         </button>
       </article>
-      </template>
+      </div>
 
-      <template v-else>
+      <div v-else key="journeys">
       <LoadingState
         v-if="loadingSavedObjects"
         title="Loading saved journeys"
@@ -135,14 +138,15 @@
         <button
           v-if="editing"
           type="button"
-          class="absolute right-4 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
+          class="absolute right-3 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl bg-red-50 text-red-600 shadow-sm shadow-red-100/80 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:shadow-black/20 dark:hover:bg-red-500/20 sm:right-5"
           @click="removeSavedItem(journey, 'journey')"
           :aria-label="`Remove ${journey.DestinationDisplay || 'saved journey'}`"
         >
           <span class="material-symbols-outlined text-[21px]">delete</span>
         </button>
       </article>
-      </template>
+      </div>
+      </Transition>
     </section>
 
     <Modal

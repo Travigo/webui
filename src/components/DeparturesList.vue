@@ -7,7 +7,7 @@
   </Notice>
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
     <div v-for="(departure, index) in this.departures" v-bind:key="departure.OccurrenceIdentifier || `${departure.Journey?.PrimaryIdentifier}-${index}`">
-      <div class="px-3 pt-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-400" v-if="this.departureDayChange(index)">
+      <div class="px-3 pt-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300" v-if="this.departureDayChange(index)">
         {{ departureDayLabel(index) }}
       </div>
 
@@ -38,10 +38,6 @@
             <p class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
               {{ departure.DestinationDisplay }}
             </p>
-            <DepartureTypeIcon
-              v-if="departure.Type !== 'Cancelled' && departure.Type !== 'Estimated'"
-              :departure="departure"
-            />
             <JourneyAlertIndicator
               :alerts="alertsFor(departure)"
               :journey-title="departure.DestinationDisplay || 'Journey'"
@@ -68,14 +64,17 @@
                 'text-amber-800 dark:text-amber-200': isDelayed(departure)
               }"
             >
-              {{ this.pretty.time(departure.Time, stop.Timezone) }}
+              <span v-departure-time="departure" class="rounded-sm">{{ this.pretty.time(departure.Time, stop.Timezone) }}</span>
             </div>
             <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
               Cancelled
             </div>
-            <div class="mt-1 max-w-full break-words text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
-              Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
-            </div>
+            <template v-else>
+              <div v-if="departure.Platform" class="mt-0.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {{ departure.PlatformType === 'ACTUAL' ? 'Platform' : 'Est. platform' }} {{ departure.Platform }}
+              </div>
+              <div v-if="boardStatus(departure)" class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{{ boardStatus(departure) }}</div>
+            </template>
           </div>
           <span class="material-symbols-outlined text-lg text-slate-400">chevron_right</span>
         </div>
@@ -107,10 +106,6 @@
             <p class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
               {{ departure.DestinationDisplay }}
             </p>
-            <DepartureTypeIcon
-              v-if="departure.Type !== 'Cancelled' && departure.Type !== 'Estimated'"
-              :departure="departure"
-            />
             <JourneyAlertIndicator
               :alerts="alertsFor(departure)"
               :journey-title="departure.DestinationDisplay || 'Journey'"
@@ -134,14 +129,17 @@
               'text-amber-800 dark:text-amber-200': isDelayed(departure)
             }"
           >
-            {{ this.pretty.time(departure.Time, stop.Timezone) }}
+            <span v-departure-time="departure" class="rounded-sm">{{ this.pretty.time(departure.Time, stop.Timezone) }}</span>
           </div>
           <div class="mt-1 inline-flex rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" v-if="isCancelled(departure)">
             Cancelled
           </div>
-          <div class="mt-1 max-w-full break-words text-xs text-slate-500" v-if="!isCancelled(departure) && departure.Platform">
-            Platform {{ departure.Platform }} <span v-if="departure.PlatformType != 'ACTUAL'">(Est.)</span>
-          </div>
+          <template v-else>
+            <div v-if="departure.Platform" class="mt-0.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+              {{ departure.PlatformType === 'ACTUAL' ? 'Platform' : 'Est. platform' }} {{ departure.Platform }}
+            </div>
+            <div v-if="boardStatus(departure)" class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{{ boardStatus(departure) }}</div>
+          </template>
         </div>
       </div>
     </div>
@@ -198,6 +196,23 @@ import Pretty from '@/pretty'
 import { DateTime } from 'luxon'
 
 export default {
+  directives: {
+    departureTime: {
+      updated(element, { value, oldValue, instance }) {
+        if (!value.OccurrenceIdentifier || value.OccurrenceIdentifier !== oldValue?.OccurrenceIdentifier ||
+            value.Time === oldValue.Time || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+        const timezone = instance.stop?.Timezone
+        if (Pretty.time(value.Time, timezone) === Pretty.time(oldValue.Time, timezone)) return
+
+        const tint = getComputedStyle(element).getPropertyValue('--ui-time-highlight').trim()
+        element.animate?.([{ backgroundColor: tint }, { backgroundColor: 'transparent' }], {
+          duration: 400,
+          easing: 'ease-out'
+        })
+      }
+    }
+  },
   props: {
     stop: undefined,
     departures: undefined,
@@ -303,6 +318,13 @@ export default {
       // Estimated remains a legacy delay signal; newer board responses expose
       // Delayed after comparing the scheduled and realtime stop times.
       return departure.Delayed === true || departure.Type == 'Estimated'
+    },
+    boardStatus(departure) {
+      if (this.isDelayed(departure)) return 'Delayed'
+      if (departure.Type === 'RealtimeTracked') {
+        return departure.Journey?.RealtimeJourney?.Reliability === 'LocationWithoutTrack' ? 'Live estimate' : 'Live'
+      }
+      return departure.Type === 'Scheduled' ? 'Scheduled' : ''
     },
     alertsFor(departure) {
       const seenAlertKeys = new Set()

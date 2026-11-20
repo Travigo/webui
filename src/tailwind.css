@@ -192,7 +192,7 @@ html.dark .text-brand-pink { color: #f18fbb; }
 
 .modal-overlay-enter-active,
 .modal-overlay-leave-active {
-  transition: opacity 220ms ease;
+  transition: opacity var(--motion-sheet) var(--motion-ease-out);
 }
 
 .modal-overlay-enter-from,
@@ -200,31 +200,18 @@ html.dark .text-brand-pink { color: #f18fbb; }
   opacity: 0;
 }
 
-.modal-overlay-enter-active .modal-panel,
-.modal-overlay-leave-active .modal-panel {
-  transition:
-    opacity 220ms ease,
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.modal-overlay-enter-from .modal-panel,
-.modal-overlay-leave-to .modal-panel {
-  opacity: 0;
-  transform: translateY(1.25rem);
-}
-
-@media (min-width: 640px) {
-  .modal-overlay-enter-from .modal-panel,
-  .modal-overlay-leave-to .modal-panel {
-    transform: translateY(0.5rem) scale(0.96);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .modal-overlay-enter-active,
-  .modal-overlay-leave-active,
+@media (width < 640px) and (prefers-reduced-motion: no-preference) {
   .modal-overlay-enter-active .modal-panel,
   .modal-overlay-leave-active .modal-panel {
-    transition: none;
+    transition: transform var(--motion-sheet) var(--motion-ease-out);
   }
+
+  .modal-overlay-enter-from .modal-panel,
+  .modal-overlay-leave-to .modal-panel {
+    transform: translateY(1rem);
+  }
+}
+
+.modal-overlay-leave-active {
+  pointer-events: none;
 }

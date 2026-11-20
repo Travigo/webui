@@ -7,17 +7,17 @@
       type="button"
       v-for="tab in tabs"
       v-bind:key="tab.id"
-      class="relative flex h-11 items-center justify-center gap-1.5 rounded-lg text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
+      class="relative flex h-11 items-center justify-center gap-1.5 rounded-lg text-xs font-bold text-slate-500 transition-colors duration-(--motion-feedback) sm:text-sm dark:text-slate-400"
       :class="{'ui-tab-bar__selected text-brand-blue dark:text-brand-blue-light': modelValue === tab.id}"
+      :aria-pressed="modelValue === tab.id"
       @click="selectTab(tab.id)"
     >
-      <span v-if="tab.icon" class="material-symbols-outlined text-[20px]">{{ tab.icon }}</span>
+      <span v-if="tab.icon" class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ tab.icon }}</span>
       <span>{{ tab.name }}</span>
-      <span
-        class="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-brand-pink dark:bg-brand-pink-light"
-        v-if="modelValue === tab.id"
-      />
     </button>
+    <span v-if="selectedIndex >= 0" class="ui-tab-bar__indicator-track" aria-hidden="true">
+      <span class="ui-tab-bar__indicator block" />
+    </span>
   </div>
 </template>
 
@@ -44,9 +44,14 @@ export default {
   },
   emits: ['update:modelValue'],
   computed: {
+    selectedIndex() {
+      return this.tabs.findIndex(tab => tab.id === this.modelValue)
+    },
     gridStyle() {
       return {
-        gridTemplateColumns: `repeat(${this.tabs.length}, minmax(0, 1fr))`
+        gridTemplateColumns: `repeat(${this.tabs.length}, minmax(0, 1fr))`,
+        '--tab-count': this.tabs.length,
+        '--tab-index': this.selectedIndex
       }
     },
     resolvedStorageKey() {

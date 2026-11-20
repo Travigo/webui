@@ -28,6 +28,13 @@
   --ui-panel-radius: 1rem;
   --ui-control-radius: 0.75rem;
   --ui-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 28px rgb(15 23 42 / 0.035);
+  --motion-feedback: 120ms;
+  --motion-fade: 140ms;
+  --motion-tab: 150ms;
+  --motion-reveal: 160ms;
+  --motion-sheet: 200ms;
+  --motion-ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
+  --ui-time-highlight: rgb(105 106 173 / 0.24);
 }
 
 .dark {
@@ -44,6 +51,7 @@
   --ui-muted: #AEB0C4;
   --ui-soft: #898ba1;
   --ui-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 12px 32px rgb(0 0 0 / 0.14);
+  --ui-time-highlight: rgb(160 162 230 / 0.28);
 }
 
 /* Keep the original semantic text utilities available outside Tailwind. */
@@ -97,11 +105,59 @@ html {
 }
 
 .ui-tab-bar {
+  position: relative;
   margin: 0.25rem 0.25rem 0;
   gap: 0.25rem;
   padding: 0.25rem;
   border-radius: calc(var(--ui-panel-radius) - 5px);
   background: var(--ui-subtle);
+}
+
+.ui-tab-bar__indicator-track {
+  position: absolute;
+  inset-inline: 0.25rem;
+  bottom: 0.25rem;
+  pointer-events: none;
+}
+
+.ui-tab-bar__indicator {
+  width: calc((100% + 0.25rem) / var(--tab-count));
+  padding-inline: 0.5rem 0.75rem;
+  transform: translateX(calc(var(--tab-index) * 100%));
+  transition: transform var(--motion-tab) var(--motion-ease-out);
+}
+
+.ui-tab-bar__indicator::after {
+  display: block;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--brand-pink);
+  content: '';
+}
+
+.ui-fade-enter-active,
+.ui-results-reveal {
+  animation: ui-fade-in var(--motion-fade) var(--motion-ease-out);
+}
+
+@keyframes ui-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-feedback: 0ms;
+    --motion-fade: 0ms;
+    --motion-tab: 0ms;
+    --motion-reveal: 0ms;
+    --motion-sheet: 0ms;
+  }
+
+  .animate-spin,
+  .animate-pulse {
+    animation: none;
+  }
 }
 
 .ui-tab-bar__selected {

@@ -1,12 +1,13 @@
 <template>
   <div class="relative" @click.stop>
     <IconButton
-      icon="more_horiz"
-      :aria-label="`${entityType} actions`"
+      :icon="saved ? 'bookmark_added' : 'more_horiz'"
+      :aria-label="saved ? `${entityType} actions, saved` : `${entityType} actions`"
       :aria-expanded="menuOpen"
-      :label="`${entityType} actions`"
+      :label="saved ? `${entityType} actions, saved` : `${entityType} actions`"
       :shape="shape"
       :icon-size="24"
+      :style="saved ? { color: 'var(--brand-blue)' } : undefined"
       @click="toggleMenu"
     />
 
@@ -28,7 +29,7 @@
           <button
             type="button"
             class="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent dark:disabled:text-slate-600"
-            :class="saveDisabled
+            :class="saved ? 'text-brand-blue dark:text-brand-blue-light disabled:text-brand-blue dark:disabled:text-brand-blue-light' : saveDisabled
               ? 'text-slate-400 dark:text-slate-600'
               : 'text-slate-700 hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-200 dark:hover:bg-brand-blue/100/10 dark:hover:text-brand-blue-light'"
             :disabled="saveDisabled"
@@ -86,6 +87,7 @@ import IconButton from '@/components/IconButton.vue'
 import NotificationRuleModal from '@/components/NotificationRuleModal.vue'
 import { notificationRuleTypesForSubject } from '@/notificationRuleTypes'
 import notificationSubscriptions from '@/notificationSubscriptions'
+import { auth0CacheScope, CACHE_MAX_AGE, cacheKeys, getCachedResource } from '@/offline/resourceCache'
 
 export default {
   name: 'EntityActionButtons',
@@ -132,11 +134,16 @@ export default {
       messageType: 'info',
       saving: false,
       saved: false,
+      checkingSaved: false,
+      savedLookup: null,
       savingNotification: false,
       notificationModalOpen: false
     }
   },
   computed: {
+    savedAccountScope() {
+      return this.isAuthenticated ? auth0CacheScope(this.auth0) : null
+    },
     readableEntityType() {
       return this.entityType.toLowerCase()
     },
@@ -154,7 +161,7 @@ export default {
       return notificationRuleTypesForSubject(this.entityType)
     },
     saveDisabled() {
-      return !this.supportsSave || this.saving || this.saved
+      return !this.supportsSave || this.checkingSaved || this.saving || this.saved
     },
     saveLabel() {
       if (this.saved) {
@@ -164,6 +171,8 @@ export default {
       if (this.saving) {
         return 'Saving...'
       }
+
+      if (this.checkingSaved) return 'Checking saved status…'
 
       return 'Save'
     },
@@ -179,7 +188,51 @@ export default {
       return `Save ${this.readableEntityType}`
     }
   },
+  watch: {
+    savedAccountScope: { immediate: true, handler: 'getSavedStatus' },
+    entityIdentifier: 'getSavedStatus',
+    entityType: 'getSavedStatus'
+  },
   methods: {
+    async getSavedStatus() {
+      this.savedLookup?.abort()
+      this.saved = false
+      this.checkingSaved = false
+
+      const scope = this.savedAccountScope
+      if (!scope || !this.entityIdentifier || !this.supportsSave) return
+
+      const identifier = this.entityIdentifier
+      const type = this.readableEntityType
+      const lookup = new AbortController()
+      this.savedLookup = lookup
+      this.checkingSaved = true
+
+      try {
+        const token = await getApiAccessToken(this.auth0)
+        if (lookup.signal.aborted) return
+        // The default response supplies saved identifiers without hydrating stops or journeys.
+        const { data } = await axios.get(`${API.URL}/core/saved`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: lookup.signal,
+          timeout: 8000
+        })
+        if (lookup.signal.aborted) return
+        const items = Array.isArray(data) ? data : []
+        this.saved = items.some(item => {
+          const itemType = String(item?.Type || '').toLowerCase()
+          return (itemType === type || itemType === `${type}s`) && item.ObjectIdentifier === identifier
+        })
+      } catch {
+        if (lookup.signal.aborted) return
+        const cached = await getCachedResource(cacheKeys.savedItems, { scope, maxAgeMs: CACHE_MAX_AGE.savedItems })
+        if (lookup.signal.aborted) return
+        const items = type === 'stop' ? cached?.data?.savedStops : cached?.data?.savedJourneys
+        this.saved = items?.some(item => item.SavedObjectIdentifier === identifier || item.PrimaryIdentifier === identifier) ?? false
+      } finally {
+        if (!lookup.signal.aborted) this.checkingSaved = false
+      }
+    },
     toggleMenu() {
       this.menuOpen = !this.menuOpen
     },
@@ -240,12 +293,15 @@ export default {
       }
 
       this.saving = true
+      const identifier = this.entityIdentifier
+      const type = this.entityType
+      const scope = this.savedAccountScope
 
       try {
         const auth0token = await getApiAccessToken(this.auth0)
         await axios.post(`${API.URL}/core/saved`, {
-          Type: this.entityType,
-          ObjectIdentifier: this.entityIdentifier
+          Type: type,
+          ObjectIdentifier: identifier
         }, {
           headers: {
             Authorization: `Bearer ${auth0token}`
@@ -253,6 +309,7 @@ export default {
           params: { view: 'web' }
         })
 
+        if (scope !== this.savedAccountScope || identifier !== this.entityIdentifier || type !== this.entityType) return
         this.saved = true
         this.closeMenu()
         this.showToast(`${this.entityName} saved.`, 'success')
@@ -260,6 +317,7 @@ export default {
         console.log(error)
 
         if (error.response?.status === 409) {
+          if (scope !== this.savedAccountScope || identifier !== this.entityIdentifier || type !== this.entityType) return
           this.saved = true
           this.closeMenu()
           this.showToast(`${this.entityName} is already saved.`, 'success')
@@ -326,6 +384,7 @@ export default {
     document.addEventListener('keydown', this.handleEscape)
   },
   beforeUnmount() {
+    this.savedLookup?.abort()
     document.removeEventListener('click', this.handleDocumentClick)
     document.removeEventListener('keydown', this.handleEscape)
   }
@@ -335,7 +394,7 @@ export default {
 <style scoped>
 .entity-action-menu-enter-active,
 .entity-action-menu-leave-active {
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition: opacity var(--motion-reveal) ease, transform var(--motion-reveal) var(--motion-ease-out);
 }
 
 .entity-action-menu-enter-from,

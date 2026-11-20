@@ -1,31 +1,27 @@
 <template>
-  <div v-if="loading" class="flex min-h-[60dvh] items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400">
-    <span class="material-symbols-outlined mr-2 animate-spin text-[20px]">progress_activity</span>
-    Loading map
-  </div>
-  <div v-else class="fullscreen-map bg-slate-100 dark:bg-slate-950" :class="{ 'map-dark': darkMode, 'map-stop-selected': !!currentViewedStop }">
+  <div class="fullscreen-map bg-slate-100 dark:bg-slate-950" :class="{ 'map-dark': darkMode, 'map-stop-selected': !!currentViewedStop }">
     <mapbox-map
-      ref="map"
-      accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
-      :mapStyle="mapStyle"
+      :access-token="mapboxToken"
+      :mapStyle="initialMapStyle"
       height="100%"
       :center="initialCenter"
       :zoom="initialZoom"
       @loaded="mapLoaded"
-      @update:center="mapPositionUpdate"
-      @update:zoom="zoomUpdate"
+      @moveend="mapPositionUpdate"
     >
       <mapbox-navigation-control position="bottom-right" />
       <mapbox-geolocate-control position="bottom-right" />
 
-      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier" @click="openStopSheet(stop)">
+      <mapbox-marker v-for="stop in detailedStops" :key="stop.PrimaryIdentifier" :lngLat="stop.Location.coordinates">
         <template v-slot:icon>
-          <StopMapMarker
-            :stop="stop"
-            :selected="currentViewedStop?.PrimaryIdentifier === stop.PrimaryIdentifier"
-            :show-route-labels="currentZoom >= stopLabelsZoom"
-            :label-side="stopMarkerSides[stop.PrimaryIdentifier] || 'right'"
-          />
+          <button type="button" class="map-stop-marker-button" :aria-label="`Open ${stop.PrimaryName}`" @click.stop="openStopSheet(stop)">
+            <StopMapMarker
+              :stop="stop"
+              :selected="currentViewedStop?.PrimaryIdentifier === stop.PrimaryIdentifier"
+              :show-route-labels="currentZoom >= stopLabelsZoom"
+              :label-side="stopMarkerSides[stop.PrimaryIdentifier] || 'right'"
+            />
+          </button>
         </template>
       </mapbox-marker>
 
@@ -54,26 +50,25 @@
       </mapbox-marker>
     </mapbox-map>
 
-    <div class="map-status-panel">
-      <div>
-        <p class="text-xs font-bold uppercase tracking-wide text-brand-blue dark:text-brand-blue-light">Map</p>
+    <div class="map-status-overlay">
+      <div class="map-status-panel">
         <h1 class="text-lg font-bold text-slate-950 dark:text-slate-100">Nearby network</h1>
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+          <span class="map-count-chip">
+            <span class="material-symbols-outlined text-[15px]" aria-hidden="true">pin_drop</span>
+            <span>{{ stopCountLabel }}</span>
+          </span>
+          <span class="map-count-chip map-count-chip--live">
+            <span class="material-symbols-outlined text-[15px]" aria-hidden="true">directions_bus</span>
+            <span>{{ showVehicles ? `${visibleVehicles.length} live` : 'Live off' }}</span>
+          </span>
+        </div>
       </div>
-      <div class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-        <span class="map-count-chip" :aria-label="showStops ? `${stops.length} stops shown` : 'Stops layer off'">
-          <span class="material-symbols-outlined text-[15px]">pin_drop</span>
-          <span>{{ showStops ? `${stops.length} stops` : 'Stops off' }}</span>
-        </span>
-        <span class="map-count-chip map-count-chip--live" :aria-label="showVehicles ? `${visibleVehicles.length} live vehicles shown` : 'Live vehicles layer off'">
-          <span class="material-symbols-outlined text-[15px]">directions_bus</span>
-          <span>{{ showVehicles ? `${visibleVehicles.length} live` : 'Live off' }}</span>
-        </span>
-      </div>
-    </div>
 
-    <div v-if="currentZoom < dataLoadMinZoom && showStops" class="map-zoom-hint">
-      <span class="material-symbols-outlined text-[18px]">zoom_in</span>
-      Zoom in to load stops
+      <div v-if="currentZoom < dataLoadMinZoom && showStops" class="map-zoom-hint">
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">zoom_in</span>
+        Zoom in to load stops
+      </div>
     </div>
 
     <div v-if="mapDataError" class="map-error-panel" role="alert">
@@ -93,6 +88,7 @@
       <span v-if="activeMapLayerCount > 0" class="map-filter-count">{{ activeMapLayerCount }}</span>
     </button>
 
+    <Transition name="map-stop-panel" @before-leave="element => element.inert = true">
     <section
       v-if="currentViewedStop"
       class="map-stop-sheet"
@@ -156,6 +152,7 @@
         />
       </div>
     </section>
+    </Transition>
   </div>
 
   <Modal
@@ -236,17 +233,26 @@
   height: 100%;
 }
 
-.map-status-panel {
+.map-status-overlay {
   position: absolute;
   left: 1rem;
   top: 5.75rem;
   z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
   width: calc(100% - 2rem);
   max-width: 32rem;
+  pointer-events: none;
+}
+
+.map-status-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
   border: 1px solid color-mix(in srgb, var(--ui-border) 85%, transparent);
   border-radius: 1.25rem;
   background: color-mix(in srgb, var(--ui-panel) 94%, transparent);
@@ -254,6 +260,28 @@
   padding: 0.75rem 0.875rem;
   box-shadow: 0 18px 45px rgb(15 23 42 / 0.14);
   backdrop-filter: blur(14px);
+}
+
+.map-stop-marker-button {
+  display: flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 0.75rem;
+}
+
+.map-stop-marker-button :deep(.stop-map-marker) {
+  width: 1.85rem;
+  min-width: 1.85rem;
+  height: 1.7rem;
+  box-shadow: 0 1px 3px rgb(23 25 35 / 0.25);
+}
+
+.map-stop-marker-button:focus-visible {
+  outline: 3px solid var(--brand-blue);
+  outline-offset: 2px;
 }
 
 .map-count-chip {
@@ -298,10 +326,6 @@
 }
 
 .map-zoom-hint {
-  position: absolute;
-  left: 1rem;
-  top: 10.5rem;
-  z-index: 40;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -372,6 +396,32 @@
   background: var(--ui-panel);
   color: var(--ui-text);
   box-shadow: 0 18px 48px rgb(15 23 42 / 0.28);
+}
+
+.map-stop-panel-enter-active,
+.map-stop-panel-leave-active {
+  transition: opacity var(--motion-sheet) var(--motion-ease-out);
+}
+
+.map-stop-panel-enter-from,
+.map-stop-panel-leave-to {
+  opacity: 0;
+}
+
+.map-stop-panel-leave-active {
+  pointer-events: none;
+}
+
+@media (width < 640px) and (prefers-reduced-motion: no-preference) {
+  .map-stop-panel-enter-active,
+  .map-stop-panel-leave-active {
+    transition: opacity var(--motion-sheet) var(--motion-ease-out), transform var(--motion-sheet) var(--motion-ease-out);
+  }
+
+  .map-stop-panel-enter-from,
+  .map-stop-panel-leave-to {
+    transform: translateY(1rem);
+  }
 }
 
 .map-stop-sheet__header {
@@ -636,14 +686,9 @@
 }
 
 @media (min-width: 640px) {
-  .map-status-panel {
+  .map-status-overlay {
     left: 2rem;
     top: 7.5rem;
-  }
-
-  .map-zoom-hint {
-    left: 2rem;
-    top: 12.2rem;
   }
 
   .map-filter-button {
@@ -679,6 +724,10 @@
 }
 
 @media (min-width: 1280px) {
+  .map-status-overlay {
+    left: 7.5rem;
+  }
+
   .map-stop-sheet {
     bottom: 1.5rem;
   }
@@ -693,19 +742,50 @@ import DeparturesList from '@/components/DeparturesList.vue'
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import axios from 'axios'
 import API from '@/API'
+import { markRaw } from 'vue'
 
-import { MapboxMap } from "vue-mapbox-ts";
+import { MapboxMap } from 'vue-mapbox-ts'
+
+const stopSource = 'travigo-stops'
+const stopClusterLayer = 'travigo-stop-clusters'
+const stopCountLayer = 'travigo-stop-cluster-count'
+const stopPointLayer = 'travigo-stop-points'
+const lightMapStyle = 'mapbox://styles/mapbox/light-v11'
+const darkMapStyle = 'mapbox://styles/mapbox/dark-v11'
+const mapboxToken = 'pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg'
 
 export default {
   name: 'StopsView',
   computed: {
     mapStyle() {
       return this.darkMode
-        ? 'mapbox://styles/mapbox/dark-v11'
-        : 'mapbox://styles/mapbox/light-v11'
+        ? darkMapStyle
+        : lightMapStyle
     },
     activeMapLayerCount() {
       return [this.showStops, this.showVehicles].filter(Boolean).length
+    },
+    stopCountLabel() {
+      if (!this.showStops) return 'Stops off'
+      if (this.currentZoom < this.dataLoadMinZoom) return 'Stops hidden'
+      if (this.stopsLoading && !this.stops.length) return 'Loading stops…'
+      return `${this.stops.length.toLocaleString()} stops`
+    },
+    detailedStops() {
+      return this.currentZoom >= this.detailedStopsZoom ? this.stops : []
+    },
+    stopsById() {
+      return new Map(this.stops.map(stop => [stop.PrimaryIdentifier, stop]))
+    },
+    stopFeatures() {
+      return {
+        type: 'FeatureCollection',
+        features: this.stops.map(stop => ({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: stop.Location.coordinates },
+          properties: { stopId: stop.PrimaryIdentifier }
+        }))
+      }
     },
     mapDataError() {
       return this.stopsError || this.vehiclesError
@@ -794,13 +874,14 @@ export default {
       stops: [],
       vehicles: [],
 
-      loading: false,
+      stopsLoading: false,
       stopsError: false,
       vehiclesError: false,
 
       currentZoom: 5,
       currentCenter: [0.1356, 52.2065],
       stopLabelsZoom: 17,
+      detailedStopsZoom: 16,
 
       initialZoom: 5,
       initialCenter: [0.1356, 52.2065],
@@ -826,9 +907,14 @@ export default {
       ],
 
       mapboxObject: undefined,
+      mapboxToken,
       darkMode: document.documentElement.classList.contains('dark'),
-      appliedMapStyle: '',
+      initialMapStyle: document.documentElement.classList.contains('dark') ? darkMapStyle : lightMapStyle,
+      appliedMapStyle: null,
+      mapStyleRequest: null,
       themeObserver: undefined,
+      stopsRequestVersion: 0,
+      vehiclesRequestVersion: 0,
 
       currentViewedStop: undefined,
 
@@ -847,69 +933,212 @@ export default {
   },
   methods: {
     mapLoaded(map) {
-      this.mapboxObject = map
-      this.applyMapStyle()
+      this.mapboxObject = markRaw(map)
+      this.appliedMapStyle = this.initialMapStyle
+      map.on('style.load', this.installStopLayers)
+      map.on('idle', this.installStopLayers)
+      map.on('click', stopClusterLayer, this.expandStopCluster)
+      map.on('click', stopPointLayer, this.openMapStop)
+      for (const layer of [stopClusterLayer, stopPointLayer]) {
+        map.on('mouseenter', layer, this.showStopPointer)
+        map.on('mouseleave', layer, this.clearStopPointer)
+      }
+      if (map.isStyleLoaded()) this.installStopLayers()
+      this.applyMapStyle(this.mapStyle)
 
       map.resize()
 
       this.refreshData()
     },
-    zoomUpdate(zoom) {
-      this.currentZoom = zoom
+    installStopLayers() {
+      const map = this.mapboxObject
+      if (!map || map.getSource(stopSource)) return
 
-      localStorage.map_last_zoom = this.currentZoom
+      const darkStyle = this.appliedMapStyle === darkMapStyle
+      if (darkStyle) {
+        for (const layer of map.getStyle().layers || []) {
+          if (layer.type === 'symbol' && /^(country|state|settlement|settlement-subdivision)-label$/.test(layer.id)) {
+            const majorLabel = layer.id === 'country-label' || layer.id === 'settlement-label'
+            map.setPaintProperty(layer.id, 'text-color', majorLabel ? '#e2e5eb' : '#b9bfcb')
+          }
+        }
+      }
+
+      const accent = darkStyle ? '#a0a2e6' : '#696aad'
+      const panel = darkStyle ? '#242637' : '#ffffff'
+      map.addSource(stopSource, {
+        type: 'geojson',
+        data: this.stopFeatures,
+        cluster: true,
+        clusterRadius: 48,
+        clusterMaxZoom: this.detailedStopsZoom - 1
+      })
+      const options = { source: stopSource, maxzoom: this.detailedStopsZoom }
+      const clustered = ['has', 'point_count']
+      map.addLayer({
+        ...options,
+        id: stopClusterLayer,
+        type: 'circle',
+        filter: clustered,
+        paint: {
+          'circle-color': accent,
+          'circle-radius': ['step', ['get', 'point_count'], 16, 25, 19, 100, 22],
+          'circle-stroke-color': panel,
+          'circle-stroke-width': 2
+        }
+      })
+      map.addLayer({
+        ...options,
+        id: stopCountLayer,
+        type: 'symbol',
+        filter: clustered,
+        layout: {
+          'text-field': ['to-string', ['get', 'point_count_abbreviated']],
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 13,
+          'text-allow-overlap': true
+        },
+        paint: { 'text-color': darkStyle ? '#171923' : '#ffffff' }
+      })
+      map.addLayer({
+        ...options,
+        id: stopPointLayer,
+        type: 'circle',
+        filter: ['!', clustered],
+        paint: {
+          'circle-color': accent,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], this.dataLoadMinZoom, 5, this.detailedStopsZoom, 9],
+          'circle-stroke-color': panel,
+          'circle-stroke-width': 2
+        }
+      })
+    },
+    async applyMapStyle(style) {
+      this.mapStyleRequest?.abort()
+      const map = this.mapboxObject
+      if (!map || style === this.appliedMapStyle) return
+
+      const request = new AbortController()
+      this.mapStyleRequest = request
+      const url = new URL(style.replace('mapbox://styles/', 'https://api.mapbox.com/styles/v1/'))
+      url.searchParams.set('access_token', mapboxToken)
+
+      try {
+        // Keep the rendered map while the replacement style downloads.
+        const response = await fetch(url, { signal: request.signal })
+        if (!response.ok) return
+        const replacement = await response.json()
+        if (request.signal.aborted || this.mapboxObject !== map) return
+        this.appliedMapStyle = style
+        map.setStyle(replacement)
+      } catch (error) {
+        if (!request.signal.aborted) console.warn('Could not switch map appearance.', error)
+      }
+    },
+    expandStopCluster(event) {
+      const map = this.mapboxObject
+      const feature = event.features?.[0]
+      if (!feature) return
+
+      const [longitude, latitude] = feature.geometry.coordinates
+      const coordinates = [longitude + 360 * Math.round((event.lngLat.lng - longitude) / 360), latitude]
+      map.getSource(stopSource)?.getClusterExpansionZoom(feature.properties.cluster_id, (error, zoom) => {
+        if (error || !this.mapboxObject || !this.showStops) return
+        const camera = { center: coordinates, zoom }
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) map.jumpTo(camera)
+        else map.easeTo({ ...camera, duration: 260 })
+      })
+    },
+    openMapStop(event) {
+      const stop = this.stopsById.get(event.features?.[0]?.properties.stopId)
+      if (stop) this.openStopSheet(stop)
+    },
+    showStopPointer() {
+      this.mapboxObject.getCanvas().style.cursor = 'pointer'
+    },
+    clearStopPointer() {
+      this.mapboxObject.getCanvas().style.cursor = ''
     },
     refreshData(updateStops = true, updateVehicles = true) {
-      if (this.$refs.map !== undefined) {
+      if (this.mapboxObject) {
         this.getData(updateStops, updateVehicles)
       }
     },
-    mapPositionUpdate(center) {
-      this.currentCenter = center
+    mapPositionUpdate() {
+      const map = this.mapboxObject
+      if (!map) return
 
+      this.currentCenter = map.getCenter().toArray()
+      this.currentZoom = map.getZoom()
       localStorage.map_last_center = JSON.stringify(this.currentCenter)
+      localStorage.map_last_zoom = this.currentZoom
 
-      this.getData(true, true)
+      this.refreshData()
+    },
+    requestBounds() {
+      const bounds = this.mapboxObject.getBounds()
+      if (!bounds) return []
+
+      const south = bounds.getSouth()
+      const north = bounds.getNorth()
+      const span = bounds.getEast() - bounds.getWest()
+      if (span >= 360) return [[-180, south, 180, north]]
+
+      const west = ((bounds.getWest() + 180) % 360 + 360) % 360 - 180
+      const east = west + span
+      return east <= 180
+        ? [[west, south, east, north]]
+        : [[west, south, 180, north], [-180, south, east - 360, north]]
+    },
+    async loadBounds(path, boxes, params = {}) {
+      const responses = await Promise.all(boxes.map(bounds =>
+        axios.get(`${API.URL}/core/${path}/`, { params: { ...params, bounds: bounds.join(',') } })
+      ))
+      return responses.flatMap(({ data }) => Array.isArray(data) ? data : [])
     },
     getData(updateStops, updateVehicles) {
-      const bounds = this.mapboxObject.getBounds()
+      const boxes = this.requestBounds()
+      if (!boxes.length) return
 
-      let bottomLeftLon = bounds._sw.lng
-      let bottomLeftLat = bounds._sw.lat
-      let topRightLon = bounds._ne.lng
-      let topRightLat = bounds._ne.lat
-
-      // TODO: For now just dont load anything if you're too zoomed out
-      if (this.showStops && updateStops && (this.currentZoom >= this.dataLoadMinZoom)) {
+      if (updateStops) {
+        const version = ++this.stopsRequestVersion
         this.stopsError = false
-        axios
-          .get(`${API.URL}/core/stops/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}&view=map`)
-          .then(response => {
-            let newStops = response.data
-
-            this.stops = newStops
-          })
-          .catch(error => {
-            console.log(error)
-            this.stopsError = true
-          })
-          .finally(() => this.loading = false)
+        if (this.showStops && this.currentZoom >= this.dataLoadMinZoom) {
+          this.stopsLoading = true
+          this.loadBounds('stops', boxes, { view: 'map' })
+            .then(stops => {
+              if (version !== this.stopsRequestVersion) return
+              this.stops = stops.filter(stop => stop?.PrimaryIdentifier &&
+                Array.isArray(stop.Location?.coordinates) &&
+                stop.Location.coordinates.length === 2 &&
+                stop.Location.coordinates.every(Number.isFinite))
+            })
+            .catch(error => {
+              if (version !== this.stopsRequestVersion) return
+              console.log(error)
+              this.stopsError = true
+            })
+            .finally(() => {
+              if (version === this.stopsRequestVersion) this.stopsLoading = false
+            })
+        } else {
+          this.stops = []
+          this.stopsLoading = false
+        }
       }
 
       if (this.showVehicles && updateVehicles) {
+        const version = ++this.vehiclesRequestVersion
         this.vehiclesError = false
-        axios
-          .get(`${API.URL}/core/realtime_journeys/?bounds=${bottomLeftLon},${bottomLeftLat},${topRightLon},${topRightLat}`)
-          .then(response => {
-            let newVehicles = Array.isArray(response.data) ? response.data : []
-
-            this.vehicles = newVehicles
+        this.loadBounds('realtime_journeys', boxes)
+          .then(vehicles => {
+            if (version === this.vehiclesRequestVersion) this.vehicles = vehicles
           })
           .catch(error => {
+            if (version !== this.vehiclesRequestVersion) return
             console.log(error)
             this.vehiclesError = true
           })
-          .finally(() => this.loading = false)
       }
     },
     openStopSheet(stop) {
@@ -956,14 +1185,6 @@ export default {
       this.showStops = false
       this.showVehicles = false
     },
-    applyMapStyle() {
-      if (!this.mapboxObject || this.appliedMapStyle === this.mapStyle) {
-        return
-      }
-
-      this.mapboxObject.setStyle(this.mapStyle)
-      this.appliedMapStyle = this.mapStyle
-    },
     getDepartures(stop = this.currentViewedStop) {
       if (!stop) {
         return
@@ -1000,7 +1221,7 @@ export default {
   created() {
     if (localStorage.map_last_center !== undefined && localStorage.map_last_zoom !== undefined) {
       this.initialCenter = JSON.parse(localStorage.map_last_center)
-      this.initialZoom = parseInt(localStorage.map_last_zoom)
+      this.initialZoom = Number(localStorage.map_last_zoom)
 
       this.currentCenter = this.initialCenter
       this.currentZoom = this.initialZoom
@@ -1034,6 +1255,10 @@ export default {
   beforeUnmount() {
     clearInterval(this.refreshTimer)
     this.themeObserver?.disconnect()
+    this.mapStyleRequest?.abort()
+    this.stopsRequestVersion += 1
+    this.vehiclesRequestVersion += 1
+    this.mapboxObject = undefined
   },
   watch: {
     showStops: {
@@ -1046,7 +1271,10 @@ export default {
         if (to) {
           this.refreshData()
         } else {
+          this.stopsRequestVersion += 1
           this.stops = []
+          this.stopsError = false
+          this.stopsLoading = false
         }
 
         localStorage.map_showStops = to
@@ -1062,14 +1290,19 @@ export default {
         if (to) {
           this.refreshData()
         } else {
+          this.vehiclesRequestVersion += 1
           this.vehicles = []
+          this.vehiclesError = false
         }
 
         localStorage.map_showVehicles = to
       }
     },
-    darkMode() {
-      this.applyMapStyle()
+    stopFeatures(data) {
+      this.mapboxObject?.getSource(stopSource)?.setData(data)
+    },
+    mapStyle(style) {
+      this.applyMapStyle(style)
     }
   }
 }

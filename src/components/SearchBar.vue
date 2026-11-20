@@ -21,7 +21,7 @@
       :aria-expanded="searchResults.length > 0"
       :aria-busy="loadingResults"
       :aria-controls="resultsListId"
-      :aria-activedescendant="activeResultIndex >= 0 ? resultId(activeResultIndex) : undefined"
+      :aria-activedescendant="activeResultIndex >= 0 && searchResults.length ? resultId(activeResultIndex) : undefined"
       v-model="searchTerm"
       v-on:input="searchStops"
       @keydown="handleSearchKeydown"
@@ -347,12 +347,10 @@ export default {
 
       if (identifier == "" || identifier === undefined || identifier === null) {
         this.selectedResultRequestToken += 1
+        this.resetSearch()
         this.selectedResult = undefined
         this.editingSelection = false
         this.searchTerm = ''
-        this.results = {}
-        this.searchAttempted = false
-        this.searchError = false
         return
       }
 
@@ -360,6 +358,7 @@ export default {
         return
       }
 
+      this.resetSearch()
       this.searchTerm = 'Loading stop...'
       const requestToken = ++this.selectedResultRequestToken
 
@@ -398,6 +397,9 @@ export default {
       this.filtersOpen = false
       this.searchStops()
     },
+    focusSearch() {
+      this.$refs.searchInput?.focus()
+    },
     selectedSectionCount(sectionId) {
       return this.selectedFilters[sectionId]?.length || 0
     },
@@ -426,56 +428,54 @@ export default {
       )
     },
     clearSelectedResult() {
-      this.searchRequestToken += 1
+      this.resetSearch()
       this.selectedResult = undefined
       this.editingSelection = false
       this.searchTerm = ''
-      this.results = {}
-      this.activeResultIndex = -1
-      this.searchAttempted = false
-      this.searchError = false
-      this.loadingResults = false
 
       if (this.mode == 'store') {
         this.$emit('update:modelValue', '')
         this.$emit('selected-result', undefined)
       }
 
-      this.$nextTick(() => this.$refs.searchInput.focus())
+      this.$nextTick(this.focusSearch)
     },
     beginEditingSelectedResult() {
+      this.resetSearch()
       this.editingSelection = true
       this.searchTerm = ''
-      this.results = {}
-      this.searchAttempted = false
-      this.searchError = false
-      this.$nextTick(() => this.$refs.searchInput?.focus())
+      this.$nextTick(this.focusSearch)
     },
     cancelSelectionEdit() {
+      this.resetSearch()
       if (this.selectedResult === undefined) {
         return
       }
 
       this.editingSelection = false
       this.searchTerm = this.stopName(this.selectedResult)
+    },
+    resetSearch() {
+      this.searchRequestToken += 1
       this.results = {}
       this.activeResultIndex = -1
       this.searchAttempted = false
       this.searchError = false
+      this.loadingResults = false
     },
     handleResultClick(result) {
       const stop = this.unwrapStop(result)
       const identifier = this.stopIdentifier(stop)
+      if (!identifier) return
 
       if (this.mode == 'link') {
         this.$router.push({ name: 'stops/view', params: {'id': identifier} })
       } else if(this.mode == 'store') {
-        this.searchRequestToken += 1
+        this.selectedResultRequestToken += 1
+        this.resetSearch()
         this.selectedResult = stop
         this.editingSelection = false
         this.searchTerm = this.stopName(stop)
-        this.results = {}
-        this.loadingResults = false
         this.$emit('update:modelValue', identifier)
         this.$emit('selected-result', stop)
       }
@@ -498,7 +498,7 @@ export default {
         return
       }
 
-      if (event.key === 'Enter' && this.activeResultIndex >= 0) {
+      if (event.key === 'Enter' && this.searchResults[this.activeResultIndex]) {
         event.preventDefault()
         this.handleResultClick(this.searchResults[this.activeResultIndex])
         return
@@ -511,8 +511,6 @@ export default {
 
       if (event.key === 'Escape') {
         this.cancelSelectionEdit()
-        this.results = {}
-        this.activeResultIndex = -1
       }
     },
     searchStops() {
@@ -520,24 +518,18 @@ export default {
         this.editingSelection = true
       }
 
-      if (this.searchTerm === '') {
-        this.searchRequestToken += 1
-        this.results = {}
-        this.activeResultIndex = -1
-        this.searchAttempted = false
-        this.searchError = false
-        this.loadingResults = false
-        return
-      }
+      this.resetSearch()
+      const name = this.searchTerm.trim()
+      if (!name) return
+
       this.loadingResults = true
       this.searchAttempted = true
-      this.searchError = false
-      const requestToken = ++this.searchRequestToken
+      const requestToken = this.searchRequestToken
 
       axios
         .get(`${API.URL}/core/stops/search`, {
           params: {
-            name: this.searchTerm,
+            name,
             transporttype: this.selectedFilters.transportType.join(','),
             view: 'web'
           }

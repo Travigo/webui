@@ -10,7 +10,8 @@
     />
 
     <slot v-if="activeTab === 'departures' || activeTab === 'arrivals'" name="controls"></slot>
-    <div v-if="activeTab === 'departures'">
+    <Transition name="ui-fade" @leave="(_, remove) => remove()">
+    <div v-if="activeTab === 'departures'" key="departures">
       <LoadingState
         v-if="loadingDepartures && (!departures || departures.length === 0)"
         title="Loading departures"
@@ -32,7 +33,7 @@
       <DeparturesList v-else :stop="stop" :departures="departures || []" :board-reference-time="boardReferenceTime" variant="compact"/>
     </div>
 
-    <div v-else-if="activeTab === 'arrivals'">
+    <div v-else-if="activeTab === 'arrivals'" key="arrivals">
       <LoadingState
         v-if="loadingArrivals && (!arrivals || arrivals.length === 0)"
         title="Loading arrivals"
@@ -54,13 +55,14 @@
       <DeparturesList v-else :stop="stop" :departures="arrivals || []" :board-reference-time="boardReferenceTime" board-type="arrivals" variant="compact" />
     </div>
 
-    <div v-else-if="activeTab === 'map'">
+    <div v-else-if="activeTab === 'map'" key="map">
       <slot name="map"></slot>
     </div>
 
-    <div v-else>
+    <div v-else key="details">
       <slot name="details"></slot>
     </div>
+    </Transition>
   </section>
 </template>
 

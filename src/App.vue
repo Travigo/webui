@@ -98,6 +98,11 @@ export default {
 
       this.applyTheme(event.matches)
     },
+    primaryItemCurrent(item) {
+      if (this.$route.name === item.route.name) return 'page'
+      if (item.route.name === 'journeyplanner/home' && this.$route.name === 'journeyplanner/search') return 'location'
+      return undefined
+    },
     showToast(event) {
       const toast = {
         id: ++this.toastId,
@@ -182,12 +187,12 @@ export default {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[var(--ui-page)] text-slate-950 transition-colors dark:text-slate-100">
+  <div class="min-h-screen bg-[var(--ui-page)] text-slate-950 dark:text-slate-100">
     <nav
       v-if="this.showChrome"
       class="relative z-50 mx-auto max-w-5xl px-4 pt-5 sm:px-8 sm:pt-8 lg:max-w-6xl lg:px-10"
     >
-      <div class="flex items-start justify-between gap-3 sm:gap-4">
+      <div class="flex items-start justify-between gap-3 sm:gap-4" :class="{ 'map-header-chrome': $route.name === 'map' }">
         <div>
           <router-link :to="{ path: '/' }" class="inline-flex items-center gap-1.5 sm:gap-2.5">
             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white p-0.5 shadow-sm shadow-slate-300/50 sm:h-11 sm:w-11 sm:rounded-2xl dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20" aria-hidden="true">
@@ -259,7 +264,13 @@ export default {
           'max-w-5xl lg:max-w-[100rem]': !this.isFullscreen && this.isDataImporter
         }"
       >
-        <router-view />
+        <router-view v-slot="{ Component, route }">
+          <Transition name="ui-fade" @leave="(_, remove) => remove()">
+            <div v-if="Component" :key="route.name" class="h-full">
+              <component :is="Component" />
+            </div>
+          </Transition>
+        </router-view>
       </div>
     </main>
 
@@ -288,13 +299,15 @@ export default {
           v-bind:key="item.name"
           v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
           :to="item.route"
-          class="group flex min-w-0 max-w-20 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-[11px] font-medium text-slate-600 transition hover:text-brand-blue sm:gap-1 sm:text-xs dark:text-slate-300 dark:hover:text-brand-blue-light"
-          active-class="bottom-nav-active"
+          :aria-current="primaryItemCurrent(item)"
+          class="group flex min-w-0 max-w-20 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-xs font-medium text-slate-600 transition-colors duration-(--motion-feedback) hover:text-brand-blue sm:gap-1 dark:text-slate-300 dark:hover:text-brand-blue-light"
+          :class="{ 'bottom-nav-active': primaryItemCurrent(item) }"
         >
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg transition group-hover:bg-brand-blue/10 sm:h-10 sm:w-10 dark:group-hover:bg-brand-blue/20">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-(--motion-feedback) group-hover:bg-brand-blue/10 sm:h-10 sm:w-10 dark:group-hover:bg-brand-blue/20">
             <span
               class="material-symbols-outlined [--bottom-nav-icon-size:24px] sm:[--bottom-nav-icon-size:26px]"
               style="font-size: var(--bottom-nav-icon-size); line-height: 1"
+              aria-hidden="true"
             >
               {{ item.icon }}
             </span>
@@ -314,11 +327,12 @@ export default {
         v-bind:key="item.name"
         v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
         :to="item.route"
-        class="group flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold text-slate-600 transition hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-300 dark:hover:bg-brand-blue/20 dark:hover:text-brand-blue-light"
-        active-class="desktop-nav-active"
+        :aria-current="primaryItemCurrent(item)"
+        class="group flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold text-slate-600 transition-colors duration-(--motion-feedback) hover:bg-brand-blue/10 hover:text-brand-blue dark:text-slate-300 dark:hover:bg-brand-blue/20 dark:hover:text-brand-blue-light"
+        :class="{ 'desktop-nav-active': primaryItemCurrent(item) }"
       >
         <span class="flex h-9 w-9 items-center justify-center rounded-lg transition">
-          <span class="material-symbols-outlined text-[24px]">{{ item.icon }}</span>
+          <span class="material-symbols-outlined text-[24px]" aria-hidden="true">{{ item.icon }}</span>
         </span>
         <span class="truncate">{{ item.name }}</span>
       </router-link>
@@ -361,6 +375,15 @@ export default {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
+.map-header-chrome {
+  margin: -0.5rem -0.5rem 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 1rem;
+  background: var(--ui-panel);
+  padding: 0.5rem;
+  box-shadow: var(--ui-shadow);
+}
+
 .bottom-nav-active {
   color: #696aad;
 }
@@ -389,7 +412,7 @@ export default {
 
 .toast-enter-active,
 .toast-leave-active {
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity var(--motion-reveal) ease, transform var(--motion-reveal) var(--motion-ease-out);
 }
 
 .toast-enter-from,

@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal-overlay">
+    <Transition name="modal-overlay" @before-leave="element => element.inert = true">
       <div
         v-if="open"
         class="fixed inset-0 z-[1000] flex min-h-dvh w-screen items-end bg-slate-950/40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
@@ -163,8 +163,9 @@ export default {
     restorePageFocus() {
       document.body.style.overflow = this.originalBodyOverflow
       document.removeEventListener('keydown', this.handleDocumentKeydown)
-      this.$nextTick(() => this.previouslyFocusedElement?.focus?.())
+      const trigger = this.previouslyFocusedElement
       this.previouslyFocusedElement = undefined
+      this.$nextTick(() => { if (!this.open) trigger?.focus?.({ preventScroll: true }) })
     },
     handleDocumentKeydown(event) {
       if (event.key === 'Escape') {

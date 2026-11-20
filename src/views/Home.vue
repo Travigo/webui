@@ -3,29 +3,30 @@
     <LocationPicker />
 
     <SearchBar
+      ref="stopSearch"
       input-id="home-stop-search"
       label="Search stops, stations or routes"
       placeholder="Search stops, stations or routes"
-      searchClasses="h-14 rounded-xl border-slate-200 bg-white px-4 text-base text-slate-900 shadow-sm placeholder:text-slate-400 sm:h-[4.25rem] sm:px-5 sm:text-lg lg:h-20 lg:text-xl"
+      searchClasses="h-14 rounded-xl border-slate-200 bg-white px-4 text-base text-slate-900 shadow-sm placeholder:text-slate-600 sm:h-[4.25rem] sm:px-5 sm:text-lg lg:h-20 lg:text-xl"
       :showIcons="true"
     />
 
-    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.9fr)] xl:items-start xl:gap-6">
     <section>
       <div class="ui-panel">
         <TabBar
           :tabs="stopPanelTabs"
           :model-value="stopPanelTab"
-          storage-key="travigo_home_stops_tab"
+          :persist="false"
           @update:model-value="changeStopPanel"
         />
 
-        <template v-if="stopPanelTab === 'nearby'">
+        <Transition name="ui-fade" @leave="(_, remove) => remove()">
+        <div v-if="stopPanelTab === 'nearby'" key="nearby">
         <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="ui-section-title">Nearby stops</h2>
-              <p class="ui-body mt-0.5">{{ nearbyStopsStatus }}</p>
+              <p v-if="nearbyStopsStatus" class="ui-body mt-0.5">{{ nearbyStopsStatus }}</p>
             </div>
             <button
               type="button"
@@ -47,25 +48,23 @@
           :current-position="nearbyPosition"
         />
 
-        <div v-if="nearbyStopsError" class="mx-4 mb-4 rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 sm:mx-5">
-          {{ nearbyStopsError }}
+        <div v-if="nearbyStopsError" class="mx-4 mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100 sm:mx-5">
+          <p role="status">{{ nearbyStopsError }}</p>
+          <button type="button" class="min-h-11 shrink-0 rounded-lg px-2 font-bold underline underline-offset-2 hover:bg-amber-100 dark:hover:bg-amber-500/20" @click="$refs.stopSearch.focusSearch()">
+            Search for a stop
+          </button>
         </div>
 
-        <div v-else-if="nearbyStops.length === 0" class="px-4 pb-4 text-sm text-slate-500 sm:px-5">
-          Enable location to find the closest stops to you.
-        </div>
-
-        <router-link :to="{ name: 'map' }" class="flex items-center justify-center gap-1 px-4 py-3 text-base font-medium text-brand-blue sm:gap-2 sm:px-5 sm:py-4 sm:text-lg">
-          See all nearby stops
+        <router-link :to="{ name: 'map' }" class="flex items-center justify-center gap-1 px-4 py-3 text-sm font-bold text-brand-blue dark:text-brand-blue-light sm:gap-2 sm:px-5">
+          {{ nearbyStops.length ? 'See all nearby stops' : 'Explore map' }}
           <span class="material-symbols-outlined text-xl sm:text-2xl">chevron_right</span>
         </router-link>
-        </template>
+        </div>
 
-        <template v-else>
+        <div v-else key="saved">
           <div class="flex items-center justify-between gap-3 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
             <div>
               <h2 class="ui-section-title">Saved stops</h2>
-              <p class="ui-body mt-0.5">Your quick-access stops</p>
             </div>
             <router-link
               :to="{ name: 'saved/home' }"
@@ -109,38 +108,38 @@
             v-bind:key="stopKey(stop)"
             :stop="stop"
             :bordered="true"
+            compact-services
             meta-icon=""
             distance-label-fallback=""
           />
-        </template>
+        </div>
+        </Transition>
       </div>
     </section>
 
     <section class="ui-panel p-4 sm:p-5">
-      <div class="mb-3 sm:mb-4">
+      <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <h2 class="ui-section-title">Network summary</h2>
-        <p class="ui-body mt-0.5">Data currently ingested in Travigo</p>
-        <p v-if="statsGeneratedAt" class="mt-1 text-xs font-medium text-slate-400">Generated {{ statsGeneratedAt }}</p>
+        <p v-if="statsGeneratedAt" class="text-xs font-medium text-slate-600 dark:text-slate-300">Generated {{ statsGeneratedAt }}</p>
       </div>
 
-      <div v-if="statsLoading" class="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4 xl:grid-cols-2" aria-label="Loading network summary">
-        <div v-for="index in 4" :key="index" class="h-32 animate-pulse rounded-xl bg-slate-100 sm:h-36 sm:rounded-xl dark:bg-slate-800"></div>
+      <div v-if="statsLoading" class="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Loading network summary">
+        <div v-for="index in 4" :key="index" class="h-14 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"></div>
       </div>
 
-      <div v-else class="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800 md:grid-cols-4 xl:grid-cols-2">
+      <div v-else class="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <button
           v-for="summary in networkSummary"
           v-bind:key="summary.label"
           @click="openStatsModal(summary.view)"
-          class="border-b border-r border-slate-100 p-3 text-left transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-800 dark:hover:bg-slate-800/60 sm:p-4"
+          class="rounded-lg bg-slate-50 px-3 py-2 text-left transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-800 dark:hover:bg-slate-700"
           :disabled="!stats"
         >
-          <div class="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
-            <span class="material-symbols-outlined text-xl text-brand-blue dark:text-brand-blue-light sm:text-2xl">{{ summary.icon }}</span>
-            <span class="text-lg font-bold text-slate-950 sm:text-xl">{{ summary.value }}</span>
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px] text-brand-blue dark:text-brand-blue-light" aria-hidden="true">{{ summary.icon }}</span>
+            <span class="text-base font-bold tabular-nums text-slate-950 dark:text-slate-100">{{ summary.value }}</span>
           </div>
-          <p class="text-sm font-semibold leading-snug text-slate-600 dark:text-slate-300">{{ summary.label }}</p>
-          <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">{{ summary.pill }}</p>
+          <p class="text-xs font-semibold leading-snug text-slate-600 dark:text-slate-300">{{ summary.label }}</p>
         </button>
       </div>
 
@@ -167,7 +166,6 @@
         <span class="material-symbols-outlined shrink-0 text-xl text-slate-400">chevron_right</span>
       </router-link>
     </section>
-    </div>
 
     <Modal
       v-model:open="statsModalOpen"
@@ -236,6 +234,8 @@ import {
   putCachedResource
 } from '@/offline/resourceCache'
 
+const stopPanelStorageKey = 'travigo_home_stops_tab'
+
 export default {
   name: 'Home',
   components: {
@@ -263,7 +263,9 @@ export default {
       nearbyPosition: undefined,
       nearbyStopsPosition: undefined,
       auth0: useAuth0(),
-      stopPanelTab: 'nearby',
+      stopPanelTab: (localStorage.getItem(stopPanelStorageKey) ?? sessionStorage.getItem(stopPanelStorageKey)) === 'saved'
+        ? 'saved'
+        : 'nearby',
       loadingSavedStops: false,
       savedStopsError: '',
       savedStops: [],
@@ -286,7 +288,8 @@ export default {
         return 'Closest stops to your current location'
       }
 
-      return 'Use your location to find nearby stops'
+      if (this.nearbyStopsError) return ''
+      return this.nearbyStopsPosition ? 'No stops found nearby' : 'Find stops around you'
     },
     nearbyStopsButtonLabel() {
       if (this.loadingNearbyStops) {
@@ -396,6 +399,7 @@ export default {
     },
     changeStopPanel(tab) {
       this.stopPanelTab = tab
+      localStorage.setItem(stopPanelStorageKey, tab)
 
       if (tab === 'saved') {
         this.getSavedStops()
@@ -689,6 +693,11 @@ export default {
     }
 
     this.refreshTimer = setInterval(this.getStats, 250000)
+  },
+  watch: {
+    'auth0.isAuthenticated'() {
+      if (this.stopPanelTab === 'saved') this.getSavedStops()
+    }
   },
   beforeRouteLeave() {
     clearInterval(this.refreshTimer)

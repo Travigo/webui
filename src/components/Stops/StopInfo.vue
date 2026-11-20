@@ -1,7 +1,7 @@
 <template>
   <router-link
     :to="stopRoute"
-    class="grid grid-cols-[3.25rem_1fr] items-center gap-3 px-4 py-3 sm:grid-cols-[5rem_1fr_auto] sm:gap-4 sm:px-5 sm:py-4"
+    class="grid grid-cols-[3.25rem_minmax(0,1fr)] items-center gap-3 px-4 py-3 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-4 sm:px-5 sm:py-4"
     :class="bordered ? 'border-b border-slate-200 last:border-b-0 dark:border-slate-800' : ''"
   >
     <div class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue/10 sm:h-14 sm:w-14 dark:bg-brand-blue/100/10">
@@ -10,23 +10,33 @@
 
     <div class="min-w-0">
       <div class="flex items-start justify-between gap-2 sm:gap-3">
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
-            <h3 class="truncate text-base font-bold leading-tight text-slate-950 dark:text-slate-100">{{ stop.PrimaryName }}</h3>
+            <h3 class="line-clamp-2 wrap-anywhere text-base font-bold leading-tight text-slate-950 dark:text-slate-100">{{ stop.PrimaryName }}</h3>
           </div>
           <div>
-            <p class="mt-0.5 text-xs leading-snug text-slate-500 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
+            <p v-if="descriptor" class="mt-0.5 text-xs leading-snug text-slate-600 dark:text-slate-300 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
           </div>
           <div class="mt-1 flex max-w-full flex-wrap gap-1">
             <ServiceIcon
-              v-for="service in displayedServices"
+              v-for="(service, index) in displayedServices"
               v-bind:key="service.PrimaryIdentifier || service.ServiceName || service.BrandIcon"
               :service="service"
-              class="h-5 rounded-md px-1.5 text-[0.72rem] font-bold leading-5 shadow-sm sm:h-6 sm:px-2 sm:text-sm"
+              class="h-5 max-w-full rounded-md px-1.5 text-[0.72rem] font-bold leading-5 sm:h-6 sm:px-2 sm:text-sm [&_span.w-full]:truncate"
+              :class="{ 'max-sm:hidden': compactServices && index > 0 }"
             />
             <span
+              v-if="compactServices && services.length > 1"
+              class="inline-flex h-5 items-center rounded-md bg-slate-100 px-1.5 text-[0.72rem] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:hidden"
+              :aria-label="`${services.length - 1} more services`"
+            >
+              +{{ services.length - 1 }}
+            </span>
+            <span
               v-if="extraServiceCount > 0"
-              class="inline-flex h-5 items-center rounded-md bg-slate-100 px-1.5 text-[0.72rem] font-bold text-slate-600 sm:h-6 sm:px-2 sm:text-sm"
+              class="inline-flex h-5 items-center rounded-md bg-slate-100 px-1.5 text-[0.72rem] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:h-6 sm:px-2 sm:text-sm"
+              :class="{ 'max-sm:hidden': compactServices }"
+              :aria-label="`${extraServiceCount} more services`"
             >
               +{{ extraServiceCount }}
             </span>
@@ -81,6 +91,10 @@ export default {
     bordered: {
       type: Boolean,
       default: true
+    },
+    compactServices: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

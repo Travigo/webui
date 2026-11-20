@@ -20,7 +20,7 @@ export const CACHE_MAX_AGE = {
 export const cacheKeys = {
   arrivals: (identifier, datetime = 'now') => `arrivals:${identifier}:${datetime}`,
   departures: (identifier, datetime = 'now') => `departures:${identifier}:${datetime}`,
-  journey: identifier => `journey:${identifier}`,
+  journey: (identifier, date) => `journey:${identifier}${date ? `:${date}` : ''}`,
   savedItems: 'saved-items',
   stop: identifier => `stop:${identifier}`,
   stopDetails: identifier => `stop-details:${identifier}`,
