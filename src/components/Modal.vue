@@ -94,6 +94,7 @@ export default {
       type: Boolean,
       default: false
     },
+    returnFocusTo: Function,
     closeOnBackdrop: {
       type: Boolean,
       default: true
@@ -163,7 +164,7 @@ export default {
     restorePageFocus() {
       document.body.style.overflow = this.originalBodyOverflow
       document.removeEventListener('keydown', this.handleDocumentKeydown)
-      const trigger = this.previouslyFocusedElement
+      const trigger = this.returnFocusTo?.() || this.previouslyFocusedElement
       this.previouslyFocusedElement = undefined
       this.$nextTick(() => { if (!this.open) trigger?.focus?.({ preventScroll: true }) })
     },

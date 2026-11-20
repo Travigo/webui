@@ -140,6 +140,14 @@ export default {
   getNotificationTargetToken(target) {
     return target?.PushNotificationToken || target?.pushNotificationToken || target?.pushnotificationtoken || target?.token || ""
   },
+  getNotificationTargetName(target, browserLabel = 'Browser') {
+    const deviceType = target?.DeviceType || target?.deviceType
+    const vendor = target?.DeviceVendor || target?.deviceVendor
+    const model = target?.DeviceModel || target?.deviceModel
+    const name = [vendor, model].filter(Boolean).join(' ')
+
+    return name || (deviceType === PUSH_NOTIFICATION_TARGET_DEVICE_TYPE ? browserLabel : deviceType || 'Notification device')
+  },
   getRemovedNotificationTokens() {
     try {
       const storedTokens = JSON.parse(localStorage.getItem(REMOVED_NOTIFICATION_TOKENS_STORAGE_KEY) || "[]")

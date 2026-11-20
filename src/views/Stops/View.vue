@@ -46,13 +46,14 @@
           empty-label="No amenities listed"
           @select="openAmenityModal"
         />
-        <router-link
-          :to="{ name: 'journeyplanner/home', query: { destination: stop.PrimaryIdentifier, destinationName: stop.PrimaryName, destinationTimezone: stop.Timezone } }"
-          class="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-blue dark:text-brand-blue-light"
-        >
-          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">route</span>
-          Plan a journey
-        </router-link>
+        <div class="flex flex-wrap gap-x-3" role="group" aria-label="Plan a journey">
+          <router-link
+            v-for="direction in [{ field: 'origin', label: 'Plan from here' }, { field: 'destination', label: 'Plan to here' }]"
+            :key="direction.field"
+            :to="plannerRoute(direction.field)"
+            class="inline-flex min-h-11 items-center text-sm font-bold text-brand-blue dark:text-brand-blue-light"
+          >{{ direction.label }}</router-link>
+        </div>
       </div>
     </PageHeader>
 
@@ -528,6 +529,16 @@ export default {
     }
   },
   methods: {
+    plannerRoute(field) {
+      return {
+        name: 'journeyplanner/home',
+        query: {
+          [field]: this.stop.PrimaryIdentifier,
+          [`${field}Name`]: this.stop.PrimaryName,
+          [`${field}Timezone`]: this.stop.Timezone
+        }
+      }
+    },
     amenitySectionFromDetails(key, config) {
       const items = this.sortAmenityItems(this.stopDetails?.[key] || [])
 

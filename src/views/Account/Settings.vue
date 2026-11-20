@@ -250,20 +250,7 @@ export default {
       return this.notify.getNotificationTargetToken(target)
     },
     notificationTargetName(target) {
-      if (!target) {
-        return 'Notification device'
-      }
-
-      const deviceType = target.DeviceType || target.deviceType || 'Notification device'
-      const vendor = target.DeviceVendor || target.deviceVendor || ''
-      const model = target.DeviceModel || target.deviceModel || ''
-      const nameParts = [vendor, model].filter(Boolean)
-
-      if (nameParts.length > 0) {
-        return nameParts.join(' ')
-      }
-
-      return deviceType === 'PWA' ? 'This browser' : deviceType
+      return this.notify.getNotificationTargetName(target, 'This browser')
     },
     notificationTargetDescription(target) {
       const modifiedAt = target.ModificationDateTime || target.modificationDateTime

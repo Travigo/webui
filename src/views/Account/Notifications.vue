@@ -184,6 +184,8 @@
       save-label="Save changes"
       :initial-notification-type="editingRule?.notificationType || ''"
       :initial-values="editingRule?.values || {}"
+      :saving="Boolean(savingRuleIdentifier)"
+      :save-error="ruleSaveError"
       show-entity-context
       @save="saveRule"
     />
@@ -259,6 +261,7 @@ export default {
       loadingRules: false,
       rulesError: '',
       savingRuleIdentifier: '',
+      ruleSaveError: '',
       deletingRuleIdentifier: '',
       ruleModalOpen: false,
       deleteModalOpen: false,
@@ -356,14 +359,16 @@ export default {
       }
 
       this.editingRule = rule
+      this.ruleSaveError = ''
       this.ruleModalOpen = true
     },
     async saveRule(rule) {
-      if (!this.editingRule) {
+      if (!this.editingRule || this.savingRuleIdentifier) {
         return
       }
 
       const existingRule = this.editingRule
+      this.ruleSaveError = ''
       this.savingRuleIdentifier = existingRule.id
 
       try {
@@ -375,10 +380,10 @@ export default {
           ? { ...existingRule, ...updatedRule }
           : notificationRule)
         this.showToast('Notification rule updated.', 'success')
-        this.editingRule = null
+        this.ruleModalOpen = false
       } catch (error) {
         console.log(error)
-        this.showToast('Notification rule could not be updated.', 'error')
+        this.ruleSaveError = 'Could not update this rule. Try again.'
       } finally {
         this.savingRuleIdentifier = ''
       }

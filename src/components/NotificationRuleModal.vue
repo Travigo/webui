@@ -5,6 +5,8 @@
     :subtitle="entityName"
     icon="notifications_active"
     close-label="Close notification rule"
+    :close-disabled="saving"
+    :return-focus-to="returnFocusTo"
     body-class="max-h-[calc(88dvh-9rem)] space-y-4 overflow-y-auto p-4 sm:p-5"
     @update:open="$emit('update:open', $event)"
   >
@@ -16,7 +18,12 @@
       <h3 class="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">{{ entityName }}</h3>
     </section>
 
-    <label class="block">
+    <div v-if="$slots.content" ref="content" tabindex="-1" class="empty:hidden">
+      <slot name="content" />
+    </div>
+
+    <fieldset v-if="showForm" ref="form" tabindex="-1" class="min-w-0 space-y-4" :disabled="saving" :aria-busy="saving">
+    <label v-if="notificationTypes.length > 1" class="block">
       <span class="text-sm font-bold text-slate-950 dark:text-slate-100">Notify me about</span>
       <select
         v-model="selectedNotificationTypeId"
@@ -48,6 +55,17 @@
       </div>
 
       <template v-if="field.type === 'multi-select'">
+        <div v-if="field.id === 'serviceAlertTypes' && alertPresets.length" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Alert shortcuts">
+          <button
+            v-for="preset in alertPresets"
+            :key="preset.label"
+            type="button"
+            class="min-h-11 rounded-lg border px-3 text-xs font-bold text-brand-blue transition-colors dark:text-brand-blue-light"
+            :class="matchesPreset(field, preset) ? 'border-brand-blue/50 bg-brand-blue/10 dark:bg-brand-blue/20' : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900'"
+            :aria-pressed="matchesPreset(field, preset)"
+            @click="selectPreset(field, preset)"
+          >{{ preset.label }}</button>
+        </div>
         <button
           type="button"
           class="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 text-left text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
@@ -55,7 +73,7 @@
           @click="toggleFieldDropdown(field.id)"
         >
           <span class="truncate">{{ fieldSummary(field) }}</span>
-          <span class="material-symbols-outlined text-[20px] text-slate-500">
+          <span class="material-symbols-outlined text-[20px] text-slate-500" aria-hidden="true">
             {{ isFieldDropdownOpen(field.id) ? 'expand_less' : 'expand_more' }}
           </span>
         </button>
@@ -96,6 +114,16 @@
               </span>
             </span>
           </label>
+        </div>
+        <div v-if="field.id === 'platformStopRefs' && unavailablePlatformStops.length" class="mt-2 rounded-lg bg-amber-50 p-2 text-sm text-amber-900 dark:text-amber-200">
+          <p role="status">The journey’s stops changed. Remove unavailable stops to continue.</p>
+          <button
+            v-for="stop in unavailablePlatformStops"
+            :key="stop.value"
+            type="button"
+            class="block min-h-11 text-left font-bold underline"
+            @click="toggleOption(field.id, stop.value)"
+          >Remove {{ stop.label }}</button>
         </div>
       </template>
 
@@ -145,12 +173,16 @@
         </div>
       </template>
     </section>
+    </fieldset>
 
     <template #footer>
-      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <slot name="footer-note" />
+      <p v-if="saveError" class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 dark:text-red-200" role="alert">{{ saveError }}</p>
+      <div v-if="showForm" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <button
           type="button"
           class="inline-flex h-11 items-center justify-center rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          :disabled="saving"
           @click="close"
         >
           Cancel
@@ -159,11 +191,13 @@
           type="button"
           class="inline-flex h-11 items-center justify-center rounded-xl bg-brand-blue px-4 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 transition hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="!canSave"
+          :aria-disabled="saving || !canSave"
           @click="save"
         >
-          {{ saveLabel }}
+          {{ saving ? 'Saving…' : saveLabel }}
         </button>
       </div>
+      <slot v-else name="footer-actions" />
     </template>
   </Modal>
 </template>
@@ -216,7 +250,13 @@ export default {
     showEntityContext: {
       type: Boolean,
       default: false
-    }
+    },
+    showForm: { type: Boolean, default: true },
+    draftKey: { type: String, default: '' },
+    alertPresets: { type: Array, default: () => [] },
+    saving: { type: Boolean, default: false },
+    saveError: { type: String, default: '' },
+    returnFocusTo: Function
   },
   emits: ['update:open', 'save'],
   data() {
@@ -224,10 +264,15 @@ export default {
       selectedNotificationTypeId: '',
       fieldValues: {},
       fieldDropdownOpen: {},
+      initialAlertWildcard: false,
+      platformStopLabels: new Map(),
       preparingInitialSelection: false
     }
   },
   computed: {
+    activeDraftKey() {
+      return this.open && this.showForm ? this.draftKey : null
+    },
     selectedNotificationType() {
       return this.notificationTypes.find(type => type.id === this.selectedNotificationTypeId) || null
     },
@@ -237,8 +282,19 @@ export default {
     selectedNotificationTypeFields() {
       return this.allSelectedNotificationTypeFields.filter(field => this.isFieldVisible(field))
     },
+    platformStopOptions() {
+      return this.notificationTypes.find(type => type.id === 'realtime-journey')?.fields.find(field => field.id === 'platformStopRefs')?.options || []
+    },
+    unavailablePlatformStops() {
+      if (!this.selectedNotificationTypeFields.some(field => field.id === 'platformStopRefs')) return []
+
+      const currentStops = new Set(this.platformStopOptions.map(option => option.value))
+      return this.fieldValue('platformStopRefs')
+        .filter(value => !currentStops.has(value))
+        .map(value => ({ value, label: this.platformStopLabels.get(value) || 'unavailable stop' }))
+    },
     canSave() {
-      if (this.selectedNotificationType === null) {
+      if (this.selectedNotificationType === null || this.unavailablePlatformStops.length) {
         return false
       }
 
@@ -260,34 +316,21 @@ export default {
     }
   },
   watch: {
-    open: {
-      handler(value) {
-        if (value) {
-          this.prepareInitialSelection()
-        }
+    activeDraftKey: {
+      handler(key) {
+        if (key !== null) this.prepareInitialSelection()
       },
       immediate: true
     },
-    initialNotificationType() {
-      if (this.open) {
+    notificationTypes(types, previousTypes) {
+      if (this.activeDraftKey === null) return
+
+      this.rememberPlatformStopLabels()
+      if (!previousTypes.length && types.length && !this.selectedNotificationTypeId) {
         this.prepareInitialSelection()
+      } else if (this.selectedNotificationType) {
+        this.prepareFieldValues()
       }
-    },
-    initialValues: {
-      handler() {
-        if (this.open) {
-          this.prepareInitialSelection()
-        }
-      },
-      deep: true
-    },
-    notificationTypes: {
-      handler() {
-        if (this.open) {
-          this.prepareInitialSelection()
-        }
-      },
-      deep: true
     },
     selectedNotificationTypeId() {
       if (this.preparingInitialSelection) {
@@ -299,11 +342,18 @@ export default {
     }
   },
   methods: {
+    focusContent() {
+      this.$nextTick(() => (this.showForm ? this.$refs.form : this.$refs.content)?.focus())
+    },
     close() {
       this.$emit('update:open', false)
     },
     prepareInitialSelection() {
       this.preparingInitialSelection = true
+      this.platformStopLabels = new Map()
+      this.rememberPlatformStopLabels()
+      this.fieldDropdownOpen = {}
+      this.initialAlertWildcard = this.initialNotificationType === 'service-alert' && this.initialValues.serviceAlertTypes?.length === 0
 
       if (this.notificationTypes.length === 0) {
         this.selectedNotificationTypeId = ''
@@ -314,9 +364,12 @@ export default {
 
       this.selectedNotificationTypeId = this.notificationTypes.some(type => type.id === this.initialNotificationType)
         ? this.initialNotificationType
-        : ''
+        : this.notificationTypes.length === 1 ? this.notificationTypes[0].id : ''
       this.fieldValues = this.cloneInitialValues()
-      this.fieldDropdownOpen = {}
+      if (this.initialAlertWildcard) {
+        const alerts = this.allSelectedNotificationTypeFields.find(field => field.id === 'serviceAlertTypes')
+        if (alerts) this.fieldValues.serviceAlertTypes = alerts.options.map(option => option.value)
+      }
       this.prepareFieldValues()
       this.$nextTick(() => {
         this.preparingInitialSelection = false
@@ -328,24 +381,8 @@ export default {
         [key]: Array.isArray(value) ? [...value] : value
       }), {})
     },
-    syncNotificationTypes() {
-      if (this.notificationTypes.length === 0) {
-        this.selectedNotificationTypeId = ''
-        this.fieldValues = {}
-        this.fieldDropdownOpen = {}
-        return
-      }
-
-      if (!this.selectedNotificationTypeId) {
-        return
-      }
-
-      if (!this.notificationTypes.some(type => type.id === this.selectedNotificationTypeId)) {
-        this.prepareInitialSelection()
-        return
-      }
-
-      this.prepareFieldValues()
+    rememberPlatformStopLabels() {
+      for (const option of this.platformStopOptions) this.platformStopLabels.set(option.value, option.label)
     },
     prepareFieldValues() {
       const nextFieldValues = {}
@@ -372,6 +409,14 @@ export default {
     },
     fieldValue(fieldId) {
       return this.fieldValues[fieldId] || []
+    },
+    matchesPreset(field, preset) {
+      const selected = this.fieldValue(field.id)
+      return selected.length === preset.values.length && preset.values.every(value => selected.includes(value))
+    },
+    selectPreset(field, preset) {
+      this.fieldValues[field.id] = [...preset.values]
+      this.fieldDropdownOpen[field.id] = false
     },
     isFieldVisible(field) {
       if (!field.visibleWhen) {
@@ -502,7 +547,7 @@ export default {
       return field.options.filter(option => !this.isOptionDisabled(field, option))
     },
     save() {
-      if (!this.canSave) {
+      if (!this.canSave || this.saving) {
         return
       }
 
@@ -513,14 +558,14 @@ export default {
         notificationType: this.selectedNotificationTypeId,
         values: this.visibleFieldValues()
       })
-      this.close()
     },
     visibleFieldValues() {
       return this.selectedNotificationTypeFields
         .filter(field => field.type !== 'readonly')
         .reduce((values, field) => ({
           ...values,
-          [field.id]: this.fieldValues[field.id]
+          [field.id]: field.id === 'serviceAlertTypes' && this.initialAlertWildcard &&
+            this.allFieldOptionsSelected(field) ? [] : this.fieldValues[field.id]
         }), {})
     }
   }

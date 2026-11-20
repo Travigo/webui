@@ -111,11 +111,12 @@ function hydrateNotificationSubscription(subscription) {
 }
 
 export default {
-  async list(auth0) {
-    const response = await axios.get(NOTIFICATION_SUBSCRIPTIONS_URL, await authenticatedConfig(auth0, { view: 'web' }))
+  async list(auth0, { resolveSubjects = true } = {}) {
+    const params = resolveSubjects ? { view: 'web' } : undefined
+    const response = await axios.get(NOTIFICATION_SUBSCRIPTIONS_URL, await authenticatedConfig(auth0, params))
     const subscriptions = Array.isArray(response.data) ? response.data : []
 
-    return subscriptions.map(subscription => hydrateNotificationSubscription(subscription))
+    return subscriptions.map(resolveSubjects ? hydrateNotificationSubscription : normaliseNotificationSubscription)
   },
   async quota(auth0) {
     const response = await axios.get(`${NOTIFICATION_SUBSCRIPTIONS_URL}/quota`, await authenticatedConfig(auth0))
