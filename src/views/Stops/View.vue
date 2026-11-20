@@ -114,14 +114,14 @@
 
         <button
           type="button"
-          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 sm:rounded-xl"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white shadow-lg shadow-brand-blue/20 disabled:opacity-75 dark:text-slate-950 sm:rounded-xl"
           :disabled="boardLoading"
           @click="refreshView()"
         >
           <span class="material-symbols-outlined text-[24px]" :class="{'animate-spin': boardLoading}">refresh</span>
           <span class="leading-tight">
             {{ displayedTimes[currentTab] ? 'Refresh board' : 'Refresh now' }}
-            <span class="block text-[11px] font-semibold text-brand-blue-light">{{ lastUpdatedLabel }}</span>
+            <span class="block text-[11px] font-semibold text-white/80 dark:text-slate-950">{{ lastUpdatedLabel }}</span>
           </span>
         </button>
       </div>
