@@ -36,8 +36,9 @@
         </router-link>
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-x-3">
+      <div class="flex items-center justify-between gap-2 max-[359px]:flex-wrap">
         <IconPillRow
+          class="min-w-0 max-sm:[&>button]:min-w-11 max-sm:[&>button]:px-1.5"
           :chips="amenityChips"
           :loading="loadingStopDetails"
           :error="stopDetailsError"
@@ -46,14 +47,25 @@
           empty-label="No amenities listed"
           @select="openAmenityModal"
         />
-        <div class="flex flex-wrap gap-x-3" role="group" aria-label="Plan a journey">
-          <router-link
-            v-for="direction in [{ field: 'origin', label: 'Plan from here' }, { field: 'destination', label: 'Plan to here' }]"
-            :key="direction.field"
-            :to="plannerRoute(direction.field)"
-            class="inline-flex min-h-11 items-center text-sm font-bold text-brand-blue dark:text-brand-blue-light"
-          >{{ direction.label }}</router-link>
-        </div>
+        <details ref="plannerMenu" class="relative ml-auto shrink-0" @keydown.esc="closePlannerMenu(true)" @focusout="handlePlannerBlur">
+          <summary class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-subtle)] px-2.5 text-sm font-semibold whitespace-nowrap text-[var(--ui-text)] transition-colors duration-(--motion-feedback) hover:border-brand-blue/50 focus-visible:outline-2 focus-visible:outline-brand-blue sm:px-3 [&::-webkit-details-marker]:hidden" aria-label="Plan journey">
+            <span class="material-symbols-outlined text-[18px] text-brand-blue" aria-hidden="true">route</span>
+            <span>Plan<span class="hidden sm:inline"> journey</span></span>
+            <span class="material-symbols-outlined text-[16px] text-[var(--ui-muted)]" aria-hidden="true">expand_more</span>
+          </summary>
+          <div class="absolute right-0 z-50 mt-2 w-44 rounded-xl border border-[var(--ui-border)] bg-[var(--ui-panel)] p-1.5 text-[var(--ui-text)] shadow-xl">
+            <router-link
+              v-for="direction in [{ field: 'origin', label: 'From this stop', icon: 'arrow_outward' }, { field: 'destination', label: 'To this stop', icon: 'login' }]"
+              :key="direction.field"
+              :to="plannerRoute(direction.field)"
+              class="flex min-h-11 items-center gap-2 rounded-lg px-2.5 text-sm font-medium hover:bg-[var(--ui-subtle)] focus-visible:outline-2 focus-visible:outline-brand-blue"
+              @click="closePlannerMenu()"
+            >
+              <span class="material-symbols-outlined text-[18px] text-brand-blue" aria-hidden="true">{{ direction.icon }}</span>
+              {{ direction.label }}
+            </router-link>
+          </div>
+        </details>
       </div>
     </PageHeader>
 
@@ -539,6 +551,19 @@ export default {
         }
       }
     },
+    closePlannerMenu(restoreFocus = false) {
+      const menu = this.$refs.plannerMenu
+      if (!menu?.open) return
+
+      menu.open = false
+      if (restoreFocus) menu.querySelector('summary')?.focus({ preventScroll: true })
+    },
+    handlePlannerBlur(event) {
+      if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) this.closePlannerMenu()
+    },
+    handlePlannerOutsidePointer(event) {
+      if (!this.$refs.plannerMenu?.contains(event.target)) this.closePlannerMenu()
+    },
     amenitySectionFromDetails(key, config) {
       const items = this.sortAmenityItems(this.stopDetails?.[key] || [])
 
@@ -919,12 +944,14 @@ export default {
     this.serviceAlertsRefreshTimer = setInterval(this.pollServiceAlerts, 60000)
     window.addEventListener('online', this.handleReconnect)
     document.addEventListener('visibilitychange', this.handleVisibilityChange)
+    document.addEventListener('pointerdown', this.handlePlannerOutsidePointer, true)
   },
   beforeRouteLeave() {  
     this.stopPolling()
   },
   beforeUnmount() {
     this.stopPolling()
+    document.removeEventListener('pointerdown', this.handlePlannerOutsidePointer, true)
   }
 }
 </script>
