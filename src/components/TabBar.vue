@@ -1,14 +1,14 @@
 <template>
   <div
-    class="grid divide-x divide-slate-100 dark:divide-slate-800"
+    class="ui-tab-bar grid"
     :style="gridStyle"
   >
     <button
       type="button"
       v-for="tab in tabs"
       v-bind:key="tab.id"
-      class="relative flex h-12 items-center justify-center gap-1.5 text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
-      :class="{'text-brand-blue dark:text-brand-blue-light': modelValue === tab.id}"
+      class="relative flex h-11 items-center justify-center gap-1.5 rounded-lg text-xs font-bold text-slate-500 transition sm:text-sm dark:text-slate-400"
+      :class="{'ui-tab-bar__selected text-brand-blue dark:text-brand-blue-light': modelValue === tab.id}"
       @click="selectTab(tab.id)"
     >
       <span v-if="tab.icon" class="material-symbols-outlined text-[20px]">{{ tab.icon }}</span>

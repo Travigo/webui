@@ -12,37 +12,44 @@
 
 :root {
   --brand-blue: #696aad;
+  --brand-blue-dark: #55568f;
+  --brand-blue-light: #a0a2e6;
   --brand-pink: #eb6ea5;
-  --ui-page: #f8fafc;
+  --brand-seafoam: #78b9ab;
+  --ui-page: #F7F7FC;
   --ui-panel: #ffffff;
   --ui-raised: #ffffff;
-  --ui-subtle: #f8fafc;
-  --ui-border: #e2e8f0;
-  --ui-divider: #f1f5f9;
-  --ui-text: #0f172a;
-  --ui-muted: #64748b;
-  --ui-soft: #94a3b8;
+  --ui-subtle: #EEEFFA;
+  --ui-border: #dedfec;
+  --ui-divider: #e8e9f2;
+  --ui-text: #26273C;
+  --ui-muted: #686B80;
+  --ui-soft: #86899e;
   --ui-panel-radius: 1rem;
   --ui-control-radius: 0.75rem;
   --ui-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 28px rgb(15 23 42 / 0.035);
 }
 
 .dark {
-  --ui-page: #020617;
-  --ui-panel: #0f172a;
-  --ui-raised: #172033;
-  --ui-subtle: #111b2e;
-  --ui-border: #334155;
-  --ui-divider: #1e293b;
-  --ui-text: #f8fafc;
-  --ui-muted: #94a3b8;
-  --ui-soft: #64748b;
+  --ui-page: #171923;
+  --ui-panel: #242637;
+  --brand-blue: #A0A2E6;
+  --brand-pink: #F18FBB;
+  --brand-seafoam: #8BCDBF;
+  --ui-raised: #2E3044;
+  --ui-subtle: #2E3044;
+  --ui-border: #3a3c50;
+  --ui-divider: #333548;
+  --ui-text: #F3F2FA;
+  --ui-muted: #AEB0C4;
+  --ui-soft: #898ba1;
   --ui-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 12px 32px rgb(0 0 0 / 0.14);
 }
 
 /* Keep the original semantic text utilities available outside Tailwind. */
 .brand-blue { color: var(--brand-blue); }
 .brand-pink { color: var(--brand-pink); }
+.brand-seafoam { color: var(--brand-seafoam); }
 
 html {
   background: var(--ui-page);
@@ -87,6 +94,20 @@ html {
 .ui-subtle {
   border-radius: var(--ui-control-radius);
   background: var(--ui-subtle);
+}
+
+.ui-tab-bar {
+  margin: 0.25rem 0.25rem 0;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: calc(var(--ui-panel-radius) - 5px);
+  background: var(--ui-subtle);
+}
+
+.ui-tab-bar__selected {
+  background: var(--ui-panel);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgb(38 39 60 / 0.12);
 }
 
 .ui-icon {

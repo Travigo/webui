@@ -11,12 +11,16 @@ module.exports = {
           blue: {
             DEFAULT: '#696aad',
             dark: '#55568f',
-            light: '#9192c5',
+            light: '#a0a2e6',
           },
           pink: {
             DEFAULT: '#eb6ea5',
             dark: '#c95587',
-            light: '#f29ac1',
+            light: '#f18fbb',
+          },
+          seafoam: {
+            DEFAULT: '#78b9ab',
+            light: '#8bcdbf',
           },
         },
       },

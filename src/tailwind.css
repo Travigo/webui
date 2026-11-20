@@ -1,10 +1,25 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+/* Shared light palette for the existing utility classes. */
+.bg-slate-50,
+.bg-gray-50,
+.bg-gray-100 { background-color: #eeeffa; }
+.text-slate-950,
+.text-slate-900,
+.text-gray-900,
+.text-gray-800 { color: #26273c; }
+.text-slate-800,
+.text-slate-700,
+.text-slate-600,
+.text-gray-700,
+.text-gray-600,
+.text-gray-500 { color: #686b80; }
+
 html.dark,
 html.dark body {
-  background: #020617;
-  color: #e2e8f0;
+  background: #171923;
+  color: #f3f2fa;
 }
 
 html.dark .bg-white,
@@ -13,19 +28,32 @@ html.dark .bg-white\/90,
 html.dark .bg-white\/80,
 html.dark .bg-white\/75,
 html.dark .bg-white\/50 {
-  background-color: rgb(15 23 42 / var(--tw-bg-opacity, 1));
+  background-color: #242637;
 }
 
 html.dark .bg-slate-50,
 html.dark .bg-gray-50,
 html.dark .bg-gray-100 {
-  background-color: rgb(15 23 42 / var(--tw-bg-opacity, 1));
+  background-color: #2e3044;
 }
 
 html.dark .bg-slate-100,
-html.dark .bg-gray-200 {
-  background-color: rgb(30 41 59 / var(--tw-bg-opacity, 1));
+html.dark .bg-gray-200,
+html.dark .bg-slate-800,
+html.dark .bg-slate-700 {
+  background-color: #2e3044;
 }
+html.dark .bg-slate-900,
+html.dark .bg-slate-950 { background-color: #242637; }
+
+html.dark .text-slate-400,
+html.dark .text-slate-300,
+html.dark .text-gray-300,
+html.dark .text-gray-200 { color: #aeb0c4; }
+html.dark .bg-brand-pink\/10 { background-color: rgb(241 143 187 / 0.1); }
+html.dark .border-slate-700,
+html.dark .border-slate-800,
+html.dark .border-slate-900 { border-color: #3a3c50; }
 
 html.dark .bg-blue-50 {
   background-color: rgb(30 58 138 / 0.18);
@@ -60,21 +88,21 @@ html.dark .text-slate-950,
 html.dark .text-slate-900,
 html.dark .text-gray-900,
 html.dark .text-gray-800 {
-  color: #f8fafc;
+  color: #f3f2fa;
 }
 
 html.dark .text-slate-800,
 html.dark .text-slate-700,
 html.dark .text-gray-700,
 html.dark .text-gray-600 {
-  color: #cbd5e1;
+  color: #aeb0c4;
 }
 
 html.dark .text-slate-600,
 html.dark .text-slate-500,
 html.dark .text-gray-500,
 html.dark .text-gray-400 {
-  color: #94a3b8;
+  color: #aeb0c4;
 }
 
 html.dark .text-blue-600,
@@ -101,7 +129,7 @@ html.dark .border-slate-100,
 html.dark .border-slate-200,
 html.dark .border-gray-200,
 html.dark .border-gray-300 {
-  border-color: #334155;
+  border-color: #3a3c50;
 }
 
 html.dark .border-blue-100,
@@ -115,7 +143,7 @@ html.dark .border-indigo-100 {
 
 html.dark .divide-slate-100 > :not(:last-child),
 html.dark .divide-slate-200 > :not(:last-child) {
-  border-color: #334155;
+  border-color: #3a3c50;
 }
 
 html.dark .shadow-slate-200\/60,
@@ -130,18 +158,18 @@ html.dark .shadow-blue-200\/80 {
 html.dark input,
 html.dark textarea,
 html.dark select {
-  color: #f8fafc;
+  color: #f3f2fa;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #64748b;
+  color: #aeb0c4;
 }
 
 html.dark .modal-panel {
-  background-color: #0f172a;
-  border-color: #334155;
-  color: #e2e8f0;
+  background-color: #242637;
+  border-color: #3a3c50;
+  color: #f3f2fa;
 }
 
 html.dark .hover\:bg-white:hover,
@@ -151,8 +179,16 @@ html.dark .hover\:bg-slate-50:hover,
 html.dark .hover\:bg-slate-100:hover,
 html.dark .hover\:bg-gray-50:hover,
 html.dark .hover\:bg-blue-50:hover {
-  background-color: #1e293b;
+  background-color: #2e3044;
 }
+
+/* Brand accents follow the selected palette in both themes. */
+html.dark .bg-brand-blue { background-color: #a0a2e6; color: #171923; }
+html.dark .hover\:bg-brand-blue-dark:hover { background-color: #8b8dd2; }
+html.dark .text-brand-blue,
+html.dark .dark\:text-brand-blue-light { color: #a0a2e6; }
+html.dark .bg-brand-pink { background-color: #f18fbb; }
+html.dark .text-brand-pink { color: #f18fbb; }
 
 .modal-overlay-enter-active,
 .modal-overlay-leave-active {
