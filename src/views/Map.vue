@@ -3,7 +3,7 @@
     <span class="material-symbols-outlined mr-2 animate-spin text-[20px]">progress_activity</span>
     Loading map
   </div>
-  <div v-else class="fullscreen-map bg-slate-100 dark:bg-slate-950" :class="{ 'map-dark': darkMode }">
+  <div v-else class="fullscreen-map bg-slate-100 dark:bg-slate-950" :class="{ 'map-dark': darkMode, 'map-stop-selected': !!currentViewedStop }">
     <mapbox-map
       ref="map"
       accessToken="pk.eyJ1IjoiYnJpdGJ1cyIsImEiOiJjbDExNzVsOHIwajAxM2Rtc3A4ZmEzNjU2In0.B-307FL4WGtmuwEfQjabOg"
@@ -18,9 +18,14 @@
       <mapbox-navigation-control position="bottom-right" />
       <mapbox-geolocate-control position="bottom-right" />
 
-      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier" @click="openStopModal(stop)">
+      <mapbox-marker :lngLat="stop.Location.coordinates" v-for="stop in this.stops" v-bind:key="stop.PrimaryIdentifier" @click="openStopSheet(stop)">
         <template v-slot:icon>
-          <StopIcon :stop="stop"/>
+          <StopMapMarker
+            :stop="stop"
+            :selected="currentViewedStop?.PrimaryIdentifier === stop.PrimaryIdentifier"
+            :show-route-labels="currentZoom >= stopLabelsZoom"
+            :label-side="stopMarkerSides[stop.PrimaryIdentifier] || 'right'"
+          />
         </template>
       </mapbox-marker>
 
@@ -55,13 +60,13 @@
         <h1 class="text-lg font-bold text-slate-950 dark:text-slate-100">Nearby network</h1>
       </div>
       <div class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-        <span class="inline-flex items-center gap-1 rounded-full bg-brand-blue/10 px-2.5 py-1 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
+        <span class="map-count-chip" :aria-label="showStops ? `${stops.length} stops shown` : 'Stops layer off'">
           <span class="material-symbols-outlined text-[15px]">pin_drop</span>
-          {{ stops.length }}
+          <span>{{ showStops ? `${stops.length} stops` : 'Stops off' }}</span>
         </span>
-        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+        <span class="map-count-chip map-count-chip--live" :aria-label="showVehicles ? `${visibleVehicles.length} live vehicles shown` : 'Live vehicles layer off'">
           <span class="material-symbols-outlined text-[15px]">directions_bus</span>
-          {{ visibleVehicles.length }}
+          <span>{{ showVehicles ? `${visibleVehicles.length} live` : 'Live off' }}</span>
         </span>
       </div>
     </div>
@@ -87,6 +92,70 @@
       <span class="material-symbols-outlined text-[22px]">tune</span>
       <span v-if="activeMapLayerCount > 0" class="map-filter-count">{{ activeMapLayerCount }}</span>
     </button>
+
+    <section
+      v-if="currentViewedStop"
+      class="map-stop-sheet"
+      aria-label="Selected stop details"
+    >
+      <header class="map-stop-sheet__header">
+        <div class="map-stop-sheet__top">
+          <div class="map-stop-sheet__identity">
+            <StopMapMarker :stop="currentViewedStop" selected compact />
+            <div class="min-w-0">
+              <h2 class="map-stop-sheet__title">{{ currentViewedStop.PrimaryName }}</h2>
+              <p v-if="currentViewedStop.Descriptor || currentViewedStop.OtherNames?.Descriptor" class="map-stop-sheet__subtitle">
+                {{ currentViewedStop.Descriptor || currentViewedStop.OtherNames?.Descriptor }}
+              </p>
+            </div>
+          </div>
+          <div class="map-stop-sheet__actions">
+            <router-link
+              :to="{ name: 'stops/view', params: { id: currentViewedStop.PrimaryIdentifier } }"
+              class="map-stop-sheet__open"
+              @click="closeStopSheet"
+            >Open stop</router-link>
+            <button type="button" class="map-stop-sheet__close" aria-label="Close stop details" @click="closeStopSheet">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="currentStopAllServices.length"
+          class="map-stop-sheet__services"
+          role="group"
+          :aria-label="`${currentStopAllServices.length} services at this stop`"
+          tabindex="0"
+        >
+          <ServiceIcon
+            v-for="(service, index) in currentStopAllServices"
+            :key="service.PrimaryIdentifier || `${service.TransportType || 'service'}:${service.ServiceName || service.PrimaryName || index}`"
+            :service="service"
+            class="map-stop-sheet__service-chip h-8 max-w-48 shrink-0 whitespace-nowrap rounded-md px-2 text-[11px] font-bold"
+          />
+        </div>
+      </header>
+
+      <div class="map-stop-sheet__board">
+        <div class="map-stop-sheet__board-heading">
+          <h3>Next departures</h3>
+          <span v-if="!loadingDepartures && !departuresError && currentViewedStopDepartures.length">
+            {{ Math.min(currentViewedStopDepartures.length, 3) }} shown
+          </span>
+        </div>
+        <div v-if="loadingDepartures" class="map-stop-sheet__message" role="status">Loading departures…</div>
+        <div v-else-if="departuresError" class="map-stop-sheet__error" role="alert">
+          <span>Departures could not be loaded.</span>
+          <button type="button" @click="getDepartures()">Retry</button>
+        </div>
+        <DeparturesList
+          v-else
+          :stop="currentViewedStop"
+          :departures="nextDepartures"
+          variant="compact"
+        />
+      </div>
+    </section>
   </div>
 
   <Modal
@@ -156,49 +225,6 @@
             </div>
   </Modal>
 
-  <Modal
-    v-model:open="stopModalOpen"
-    :title="currentViewedStop?.PrimaryName || 'Stop details'"
-    :subtitle="currentViewedStop?.Descriptor || currentViewedStop?.OtherNames?.Descriptor || 'Departures and stop information'"
-    icon="location_on"
-    size="lg"
-    close-label="Close stop departures"
-    body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
-  >
-          <div v-if="currentViewedStop !== undefined" class="space-y-4">
-            <div class="rounded-xl bg-brand-blue/10 p-4 dark:bg-brand-blue/100/10">
-              <StopStatus :currentViewedStop="currentViewedStop" />
-            </div>
-
-            <div>
-              <div class="mb-3 flex items-center justify-between gap-3">
-                <h3 class="text-base font-bold text-slate-950 dark:text-slate-100 sm:text-lg">Departures</h3>
-                <router-link
-                  @click="closeStopModal"
-                  :to="{'name': 'stops/view', params: {'id': currentViewedStop.PrimaryIdentifier}}"
-                  class="inline-flex min-h-11 items-center gap-1 rounded-xl bg-brand-blue px-3 py-1.5 text-sm font-bold text-white shadow-sm shadow-brand-blue/20 transition hover:bg-brand-blue-dark"
-                >
-                  View more
-                  <span class="material-symbols-outlined text-base">chevron_right</span>
-                </router-link>
-              </div>
-
-              <StopDeparturesTable
-                :stop="currentViewedStop"
-                :departures="currentViewedStopDepartures"
-                :loading-departures="loadingDepartures"
-                :departures-error="departuresError"
-                :show-tabs="false"
-                :show-details="false"
-                @retry-departures="getDepartures"
-              />
-            </div>
-          </div>
-
-          <div v-else class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-100">
-            Select a stop on the map to view departures.
-          </div>
-  </Modal>
 </template>
 
 <style scoped lang="scss">
@@ -221,12 +247,30 @@
   gap: 1rem;
   width: calc(100% - 2rem);
   max-width: 32rem;
-  border: 1px solid rgb(226 232 240 / 0.9);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 85%, transparent);
   border-radius: 1.25rem;
-  background: rgb(255 255 255 / 0.92);
+  background: color-mix(in srgb, var(--ui-panel) 94%, transparent);
+  color: var(--ui-text);
   padding: 0.75rem 0.875rem;
   box-shadow: 0 18px 45px rgb(15 23 42 / 0.14);
   backdrop-filter: blur(14px);
+}
+
+.map-count-chip {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-blue) 12%, var(--ui-panel));
+  color: var(--brand-blue);
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+}
+
+.map-count-chip--live {
+  background: color-mix(in srgb, var(--brand-pink) 13%, var(--ui-panel));
+  color: var(--brand-pink);
 }
 
 .map-error-panel {
@@ -282,17 +326,17 @@
   height: 3rem;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgb(226 232 240 / 0.9);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 85%, transparent);
   border-radius: 1rem;
-  background: rgb(255 255 255 / 0.94);
-  color: rgb(37 99 235);
+  background: color-mix(in srgb, var(--ui-panel) 96%, transparent);
+  color: var(--brand-blue);
   box-shadow: 0 18px 45px rgb(15 23 42 / 0.16);
   backdrop-filter: blur(14px);
   transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
 .map-filter-button:hover {
-  background: rgb(239 246 255);
+  background: var(--ui-subtle);
   transform: translateY(-1px);
 }
 
@@ -305,12 +349,187 @@
   height: 1.25rem;
   align-items: center;
   justify-content: center;
-  border: 2px solid white;
+  border: 2px solid var(--ui-panel);
   border-radius: 999px;
-  background: rgb(37 99 235);
-  color: white;
+  background: var(--brand-blue);
+  color: var(--ui-page);
   font-size: 0.7rem;
   font-weight: 900;
+}
+
+.map-stop-sheet {
+  position: absolute;
+  z-index: 45;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  display: flex;
+  max-height: min(52dvh, 27rem);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-panel-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.28);
+}
+
+.map-stop-sheet__header {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-bottom: 1px solid var(--ui-divider);
+  padding: 0.875rem 1rem;
+}
+
+.map-stop-sheet__top,
+.map-stop-sheet__identity {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.map-stop-sheet__top {
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.map-stop-sheet__identity {
+  flex: 1 1 auto;
+  gap: 0.75rem;
+}
+
+.map-stop-sheet__title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ui-text);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  text-overflow: ellipsis;
+}
+
+.map-stop-sheet__subtitle {
+  margin-top: 0.15rem;
+  color: var(--ui-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.map-stop-sheet__services {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.1rem 0.1rem 0.3rem;
+  overscroll-behavior-x: contain;
+  scrollbar-color: var(--ui-border) transparent;
+  scrollbar-width: thin;
+}
+
+.map-stop-sheet__service-chip :deep(span.w-full) {
+  display: block;
+  max-width: 8.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-stop-sheet__services::-webkit-scrollbar {
+  height: 0.25rem;
+}
+
+.map-stop-sheet__services::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--ui-border);
+}
+
+.map-stop-sheet__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.map-stop-sheet__open,
+.map-stop-sheet__close {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.map-stop-sheet__open {
+  background: var(--brand-blue);
+  color: var(--ui-page);
+}
+
+.map-stop-sheet__close {
+  width: 2.5rem;
+  padding: 0;
+  background: var(--ui-subtle);
+  color: var(--ui-muted);
+}
+
+.map-stop-sheet__board {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.map-stop-sheet__board-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem 0.25rem;
+}
+
+.map-stop-sheet__board-heading h3 {
+  color: var(--ui-text);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.map-stop-sheet__board-heading span,
+.map-stop-sheet__message {
+  color: var(--ui-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.map-stop-sheet__message {
+  padding: 0.75rem 1rem 1rem;
+}
+
+.map-stop-sheet__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #a03c50;
+  padding: 0.75rem 1rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.map-stop-sheet__error button {
+  min-height: 2.5rem;
+  border-radius: 0.7rem;
+  background: var(--ui-subtle);
+  color: var(--ui-text);
+  padding: 0 0.75rem;
+  font-weight: 800;
 }
 
 :deep(.mapboxgl-ctrl-bottom-right) {
@@ -318,11 +537,21 @@
   right: 0.7rem;
 }
 
+.map-stop-selected :deep(.mapboxgl-ctrl-bottom-right) {
+  bottom: auto;
+  top: 13.25rem;
+}
+
+.map-stop-selected .map-filter-button {
+  bottom: auto;
+  top: 9rem;
+}
+
 :deep(.mapboxgl-ctrl-group) {
   overflow: hidden;
-  border: 1px solid rgb(226 232 240 / 0.9);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 85%, transparent);
   border-radius: 1rem;
-  background: rgb(255 255 255 / 0.94);
+  background: color-mix(in srgb, var(--ui-panel) 96%, transparent);
   box-shadow: 0 14px 35px rgb(15 23 42 / 0.14);
   backdrop-filter: blur(14px);
 }
@@ -335,18 +564,19 @@
 }
 
 :deep(.mapboxgl-ctrl-group button:hover) {
-  background-color: rgb(239 246 255);
+  background-color: var(--ui-subtle);
 }
 
 :deep(.mapboxgl-ctrl-group button + button) {
-  border-top-color: rgb(226 232 240);
+  border-top-color: var(--ui-divider);
 }
 
 :deep(.mapboxgl-popup-content) {
-  border: 1px solid rgb(226 232 240);
+  border: 1px solid var(--ui-border);
   border-radius: 1rem;
   padding: 0.75rem;
-  color: rgb(15 23 42);
+  background: var(--ui-panel);
+  color: var(--ui-text);
   box-shadow: 0 18px 45px rgb(15 23 42 / 0.16);
 }
 
@@ -360,33 +590,33 @@
 .map-dark .map-status-panel,
 .map-dark .map-filter-button,
 .map-dark :deep(.mapboxgl-ctrl-group) {
-  border-color: rgb(30 41 59 / 0.95);
-  background: rgb(15 23 42 / 0.92);
+  border-color: color-mix(in srgb, var(--ui-border) 85%, transparent);
+  background: color-mix(in srgb, var(--ui-panel) 94%, transparent);
   box-shadow: 0 18px 45px rgb(0 0 0 / 0.32);
 }
 
 .map-dark .map-filter-button {
-  color: rgb(147 197 253);
+  color: var(--brand-blue);
 }
 
 .map-dark .map-filter-button:hover {
-  background: rgb(37 99 235 / 0.12);
+  background: var(--ui-subtle);
 }
 
 .map-dark .map-filter-count {
-  border-color: rgb(15 23 42);
+  border-color: var(--ui-panel);
 }
 
 .map-dark :deep(.mapboxgl-ctrl-group button) {
-  color: rgb(226 232 240);
+  color: var(--ui-text);
 }
 
 .map-dark :deep(.mapboxgl-ctrl-group button:hover) {
-  background-color: rgb(37 99 235 / 0.16);
+  background-color: var(--ui-subtle);
 }
 
 .map-dark :deep(.mapboxgl-ctrl-group button + button) {
-  border-top-color: rgb(30 41 59);
+  border-top-color: var(--ui-divider);
 }
 
 .map-dark :deep(.mapboxgl-ctrl-icon) {
@@ -400,9 +630,9 @@
 }
 
 .map-dark :deep(.mapboxgl-popup-content) {
-  border-color: rgb(30 41 59);
-  background: rgb(15 23 42);
-  color: rgb(241 245 249);
+  border-color: var(--ui-border);
+  background: var(--ui-panel);
+  color: var(--ui-text);
 }
 
 @media (min-width: 640px) {
@@ -421,19 +651,46 @@
     right: 2rem;
   }
 
+  .map-stop-sheet {
+    position: fixed;
+    left: auto;
+    right: 1.5rem;
+    bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    width: min(28rem, calc(100vw - 3rem));
+    min-width: min(24rem, calc(100vw - 3rem));
+    max-height: min(70dvh, 34rem);
+  }
+
+  .map-stop-selected .map-filter-button {
+    right: 1.5rem;
+    top: 7.5rem;
+  }
+
   :deep(.mapboxgl-ctrl-bottom-right) {
     bottom: calc(11rem + env(safe-area-inset-bottom));
     right: 1.7rem;
+  }
+
+  .map-stop-selected :deep(.mapboxgl-ctrl-bottom-right) {
+    bottom: auto;
+    right: 1.2rem;
+    top: 12.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .map-stop-sheet {
+    bottom: 1.5rem;
   }
 }
 </style>
 
 
 <script>
-import StopStatus from '@/components/StopStatus.vue'
-import StopIcon from '@/components/StopIcon.vue'
+import StopMapMarker from '@/components/StopMapMarker.vue'
 import Modal from '@/components/Modal.vue'
-import StopDeparturesTable from '@/components/Stops/StopDeparturesTable.vue'
+import DeparturesList from '@/components/DeparturesList.vue'
+import ServiceIcon from '@/components/ServiceIcon.vue'
 import axios from 'axios'
 import API from '@/API'
 
@@ -462,6 +719,74 @@ export default {
           typeof coordinates[0] === 'number' &&
           typeof coordinates[1] === 'number'
       })
+    },
+    currentStopAllServices() {
+      const unique = new Map()
+      ;(this.currentViewedStop?.Services || []).forEach((service, index) => {
+        const key = service?.PrimaryIdentifier || `${service?.TransportType || 'unknown'}:${service?.ServiceName || service?.PrimaryName || index}`
+        if (!unique.has(key)) unique.set(key, service)
+      })
+      return [...unique.values()].map(service => ({
+        ...service,
+        ServiceName: service?.ServiceName || service?.PrimaryName || ''
+      }))
+    },
+    nextDepartures() {
+      return this.currentViewedStopDepartures.slice(0, 3)
+    },
+    stopMarkerSides() {
+      const map = this.mapboxObject
+      if (!map || this.currentZoom < this.stopLabelsZoom) return {}
+
+      const viewportCenter = map.project(this.currentCenter)
+      const points = this.stops.map((stop, index) => {
+        const coordinates = stop?.Location?.coordinates
+        if (!Array.isArray(coordinates) || coordinates.length !== 2) return null
+
+        const point = map.project(coordinates)
+        return {
+          id: stop.PrimaryIdentifier,
+          index,
+          x: point.x,
+          y: point.y
+        }
+      }).filter(Boolean)
+
+      const sides = {}
+      points.forEach(point => {
+        let leftPressure = 0
+        let rightPressure = 0
+        let nearbyX = 0
+        let nearbyWeight = 0
+
+        points.forEach(other => {
+          if (other.id === point.id) return
+
+          const dx = other.x - point.x
+          const dy = Math.abs(other.y - point.y)
+          const horizontalDistance = Math.abs(dx)
+          if (horizontalDistance >= 150 || dy >= 46) return
+
+          const weight = (1 - horizontalDistance / 150) * (1 - dy / 46)
+          if (dx < 0) leftPressure += weight
+          else rightPressure += weight
+          nearbyX += other.x * weight
+          nearbyWeight += weight
+        })
+
+        if (Math.abs(leftPressure - rightPressure) > 0.04) {
+          sides[point.id] = leftPressure < rightPressure ? 'left' : 'right'
+        } else if (nearbyWeight > 0 && Math.abs((nearbyX / nearbyWeight) - point.x) > 4) {
+          sides[point.id] = point.x < (nearbyX / nearbyWeight) ? 'left' : 'right'
+        } else {
+          sides[point.id] = point.x < viewportCenter.x ? 'left' : 'right'
+          if (Math.abs(point.x - viewportCenter.x) <= 4) {
+            sides[point.id] = point.index % 2 === 0 ? 'left' : 'right'
+          }
+        }
+      })
+
+      return sides
     }
   },
   data () {
@@ -475,6 +800,7 @@ export default {
 
       currentZoom: 5,
       currentCenter: [0.1356, 52.2065],
+      stopLabelsZoom: 17,
 
       initialZoom: 5,
       initialCenter: [0.1356, 52.2065],
@@ -505,7 +831,6 @@ export default {
       themeObserver: undefined,
 
       currentViewedStop: undefined,
-      stopModalOpen: false,
 
       loadingDepartures: true,
       currentViewedStopDepartures: [],
@@ -514,9 +839,9 @@ export default {
   },
   components: {
     Modal,
-    StopStatus,
-    StopIcon,
-    StopDeparturesTable,
+    StopMapMarker,
+    DeparturesList,
+    ServiceIcon,
 
     MapboxMap
   },
@@ -587,17 +912,19 @@ export default {
           .finally(() => this.loading = false)
       }
     },
-    openStopModal(stop) {
+    openStopSheet(stop) {
       this.currentViewedStop = stop
       this.currentViewedStopDepartures = []
       this.loadingDepartures = true
       this.departuresError = false
-      this.stopModalOpen = true
 
-      this.getDepartures()
+      this.getDepartures(stop)
     },
-    closeStopModal() {
-      this.stopModalOpen = false
+    closeStopSheet() {
+      this.currentViewedStop = undefined
+      this.currentViewedStopDepartures = []
+      this.loadingDepartures = false
+      this.departuresError = false
     },
     openMapFilters() {
       this.mapFiltersOpen = true
@@ -637,15 +964,16 @@ export default {
       this.mapboxObject.setStyle(this.mapStyle)
       this.appliedMapStyle = this.mapStyle
     },
-    getDepartures() {
-      if (!this.currentViewedStop) {
+    getDepartures(stop = this.currentViewedStop) {
+      if (!stop) {
         return
       }
 
+      const stopIdentifier = stop.PrimaryIdentifier
       this.loadingDepartures = true
       this.departuresError = false
       axios
-        .get(`${API.URL}/core/stops/${this.currentViewedStop.PrimaryIdentifier}/departures`, {
+        .get(`${API.URL}/core/stops/${stopIdentifier}/departures`, {
           params: {
             'count': 10,
             view: 'compact',
@@ -653,13 +981,20 @@ export default {
           }
         })
         .then(response => {
+          if (this.currentViewedStop?.PrimaryIdentifier !== stopIdentifier) return
           this.currentViewedStopDepartures = response.data
         })
         .catch(error => {
           console.log(error)
-          this.departuresError = true
+          if (this.currentViewedStop?.PrimaryIdentifier === stopIdentifier) {
+            this.departuresError = true
+          }
         })
-        .finally(() => this.loadingDepartures = false)
+        .finally(() => {
+          if (this.currentViewedStop?.PrimaryIdentifier === stopIdentifier) {
+            this.loadingDepartures = false
+          }
+        })
     }
   },
   created() {
