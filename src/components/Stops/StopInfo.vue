@@ -21,25 +21,17 @@
             <p v-if="descriptor" class="mt-0.5 min-w-0 wrap-anywhere text-xs leading-snug text-slate-600 dark:text-slate-300 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
             <p v-if="compact && distanceLabel" class="mt-0.5 whitespace-nowrap text-xs leading-snug text-slate-600 sm:hidden dark:text-slate-300">{{ distanceLabel }}</p>
           </div>
-          <div class="mt-1 flex max-w-full flex-wrap gap-1" :class="{'max-sm:hidden': compact && displayedServices.length === 0}">
+          <CompactServiceList v-if="compactServices && services.length" :services="services" class="mt-1" />
+          <div v-else class="mt-1 flex max-w-full flex-wrap gap-1" :class="{'max-sm:hidden': compact && displayedServices.length === 0}">
             <ServiceIcon
-              v-for="(service, index) in displayedServices"
+              v-for="service in displayedServices"
               v-bind:key="service.PrimaryIdentifier || service.ServiceName || service.BrandIcon"
               :service="service"
               class="h-5 max-w-full rounded-md px-1.5 text-[0.72rem] font-bold leading-5 sm:h-6 sm:px-2 sm:text-sm [&_span.w-full]:truncate"
-              :class="{ 'max-sm:hidden': compactServices && index > 0 }"
             />
-            <span
-              v-if="compactServices && services.length > 1"
-              class="inline-flex h-5 items-center rounded-md bg-slate-100 px-1.5 text-[0.72rem] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:hidden"
-              :aria-label="`${services.length - 1} more services`"
-            >
-              +{{ services.length - 1 }}
-            </span>
             <span
               v-if="extraServiceCount > 0"
               class="inline-flex h-5 items-center rounded-md bg-slate-100 px-1.5 text-[0.72rem] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:h-6 sm:px-2 sm:text-sm"
-              :class="{ 'max-sm:hidden': compactServices }"
               :aria-label="`${extraServiceCount} more services`"
             >
               +{{ extraServiceCount }}
@@ -68,10 +60,12 @@
 <script>
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import StopIcon from '@/components/StopIcon.vue'
+import CompactServiceList from '@/components/Stops/CompactServiceList.vue'
 
 export default {
   name: 'StopInfo',
   components: {
+    CompactServiceList,
     ServiceIcon,
     StopIcon
   },
