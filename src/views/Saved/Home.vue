@@ -17,7 +17,7 @@
     </div>
 
     <section class="ui-panel">
-      <div class="flex items-center gap-2">
+      <div class="saved-items-toolbar ui-tab-bar flex items-center">
         <TabBar
           class="min-w-0 flex-1"
           :tabs="savedItemTabs"
@@ -28,11 +28,11 @@
         <button
           v-if="hasSavedItems"
           type="button"
-          class="mr-2 inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          class="inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-(--ui-divider) px-2.5 text-xs font-bold text-slate-700 transition-colors duration-(--motion-feedback) hover:bg-(--ui-panel) sm:px-3 sm:text-sm dark:text-slate-200"
           :aria-label="editing ? 'Done editing saved items' : 'Edit saved items'"
           @click="toggleEditing"
         >
-          <span class="material-symbols-outlined hidden text-[18px] sm:inline-block" aria-hidden="true">{{ editing ? 'done' : 'edit' }}</span>
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">{{ editing ? 'done' : 'edit' }}</span>
           {{ editing ? 'Done' : 'Edit' }}<span v-if="!editing" class="hidden sm:inline">items</span>
         </button>
       </div>
@@ -490,3 +490,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.saved-items-toolbar {
+  gap: 0;
+  padding: 0 0.25rem 0 0;
+}
+
+.saved-items-toolbar > .ui-tab-bar {
+  margin: 0;
+  background: transparent;
+}
+</style>
