@@ -19,7 +19,9 @@
           </div>
           <div class="flex flex-wrap items-baseline gap-x-2">
             <p v-if="descriptor" class="mt-0.5 min-w-0 wrap-anywhere text-xs leading-snug text-slate-600 dark:text-slate-300 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
-            <p v-if="compact && distanceLabel" class="mt-0.5 whitespace-nowrap text-xs leading-snug text-slate-600 sm:hidden dark:text-slate-300">{{ distanceLabel }}</p>
+            <p v-if="compact && distanceLabel" class="mt-0.5 whitespace-nowrap text-xs leading-snug text-slate-600 sm:hidden dark:text-slate-300">
+              <span v-if="descriptor" class="mr-2 text-slate-400" aria-hidden="true">·</span>{{ distanceLabel }}
+            </p>
           </div>
           <CompactServiceList v-if="compactServices && services.length" :services="services" class="mt-1" />
           <div v-else class="mt-1 flex max-w-full flex-wrap gap-1" :class="{'max-sm:hidden': compact && displayedServices.length === 0}">
