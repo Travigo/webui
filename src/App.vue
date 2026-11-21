@@ -196,21 +196,7 @@ export default {
         <div>
           <router-link :to="{ path: '/' }" class="inline-flex items-center gap-1.5 sm:gap-2.5">
             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white p-0.5 shadow-sm shadow-slate-300/50 sm:h-11 sm:w-11 sm:rounded-2xl dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20" aria-hidden="true">
-              <svg class="h-full w-full" viewBox="0 0 48 44" fill="none">
-                <defs>
-                  <linearGradient id="header-journey-line" x1="10" y1="29" x2="40" y2="24" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#eb6ea5" />
-                    <stop offset="1" stop-color="#696aad" />
-                  </linearGradient>
-                </defs>
-                <path d="M10 29C18 18 27 19 34 26C36 28 38 28 41 25" stroke="url(#header-journey-line)" stroke-width="3.5" stroke-linecap="round" />
-                <g transform="rotate(-14 11 25)">
-                  <rect x="2.5" y="18.5" width="17" height="12" rx="4" fill="#f59e0b" />
-                  <path d="M6.5 22.5H15.5M7.5 26.5H10.5M13.5 26.5H15.5" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-                </g>
-                <path d="M38 9C33.25 9 29.75 12.65 29.75 17.15C29.75 23.1 38 32 38 32C38 32 46.25 23.1 46.25 17.15C46.25 12.65 42.75 9 38 9Z" fill="#696aad" />
-                <circle cx="38" cy="17" r="3" fill="white" />
-              </svg>
+              <img src="/travigo-logo-carriage.svg" class="h-full w-full" alt="" />
             </span>
             <span class="inline-flex items-baseline gap-1.5 sm:gap-2">
               <span class="text-[clamp(1.5rem,3vw,3rem)] font-semibold leading-[1.15] tracking-normal">

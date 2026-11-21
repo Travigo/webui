@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Travigo destination ticket</title>
+  <g transform="rotate(-13 64 64)">
+    <path fill="#EB6EA5" d="M22 39h51v42H22a8 8 0 0 1-8-8v-5a8 8 0 0 0 0-16v-5a8 8 0 0 1 8-8Z"/>
+    <path fill="#696AAD" fill-rule="evenodd" d="M86 28c15 0 27 12 27 27c0 13-9 24-24 43a4 4 0 0 1-6 0L68 81H40l28-44c4-6 10-9 18-9Zm0 16a11 11 0 1 0 0 22a11 11 0 0 0 0-22Z"/>
+  </g>
+</svg>
