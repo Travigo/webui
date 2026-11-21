@@ -62,18 +62,18 @@
         {{ journey.RealtimeJourney.VehicleLocationDescription }}
       </p>
 
-      <div v-if="headerRailOverviewItem" class="flex items-center gap-2 border-t border-slate-100 pt-2 dark:border-slate-800">
-        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
-          <span class="material-symbols-outlined text-[17px] text-brand-blue dark:text-brand-blue-light">{{ headerRailOverviewItem.icon }}</span>
-          {{ headerRailOverviewItem.label }}
+      <div v-if="headerJourneyDetailsItem" class="flex items-center gap-2 border-t border-slate-100 pt-2 dark:border-slate-800">
+        <span class="inline-flex min-w-0 items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+          <span class="material-symbols-outlined shrink-0 text-[17px] text-brand-blue dark:text-brand-blue-light" aria-hidden="true">{{ headerJourneyDetailsItem.icon }}</span>
+          <span class="truncate">{{ headerJourneyDetailsItem.label }}</span>
         </span>
         <button
           type="button"
-          class="ml-auto inline-flex min-h-11 items-center gap-1 rounded-xl px-2 text-xs font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10 sm:min-h-8 sm:px-1"
+          class="ml-auto inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-2 text-xs font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10 sm:min-h-8 sm:px-1"
           @click="changeTab('details')"
         >
-          Onboard details
-          <span class="material-symbols-outlined text-[17px]">chevron_right</span>
+          {{ headerJourneyDetailsItem.action }}
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">chevron_right</span>
         </button>
       </div>
     </PageHeader>
@@ -351,7 +351,27 @@
           </article>
         </section>
 
-        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+        <section
+          v-if="motorvehicleDetailItems.length"
+          class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
+        >
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Vehicle details</h2>
+            <span class="material-symbols-outlined text-[22px] text-brand-blue dark:text-brand-blue-light" aria-hidden="true">directions_bus</span>
+          </div>
+          <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            <div
+              v-for="detail in motorvehicleDetailItems"
+              :key="detail.label"
+              class="min-w-0 rounded-xl bg-white p-3 dark:bg-slate-900"
+            >
+              <dt class="font-semibold text-slate-500 dark:text-slate-400">{{ detail.label }}</dt>
+              <dd class="mt-1 wrap-break-word font-bold text-slate-950 dark:text-slate-100">{{ detail.value }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails && !motorvehicleDetailItems.length" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           No extra journey details are available.
         </section>
       </div>
@@ -734,8 +754,23 @@ export default {
 
       return items.slice(0, 3)
     },
-    headerRailOverviewItem() {
-      return this.railOverviewItems.find(item => item.icon === 'train') || this.railOverviewItems[0] || null
+    motorvehicleDetailItems() {
+      const details = this.journey?.RealtimeJourney?.DetailedMotorvehicleInformation
+      return [
+        { label: 'Registration', value: details?.RegistrationNumber?.trim() },
+        { label: 'Make', value: details?.VehicleMake?.trim() },
+        { label: 'Colour', value: details?.VehicleColour?.trim() },
+        { label: 'Fuel type', value: details?.PowerType?.trim() }
+      ].filter(detail => detail.value)
+    },
+    headerJourneyDetailsItem() {
+      const railItem = this.railOverviewItems.find(item => item.icon === 'train') || this.railOverviewItems[0]
+      if (railItem) {
+        return { ...railItem, action: 'Onboard details' }
+      }
+
+      const [vehicleItem] = this.motorvehicleDetailItems
+      return vehicleItem ? { icon: 'directions_bus', label: vehicleItem.value, action: 'Vehicle details' } : null
     },
     nextJourneyPoint() {
       const realtime = this.journey?.RealtimeJourney
