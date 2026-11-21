@@ -2,10 +2,10 @@
   <section v-if="compact && compactAlertCard" class="overflow-hidden rounded-xl border shadow-sm" :class="compactAlertCard.classes">
     <button
       type="button"
-      class="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/45 dark:hover:bg-slate-900/20"
+      class="flex min-h-11 w-full items-center gap-2 px-2.5 py-1.5 text-left transition hover:bg-white/45 sm:gap-3 sm:px-3 sm:py-2.5 dark:hover:bg-slate-900/20"
       @click="openAlertsModal"
     >
-      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" :class="compactAlertCard.iconClasses">
+      <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8" :class="compactAlertCard.iconClasses">
         <span class="material-symbols-outlined text-[20px] leading-none">{{ compactAlertCard.icon }}</span>
       </span>
       <span class="min-w-0 flex-1">

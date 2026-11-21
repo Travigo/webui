@@ -9,7 +9,6 @@
     <PageHeader
       :title="stop.PrimaryName"
       :subtitle="stop.Descriptor || stop.OtherNames?.Descriptor || stop.LocalityName || ''"
-      icon="location_on"
       compact
     >
       <template #actions>
@@ -21,11 +20,11 @@
         />
       </template>
 
-      <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" v-if="visibleServices.length > 0">
+      <HorizontalScrollFade v-if="visibleServices.length > 0" class="-mx-1" track-class="gap-2 px-1 pb-1">
         <router-link
-          :to="{'name': 'services/view', params: {'id': service.PrimaryIdentifier}}"
           v-for="service in visibleServices"
-          v-bind:key="service.PrimaryIdentifier"
+          :key="service.PrimaryIdentifier"
+          :to="{ name: 'services/view', params: { id: service.PrimaryIdentifier } }"
           class="shrink-0"
         >
           <ServiceIcon
@@ -34,7 +33,7 @@
             :service="service"
           />
         </router-link>
-      </div>
+      </HorizontalScrollFade>
 
       <div class="flex items-center justify-between gap-2 max-[359px]:flex-wrap">
         <IconPillRow
@@ -329,6 +328,7 @@ import Alert from '@/components/Alert.vue'
 import DatasourceAttributes from "@/components/DatasourceAttributes.vue"
 import EntityActionButtons from '@/components/EntityActionButtons.vue'
 import ErrorState from '@/components/ErrorState.vue'
+import HorizontalScrollFade from '@/components/HorizontalScrollFade.vue'
 import IconPillRow from '@/components/IconPillRow.vue'
 import IconButton from '@/components/IconButton.vue'
 import LoadingState from '@/components/LoadingState.vue'
@@ -435,6 +435,7 @@ export default {
     DatasourceAttributes,
     EntityActionButtons,
     ErrorState,
+    HorizontalScrollFade,
     IconButton,
     IconPillRow,
     LoadingState,

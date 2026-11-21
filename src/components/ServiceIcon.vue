@@ -2,7 +2,7 @@
   <div
     class="text-sm text-center inline-block py-0 px-2 rounded bg-blue-200 min-w-[1rem] border-solid border border-gray-300 dark:border-gray-600"
     :style="serviceIconStyle"
-    v-if="service.ServiceName != '' || service.BrandIcon != ''"
+    v-if="nameOnly ? service.ServiceName : service.ServiceName != '' || service.BrandIcon != ''"
   >
     <div class="flex h-full items-center" :class="{ 'justify-center': short || !service.ServiceName }">
       <img
@@ -13,7 +13,7 @@
         @error="brandIconFailed = true"
       />
       <span
-        v-else-if="service.BrandIcon"
+        v-else-if="!nameOnly && service.BrandIcon"
         class="material-symbols-outlined"
         :class="{'mr-1 text-[20px]': !short, 'text-[27px]': short}"
       >
@@ -21,7 +21,7 @@
       </span>
       <span
         class="w-full"
-        v-if="(service.ServiceName != '' && !short) || (service.BrandIcon == '' && short)"
+        v-if="nameOnly || (service.ServiceName != '' && !short) || (service.BrandIcon == '' && short)"
       >
         {{ service.ServiceName }}
       </span>
@@ -60,13 +60,14 @@ export default {
   },
   props: {
     service: {},
+    nameOnly: Boolean,
     short: {
       default: false
     }
   },
   computed: {
     showBrandIcon() {
-      return Boolean(this.service.BrandIcon) && !this.brandIconFailed
+      return !this.nameOnly && Boolean(this.service.BrandIcon) && !this.brandIconFailed
     },
     transportIcon() {
       return {

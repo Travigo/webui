@@ -190,7 +190,7 @@ export default {
   <div class="min-h-screen bg-[var(--ui-page)] text-slate-950 dark:text-slate-100">
     <nav
       v-if="this.showChrome"
-      class="relative z-50 mx-auto max-w-5xl px-4 pt-5 sm:px-8 sm:pt-8 lg:max-w-6xl lg:px-10"
+      class="relative z-50 mx-auto max-w-5xl px-4 pt-3 sm:px-8 sm:pt-8 lg:max-w-6xl lg:px-10"
     >
       <div class="flex items-start justify-between gap-3 sm:gap-4" :class="{ 'map-header-chrome': $route.name === 'map' }">
         <div>
@@ -274,7 +274,7 @@ export default {
       </div>
     </main>
 
-    <footer class="mx-2 my-4" v-if="!this.isFullscreen" v-bind:class="{ 'pb-24 sm:pb-28 xl:pb-10': this.showChrome && !this.isFullscreen }">
+    <footer class="mx-2 my-4" v-if="!this.isFullscreen" v-bind:class="{ 'pb-20 sm:pb-28 xl:pb-10': this.showChrome && !this.isFullscreen }">
       <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
         &copy; Aaron Claydon {{ new Date().getFullYear() }} &bull; 
         <router-link :to="{ name: 'about' }">About</router-link> &bull; 
@@ -285,7 +285,7 @@ export default {
 
     <nav
       v-if="this.showChrome"
-      class="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg shadow-slate-300/40 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:px-4 sm:py-3 xl:hidden dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30"
+      class="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-slate-200 bg-white/95 px-3 py-1 shadow-lg shadow-slate-300/40 backdrop-blur sm:bottom-5 sm:w-[calc(100%-2.5rem)] sm:px-4 sm:py-3 xl:hidden dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30"
       aria-label="Primary"
     >
       <div
@@ -300,12 +300,12 @@ export default {
           v-show="!item.requiresLogin || (item.requiresLogin && this.auth0.isAuthenticated)"
           :to="item.route"
           :aria-current="primaryItemCurrent(item)"
-          class="group flex min-w-0 max-w-20 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1 text-xs font-medium text-slate-600 transition-colors duration-(--motion-feedback) hover:text-brand-blue sm:gap-1 dark:text-slate-300 dark:hover:text-brand-blue-light"
+          class="group flex min-h-11 min-w-0 max-w-20 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-xs font-medium text-slate-600 transition-colors duration-(--motion-feedback) hover:text-brand-blue sm:gap-1 sm:py-1 dark:text-slate-300 dark:hover:text-brand-blue-light"
           :class="{ 'bottom-nav-active': primaryItemCurrent(item) }"
         >
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-(--motion-feedback) group-hover:bg-brand-blue/10 sm:h-10 sm:w-10 dark:group-hover:bg-brand-blue/20">
+          <span class="flex h-6 w-7 items-center justify-center rounded-lg transition-colors duration-(--motion-feedback) group-hover:bg-brand-blue/10 sm:h-10 sm:w-10 dark:group-hover:bg-brand-blue/20">
             <span
-              class="material-symbols-outlined [--bottom-nav-icon-size:24px] sm:[--bottom-nav-icon-size:26px]"
+              class="material-symbols-outlined [--bottom-nav-icon-size:20px] sm:[--bottom-nav-icon-size:26px]"
               style="font-size: var(--bottom-nav-icon-size); line-height: 1"
               aria-hidden="true"
             >

@@ -7,12 +7,12 @@
   </Notice>
   <div v-else-if="variant === 'compact'" class="divide-y divide-slate-100 dark:divide-slate-800">
     <div v-for="(departure, index) in this.departures" v-bind:key="departure.OccurrenceIdentifier || `${departure.Journey?.PrimaryIdentifier}-${index}`">
-      <div class="px-3 pt-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300" v-if="this.departureDayChange(index)">
+      <div class="px-3 pt-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 sm:pt-3 dark:text-slate-300" v-if="this.departureDayChange(index)">
         {{ departureDayLabel(index) }}
       </div>
 
       <router-link
-        class="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto] dark:hover:bg-slate-800/70"
+        class="grid min-h-11 min-w-0 grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-2.5 px-3 py-2 transition hover:bg-slate-50 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto] sm:gap-3 sm:py-3 dark:hover:bg-slate-800/70"
         :class="{
           'opacity-70': isCancelled(departure)
         }"
@@ -21,21 +21,20 @@
       >
         <ServiceIcon
           v-if="departure.Journey.Service!==undefined"
-          class="h-12 min-w-12 rounded-xl text-base shadow-sm"
-          style="line-height: 48px"
+          class="h-10 min-w-10 rounded-lg text-sm shadow-sm max-sm:overflow-hidden max-sm:px-1 max-sm:[&_span.w-full]:truncate sm:h-12 sm:min-w-12 sm:rounded-xl sm:text-base sm:leading-[48px]"
           :service="departure.Journey.Service"
           :short="departure.Journey.Service?.BrandDisplayMode=='short'"
         />
         <div
           v-else
-          class="flex h-12 min-w-12 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm"
+          class="flex h-10 min-w-10 items-center justify-center rounded-lg bg-brand-blue text-white shadow-sm sm:h-12 sm:min-w-12 sm:rounded-xl"
         >
           <span class="material-symbols-outlined text-[24px]">directions_bus</span>
         </div>
 
         <div class="min-w-0">
           <div class="flex min-w-0 items-center gap-1.5">
-            <p class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
+            <p class="text-[15px] font-bold leading-tight text-slate-950 max-sm:line-clamp-2 sm:truncate sm:text-base">
               {{ departure.DestinationDisplay }}
             </p>
             <JourneyAlertIndicator
@@ -43,18 +42,17 @@
               :journey-title="departure.DestinationDisplay || 'Journey'"
             />
           </div>
-          <div class="mt-1 flex min-w-0 items-center gap-2">
+          <div v-if="departure.Journey.Service?.ServiceName" class="mt-1 flex min-w-0 items-center gap-2">
             <ServiceIcon
-              v-if="departure.Journey.Service!==undefined"
               class="h-5 max-w-full rounded-md px-1.5 text-[11px] leading-5"
               style="line-height: 20px"
               :service="departure.Journey.Service"
-              :short="false"
+              name-only
             />
           </div>
         </div>
 
-        <div class="flex min-w-0 items-center gap-2 text-right">
+        <div class="flex min-w-0 items-center gap-1 text-right sm:gap-2">
           <div>
             <div
               class="text-[15px] font-bold leading-tight tabular-nums"
@@ -77,7 +75,7 @@
       </router-link>
 
       <div
-        class="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto]"
+        class="grid min-h-11 min-w-0 grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-2.5 px-3 py-2 sm:grid-cols-[3.25rem_minmax(0,1fr)_auto] sm:gap-3 sm:py-3"
         :class="{
           'opacity-70': isCancelled(departure)
         }"
@@ -85,21 +83,20 @@
       >
         <ServiceIcon
           v-if="departure.Journey.Service!==undefined"
-          class="h-12 min-w-12 rounded-xl text-base shadow-sm"
-          style="line-height: 48px"
+          class="h-10 min-w-10 rounded-lg text-sm shadow-sm max-sm:overflow-hidden max-sm:px-1 max-sm:[&_span.w-full]:truncate sm:h-12 sm:min-w-12 sm:rounded-xl sm:text-base sm:leading-[48px]"
           :service="departure.Journey.Service"
           :short="departure.Journey.Service?.BrandDisplayMode=='short'"
         />
         <div
           v-else
-          class="flex h-12 min-w-12 items-center justify-center rounded-xl bg-brand-blue text-white shadow-sm"
+          class="flex h-10 min-w-10 items-center justify-center rounded-lg bg-brand-blue text-white shadow-sm sm:h-12 sm:min-w-12 sm:rounded-xl"
         >
           <span class="material-symbols-outlined text-[24px]">directions_bus</span>
         </div>
 
         <div class="min-w-0">
           <div class="flex min-w-0 items-center gap-1.5">
-            <p class="truncate text-[15px] font-bold leading-tight text-slate-950 sm:text-base">
+            <p class="text-[15px] font-bold leading-tight text-slate-950 max-sm:line-clamp-2 sm:truncate sm:text-base">
               {{ departure.DestinationDisplay }}
             </p>
             <JourneyAlertIndicator
@@ -112,7 +109,7 @@
             class="mt-1 h-5 max-w-full rounded-md px-1.5 text-[11px] leading-5"
             style="line-height: 20px"
             :service="departure.Journey.Service"
-            :short="false"
+            name-only
           />
         </div>
 

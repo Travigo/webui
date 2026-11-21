@@ -106,14 +106,14 @@
           </div>
         </aside>
 
-        <div class="p-4 sm:p-5">
+        <div class="px-3 py-2 sm:p-5">
           <button
             v-if="hasHiddenStops"
             @click="toggleInactiveStops()"
             type="button"
             :aria-expanded="expandInactiveStops"
             aria-controls="journey-stop-timeline"
-            class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+            class="mb-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-200 sm:mb-4"
           >
             <span class="material-symbols-outlined text-[19px]" aria-hidden="true">{{ expandInactiveStops ? 'unfold_less' : 'history' }}</span>
             {{ expandInactiveStops ? 'Collapse previous stops' : 'Show previous stops' }}
@@ -137,24 +137,24 @@
               v-if="showStop(index)"
               :id="point === nextJourneyPoint ? 'journey-next-stop' : undefined"
               :tabindex="point === nextJourneyPoint ? -1 : undefined"
-              class="relative grid scroll-mt-4 grid-cols-[1.5rem_minmax(0,1fr)_auto] gap-x-2 py-3 sm:gap-x-3"
+              class="relative grid min-h-11 scroll-mt-4 grid-cols-[1.25rem_minmax(0,1fr)_auto] gap-x-2 py-2 sm:grid-cols-[1.5rem_minmax(0,1fr)_auto] sm:gap-x-3 sm:py-3"
               :class="{'journey-previous-stop': !point.active}"
             >
               <div class="relative flex justify-center" :class="{'opacity-65': !point.active}">
                 <span
-                  class="absolute top-7 h-full w-px bg-slate-200"
+                  class="absolute top-4 h-[calc(100%+0.5rem)] w-px bg-slate-200 sm:top-7 sm:h-full"
                   v-if="index < journeyPoints.length - 1"
                 ></span>
                 <span
-                  class="relative z-10 mt-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white shadow-sm transition-colors duration-(--motion-feedback)"
+                  class="relative z-10 mt-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-white shadow-sm transition-colors duration-(--motion-feedback) sm:h-4 sm:w-4"
                   :class="point === nextJourneyPoint ? 'bg-brand-blue ring-2 ring-brand-blue/40' : point.active ? 'bg-brand-blue' : 'bg-slate-300'"
                 ></span>
               </div>
 
-              <div class="min-w-0" :class="{'opacity-65': !point.active}">
+              <div class="min-w-0 max-sm:relative" :class="{'opacity-65': !point.active}">
                 <router-link
                   :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
-                  class="block wrap-break-word text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100 sm:text-base"
+                  class="block wrap-break-word text-[15px] font-bold leading-tight text-slate-950 max-sm:after:absolute max-sm:after:-inset-y-2 max-sm:after:inset-x-0 dark:text-slate-100 sm:text-base"
                   :class="{'text-slate-600': !point.active}"
                 >
                   {{ point.stop.PrimaryName }}

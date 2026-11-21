@@ -22,7 +22,7 @@
 
         <Transition name="ui-fade" @leave="(_, remove) => remove()">
         <div v-if="stopPanelTab === 'nearby'" key="nearby">
-        <div class="mb-3 sm:mb-4 p-4 sm:p-5 pb-0">
+        <div class="mb-2 px-3 pt-3 sm:mb-4 sm:px-5 sm:pt-5">
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="ui-section-title">Nearby stops</h2>
@@ -46,6 +46,8 @@
           v-bind:key="stopKey(stop)"
           :stop="stop"
           :current-position="nearbyPosition"
+          compact
+          compact-services
         />
 
         <div v-if="nearbyStopsError" class="mx-4 mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100 sm:mx-5">
@@ -62,13 +64,13 @@
         </div>
 
         <div v-else key="saved">
-          <div class="flex items-center justify-between gap-3 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
+          <div class="flex items-center justify-between gap-3 px-3 pb-2 pt-3 sm:px-5 sm:pb-3 sm:pt-5">
             <div>
               <h2 class="ui-section-title">Saved stops</h2>
             </div>
             <router-link
               :to="{ name: 'saved/home' }"
-              class="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl px-2 text-sm font-bold text-brand-blue transition hover:bg-brand-blue/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10"
+              class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-2 text-sm font-bold text-brand-blue transition hover:bg-brand-blue/10 sm:min-h-10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/10"
             >
               Manage
               <span class="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -108,6 +110,7 @@
             v-bind:key="stopKey(stop)"
             :stop="stop"
             :bordered="true"
+            compact
             compact-services
             meta-icon=""
             distance-label-fallback=""

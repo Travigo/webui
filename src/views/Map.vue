@@ -116,20 +116,21 @@
             </button>
           </div>
         </div>
-        <div
+        <HorizontalScrollFade
           v-if="currentStopAllServices.length"
+          :key="currentViewedStop.PrimaryIdentifier"
           class="map-stop-sheet__services"
-          role="group"
-          :aria-label="`${currentStopAllServices.length} services at this stop`"
-          tabindex="0"
+          track-class="items-center gap-[0.45rem]"
+          :label="`${currentStopAllServices.length} services at this stop`"
+          focusable
         >
           <ServiceIcon
             v-for="(service, index) in currentStopAllServices"
             :key="service.PrimaryIdentifier || `${service.TransportType || 'service'}:${service.ServiceName || service.PrimaryName || index}`"
             :service="service"
-            class="map-stop-sheet__service-chip h-8 max-w-48 shrink-0 whitespace-nowrap rounded-md px-2 text-[11px] font-bold"
+            class="map-stop-sheet__service-chip h-7 max-w-48 shrink-0 whitespace-nowrap rounded-md px-2 text-[11px] font-bold"
           />
-        </div>
+        </HorizontalScrollFade>
       </header>
 
       <div class="map-stop-sheet__board">
@@ -236,7 +237,7 @@
 .map-status-overlay {
   position: absolute;
   left: 1rem;
-  top: 5.75rem;
+  top: 5.25rem;
   z-index: 40;
   display: grid;
   justify-items: start;
@@ -428,26 +429,26 @@
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.375rem;
   border-bottom: 1px solid var(--ui-divider);
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 1rem 0.5rem;
 }
 
 .map-stop-sheet__top,
 .map-stop-sheet__identity {
   display: flex;
   min-width: 0;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .map-stop-sheet__top {
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .map-stop-sheet__identity {
   flex: 1 1 auto;
-  gap: 0.75rem;
+  gap: 0.625rem;
 }
 
 .map-stop-sheet__title {
@@ -464,21 +465,15 @@
 }
 
 .map-stop-sheet__subtitle {
-  margin-top: 0.15rem;
+  margin-top: 0.125rem;
   color: var(--ui-muted);
   font-size: 0.75rem;
   line-height: 1.35;
 }
 
-.map-stop-sheet__services {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  gap: 0.45rem;
-  overflow-x: auto;
+.map-stop-sheet__services :deep(.horizontal-scroll-viewport) {
   overflow-y: hidden;
-  padding: 0.1rem 0.1rem 0.3rem;
+  padding: 0.1rem;
   overscroll-behavior-x: contain;
   scrollbar-color: var(--ui-border) transparent;
   scrollbar-width: thin;
@@ -491,11 +486,11 @@
   text-overflow: ellipsis;
 }
 
-.map-stop-sheet__services::-webkit-scrollbar {
+.map-stop-sheet__services :deep(.horizontal-scroll-viewport::-webkit-scrollbar) {
   height: 0.25rem;
 }
 
-.map-stop-sheet__services::-webkit-scrollbar-thumb {
+.map-stop-sheet__services :deep(.horizontal-scroll-viewport::-webkit-scrollbar-thumb) {
   border-radius: 999px;
   background: var(--ui-border);
 }
@@ -514,7 +509,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
-  padding: 0 0.75rem;
+  padding: 0 0.625rem;
   font-size: 0.75rem;
   font-weight: 800;
   white-space: nowrap;
@@ -739,6 +734,7 @@
 import StopMapMarker from '@/components/StopMapMarker.vue'
 import Modal from '@/components/Modal.vue'
 import DeparturesList from '@/components/DeparturesList.vue'
+import HorizontalScrollFade from '@/components/HorizontalScrollFade.vue'
 import ServiceIcon from '@/components/ServiceIcon.vue'
 import axios from 'axios'
 import API from '@/API'
@@ -927,6 +923,7 @@ export default {
     Modal,
     StopMapMarker,
     DeparturesList,
+    HorizontalScrollFade,
     ServiceIcon,
 
     MapboxMap

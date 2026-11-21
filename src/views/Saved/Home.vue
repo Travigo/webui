@@ -5,6 +5,7 @@
       subtitle="Quick access to stops and journeys."
       icon="bookmark"
       variant="panel"
+      class="max-sm:p-3"
     />
 
     <div
@@ -75,6 +76,7 @@
           <StopInfo
             :stop="stop"
             :bordered="false"
+            compact
             compact-services
             status-label=""
             meta-icon=""

@@ -2,9 +2,12 @@
   <router-link
     :to="stopRoute"
     class="grid grid-cols-[3.25rem_minmax(0,1fr)] items-center gap-3 px-4 py-3 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-4 sm:px-5 sm:py-4"
-    :class="bordered ? 'border-b border-slate-200 last:border-b-0 dark:border-slate-800' : ''"
+    :class="{
+      'border-b border-slate-200 last:border-b-0 dark:border-slate-800': bordered,
+      'min-h-11 max-sm:grid-cols-[2.75rem_minmax(0,1fr)] max-sm:gap-2.5 max-sm:px-3 max-sm:py-2': compact
+    }"
   >
-    <div class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue/10 sm:h-14 sm:w-14 dark:bg-brand-blue/100/10">
+    <div class="flex h-13 w-13 items-center justify-center rounded-xl bg-brand-blue/10 sm:h-14 sm:w-14 dark:bg-brand-blue/100/10" :class="{'max-sm:h-11 max-sm:w-11 max-sm:rounded-lg max-sm:[&>span:not(:first-child)]:hidden': compact}" aria-hidden="true">
       <StopIcon :stop="stop" size="10" />
     </div>
 
@@ -14,10 +17,11 @@
           <div class="flex items-center gap-2">
             <h3 class="line-clamp-2 wrap-anywhere text-base font-bold leading-tight text-slate-950 dark:text-slate-100">{{ stop.PrimaryName }}</h3>
           </div>
-          <div>
-            <p v-if="descriptor" class="mt-0.5 text-xs leading-snug text-slate-600 dark:text-slate-300 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
+          <div class="flex flex-wrap items-baseline gap-x-2">
+            <p v-if="descriptor" class="mt-0.5 min-w-0 wrap-anywhere text-xs leading-snug text-slate-600 dark:text-slate-300 sm:mt-1 sm:text-sm">{{ descriptor }}</p>
+            <p v-if="compact && distanceLabel" class="mt-0.5 whitespace-nowrap text-xs leading-snug text-slate-600 sm:hidden dark:text-slate-300">{{ distanceLabel }}</p>
           </div>
-          <div class="mt-1 flex max-w-full flex-wrap gap-1">
+          <div class="mt-1 flex max-w-full flex-wrap gap-1" :class="{'max-sm:hidden': compact && displayedServices.length === 0}">
             <ServiceIcon
               v-for="(service, index) in displayedServices"
               v-bind:key="service.PrimaryIdentifier || service.ServiceName || service.BrandIcon"
@@ -47,14 +51,14 @@
               Stop
             </span>
           </div>
-          <p v-if="metaIcon || distanceLabel" class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-sm">
+          <p v-if="metaIcon || distanceLabel" class="mt-1 flex items-center gap-1 text-xs text-slate-500 sm:text-sm" :class="{'max-sm:hidden': compact}">
             <span v-if="metaIcon" class="material-symbols-outlined text-base text-[0.7rem]">{{ metaIcon }}</span>
             {{ distanceLabel }}
           </p>
         </div>
 
         <div class="flex shrink-0 self-center items-center justify-end gap-1 text-right">
-          <span class="material-symbols-outlined text-2xl text-slate-400 sm:text-3xl">chevron_right</span>
+          <span class="material-symbols-outlined text-2xl text-slate-400 sm:text-3xl" :class="{'max-sm:text-xl': compact}" aria-hidden="true">chevron_right</span>
         </div>
       </div>
     </div>
@@ -92,6 +96,7 @@ export default {
       type: Boolean,
       default: true
     },
+    compact: Boolean,
     compactServices: {
       type: Boolean,
       default: false

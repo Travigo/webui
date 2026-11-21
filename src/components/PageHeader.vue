@@ -67,7 +67,7 @@ export default {
   computed: {
     headerClass() {
       if (this.variant === 'panel' || this.variant === 'tinted') {
-        return 'ui-panel p-4 sm:p-5'
+        return this.compact ? 'ui-panel p-3 sm:p-5' : 'ui-panel p-4 sm:p-5'
       }
 
       if (this.variant === 'plain') {
