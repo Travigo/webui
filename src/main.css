@@ -35,6 +35,9 @@
   --motion-sheet: 200ms;
   --motion-ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
   --ui-time-highlight: rgb(105 106 173 / 0.24);
+  --ui-time-live: #087449;
+  --ui-time-delayed: #934807;
+  --ui-time-cancelled: #ad293a;
 }
 
 .dark {
@@ -52,7 +55,14 @@
   --ui-soft: #898ba1;
   --ui-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 12px 32px rgb(0 0 0 / 0.14);
   --ui-time-highlight: rgb(160 162 230 / 0.28);
+  --ui-time-live: #86efac;
+  --ui-time-delayed: #fcd38a;
+  --ui-time-cancelled: #fda4af;
 }
+
+.ui-time-live { color: var(--ui-time-live); }
+.ui-time-delayed { color: var(--ui-time-delayed); }
+.ui-time-cancelled { color: var(--ui-time-cancelled); }
 
 /* Keep the original semantic text utilities available outside Tailwind. */
 .brand-blue { color: var(--brand-blue); }

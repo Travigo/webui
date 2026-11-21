@@ -57,12 +57,8 @@
         <div class="flex min-w-0 items-center gap-2 text-right">
           <div>
             <div
-              class="text-[15px] font-bold leading-tight"
-              :class="{
-                'line-through decoration-red-500 decoration-2': isCancelled(departure),
-                'text-slate-950 dark:text-slate-100': !isDelayed(departure),
-                'text-amber-800 dark:text-amber-200': isDelayed(departure)
-              }"
+              class="text-[15px] font-bold leading-tight tabular-nums"
+              :class="boardTimeClass(departure) || 'text-slate-950 dark:text-slate-100'"
             >
               <span v-departure-time="departure" class="rounded-sm">{{ this.pretty.time(departure.Time, stop.Timezone) }}</span>
             </div>
@@ -73,7 +69,7 @@
               <div v-if="departure.Platform" class="mt-0.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
                 {{ departure.PlatformType === 'ACTUAL' ? 'Platform' : 'Est. platform' }} {{ departure.Platform }}
               </div>
-              <div v-if="boardStatus(departure)" class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{{ boardStatus(departure) }}</div>
+              <div v-if="boardStatus(departure)" class="mt-0.5 text-xs" :class="boardTimeClass(departure) || 'text-slate-600 dark:text-slate-300'">{{ boardStatus(departure) }}</div>
             </template>
           </div>
           <span class="material-symbols-outlined text-lg text-slate-400">chevron_right</span>
@@ -122,12 +118,8 @@
 
         <div class="min-w-0 text-right">
           <div
-            class="text-[15px] font-bold leading-tight"
-            :class="{
-              'line-through decoration-red-500 decoration-2': isCancelled(departure),
-              'text-slate-950 dark:text-slate-100': !isDelayed(departure),
-              'text-amber-800 dark:text-amber-200': isDelayed(departure)
-            }"
+            class="text-[15px] font-bold leading-tight tabular-nums"
+            :class="boardTimeClass(departure) || 'text-slate-950 dark:text-slate-100'"
           >
             <span v-departure-time="departure" class="rounded-sm">{{ this.pretty.time(departure.Time, stop.Timezone) }}</span>
           </div>
@@ -138,7 +130,7 @@
             <div v-if="departure.Platform" class="mt-0.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
               {{ departure.PlatformType === 'ACTUAL' ? 'Platform' : 'Est. platform' }} {{ departure.Platform }}
             </div>
-            <div v-if="boardStatus(departure)" class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{{ boardStatus(departure) }}</div>
+            <div v-if="boardStatus(departure)" class="mt-0.5 text-xs" :class="boardTimeClass(departure) || 'text-slate-600 dark:text-slate-300'">{{ boardStatus(departure) }}</div>
           </template>
         </div>
       </div>
@@ -325,6 +317,13 @@ export default {
         return departure.Journey?.RealtimeJourney?.Reliability === 'LocationWithoutTrack' ? 'Live estimate' : 'Live'
       }
       return departure.Type === 'Scheduled' ? 'Scheduled' : ''
+    },
+    boardTimeClass(departure) {
+      if (this.isCancelled(departure)) return 'ui-time-cancelled line-through decoration-2'
+      const status = this.boardStatus(departure)
+      if (status === 'Delayed' || status === 'Live estimate') return 'ui-time-delayed'
+      if (status === 'Live') return 'ui-time-live'
+      return ''
     },
     alertsFor(departure) {
       const seenAlertKeys = new Set()

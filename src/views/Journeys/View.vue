@@ -138,9 +138,9 @@
               :id="point === nextJourneyPoint ? 'journey-next-stop' : undefined"
               :tabindex="point === nextJourneyPoint ? -1 : undefined"
               class="relative grid scroll-mt-4 grid-cols-[1.5rem_minmax(0,1fr)_auto] gap-x-2 py-3 sm:gap-x-3"
-              :class="{'journey-previous-stop opacity-65': !point.active}"
+              :class="{'journey-previous-stop': !point.active}"
             >
-              <div class="relative flex justify-center">
+              <div class="relative flex justify-center" :class="{'opacity-65': !point.active}">
                 <span
                   class="absolute top-7 h-full w-px bg-slate-200"
                   v-if="index < journeyPoints.length - 1"
@@ -151,7 +151,7 @@
                 ></span>
               </div>
 
-              <div class="min-w-0">
+              <div class="min-w-0" :class="{'opacity-65': !point.active}">
                 <router-link
                   :to="{'name': 'stops/view', params: {'id': point.stop.PrimaryIdentifier}}"
                   class="block wrap-break-word text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100 sm:text-base"
@@ -215,20 +215,21 @@
                     --:--
                   </div>
                   <template v-else>
-                    <div class="text-[15px] font-bold leading-tight text-slate-950 dark:text-slate-100">
-                      {{ timelineTimes[index].display }}
-                    </div>
-                    <div v-if="timelineTimes[index].isRealtime || journey.RealtimeJourney" class="mt-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-                      {{ timelineTimes[index].label }}
-                    </div>
-                    <div v-if="timelineTimes[index].changed && timelineTimes[index].scheduled" class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
-                      Scheduled {{ timelineTimes[index].scheduled }}
+                    <div class="flex items-baseline justify-end gap-1.5 whitespace-nowrap leading-tight tabular-nums">
+                      <span v-if="timelineTimes[index].changed" class="text-xs text-slate-600 dark:text-slate-300">
+                        <span class="sr-only">Scheduled {{ timelineTimes[index].scheduled }}</span>
+                        <s aria-hidden="true">{{ timelineTimes[index].scheduled }}</s>
+                      </span>
+                      <span class="text-[15px] font-bold" :class="timelineTimes[index].colour" :title="timelineTimes[index].label">
+                        <span class="sr-only">{{ timelineTimes[index].label }} {{ timelineTimes[index].display }}</span>
+                        <span aria-hidden="true">{{ timelineTimes[index].display }}</span>
+                      </span>
                     </div>
                   </template>
                 </div>
 
-                <div class="mt-1 text-xs text-slate-500" v-if="pointArrivalSummary(point)">
-                  {{ pointArrivalSummary(point) }}
+                <div class="mt-0.5 whitespace-nowrap text-xs text-slate-600 tabular-nums dark:text-slate-300" v-if="timelineTimes[index].arrivalSummary">
+                  {{ timelineTimes[index].arrivalSummary }}
                 </div>
               </div>
             </div>
@@ -745,7 +746,10 @@ export default {
       return this.nextJourneyPoint || this.journeyPoints[0]
     },
     timelineTimes() {
-      return this.journeyPoints.map(point => this.pointTime(point))
+      return this.journeyPoints.map(point => {
+        const time = this.pointTime(point)
+        return { ...time, arrivalSummary: this.pointArrivalSummary(point, time.display) }
+      })
     },
     showDetailedInformationRail() {
       if (this.journey?.RealtimeJourney?.Cancelled) {
@@ -869,24 +873,48 @@ export default {
     pointTime(point, arrival = point.lastOne) {
       const timezone = this.journey.DepartureTimezone
       const formatTime = value => value && value !== '0001-01-01T00:00:00Z' ? this.pretty.time(value, timezone) : ''
-      const scheduled = formatTime(arrival ? point.arrivalTime : point.departureTime)
-      const realtime = formatTime(arrival ? point.realtime?.ArrivalTime : point.realtime?.DepartureTime)
+      const scheduledValue = arrival ? point.arrivalTime : point.departureTime
+      const realtimeValue = arrival ? point.realtime?.ArrivalTime : point.realtime?.DepartureTime
+      const scheduled = formatTime(scheduledValue)
+      const realtime = formatTime(realtimeValue)
+      const minutesLate = scheduled && realtime ? this.journeyTimeDifference(scheduledValue, realtimeValue, timezone) : null
       const label = !realtime ? 'Scheduled'
         : this.realtimeStale ? 'Last known'
         : point.realtime.TimeType === 'Historical' ? 'Recorded' : 'Expected'
+      const punctuality = minutesLate === null || this.realtimeStale ? ''
+        : minutesLate > 0 ? ', delayed' : minutesLate < 0 ? ', early' : ', on time'
 
       return {
         display: realtime || scheduled || '—',
         scheduled,
-        label,
+        label: label + punctuality,
+        colour: realtime && !this.realtimeStale
+          ? (minutesLate > 0 ? 'ui-time-delayed' : 'ui-time-live')
+          : 'text-slate-950 dark:text-slate-100',
         isRealtime: Boolean(realtime),
-        changed: Boolean(realtime && realtime !== scheduled)
+        changed: Boolean(scheduled && realtime && realtime !== scheduled)
       }
     },
-    pointArrivalSummary(point) {
+    journeyTimeDifference(scheduled, realtime, timezone) {
+      const parse = value => DateTime.fromISO(value, {
+        zone: value.startsWith('0000-01-01T') ? 'UTC' : timezone || 'UTC'
+      }).startOf('minute')
+      const scheduledTime = parse(scheduled)
+      const liveTime = parse(realtime)
+      if (!scheduledTime.isValid || !liveTime.isValid) return null
+
+      if (scheduledTime.year >= 1900 && liveTime.year >= 1900) {
+        return liveTime.diff(scheduledTime, 'minutes').minutes
+      }
+
+      // Timetable clocks can omit the service date. Compare across midnight in that case.
+      const clockDifference = (liveTime.hour - scheduledTime.hour) * 60 + liveTime.minute - scheduledTime.minute
+      return (clockDifference + 2160) % 1440 - 720
+    },
+    pointArrivalSummary(point, departure) {
       if (point.lastOne || this.pointCancelled(point)) return ''
       const arrival = this.pointTime(point, true)
-      if (arrival.display === '—' || arrival.display === this.pointTime(point, false).display) return ''
+      if (arrival.display === '—' || arrival.display === departure) return ''
       return `${point.realtime?.TimeType === 'Historical' && arrival.isRealtime ? 'Arrived' : 'Arrives'} ${arrival.display}`
     },
     mapLoaded(map) {
@@ -1349,6 +1377,6 @@ export default {
 
 @keyframes journey-previous-stop-reveal {
   from { opacity: 0; }
-  to { opacity: 0.65; }
+  to { opacity: 1; }
 }
 </style>
