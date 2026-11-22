@@ -352,16 +352,16 @@
         </section>
 
         <section
-          v-if="motorvehicleDetailItems.length"
+          v-if="vehicleDetailItems.length"
           class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60"
         >
           <div class="flex items-center justify-between gap-3">
             <h2 class="text-sm font-bold text-slate-950 dark:text-slate-100">Vehicle details</h2>
-            <span class="material-symbols-outlined text-[22px] text-brand-blue dark:text-brand-blue-light" aria-hidden="true">directions_bus</span>
+            <span class="material-symbols-outlined text-[22px] text-brand-blue dark:text-brand-blue-light" aria-hidden="true">{{ transportIcon(journey.Service?.TransportType) }}</span>
           </div>
           <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
             <div
-              v-for="detail in motorvehicleDetailItems"
+              v-for="detail in vehicleDetailItems"
               :key="detail.label"
               class="min-w-0 rounded-xl bg-white p-3 dark:bg-slate-900"
             >
@@ -371,7 +371,7 @@
           </dl>
         </section>
 
-        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails && !motorvehicleDetailItems.length" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+        <section v-if="!journey?.RealtimeJourney?.Occupancy?.OccupancyAvailable && !hasDetailedRailDetails && !vehicleDetailItems.length" class="rounded-xl bg-amber-50 px-3 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           No extra journey details are available.
         </section>
       </div>
@@ -754,14 +754,21 @@ export default {
 
       return items.slice(0, 3)
     },
-    motorvehicleDetailItems() {
-      const details = this.journey?.RealtimeJourney?.DetailedMotorvehicleInformation
-      return [
+    vehicleDetailItems() {
+      const realtime = this.journey?.RealtimeJourney
+      const details = realtime?.DetailedMotorvehicleInformation
+      const items = [
         { label: 'Registration', value: details?.RegistrationNumber?.trim() },
         { label: 'Make', value: details?.VehicleMake?.trim() },
         { label: 'Colour', value: details?.VehicleColour?.trim() },
         { label: 'Fuel type', value: details?.PowerType?.trim() }
       ].filter(detail => detail.value)
+
+      if (items.length || this.hasDetailedRailDetails || this.hasTrainFormation || this.hasRailFacilities) {
+        return items
+      }
+      const reference = realtime?.VehicleRef?.trim()
+      return reference ? [{ label: 'Vehicle reference', value: reference }] : []
     },
     headerJourneyDetailsItem() {
       const railItem = this.railOverviewItems.find(item => item.icon === 'train') || this.railOverviewItems[0]
@@ -769,8 +776,8 @@ export default {
         return { ...railItem, action: 'Onboard details' }
       }
 
-      const [vehicleItem] = this.motorvehicleDetailItems
-      return vehicleItem ? { icon: 'directions_bus', label: vehicleItem.value, action: 'Vehicle details' } : null
+      const [vehicleItem] = this.vehicleDetailItems
+      return vehicleItem ? { icon: this.transportIcon(this.journey?.Service?.TransportType), label: vehicleItem.value, action: 'Vehicle details' } : null
     },
     nextJourneyPoint() {
       const realtime = this.journey?.RealtimeJourney
