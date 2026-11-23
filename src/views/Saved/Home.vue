@@ -17,7 +17,7 @@
     </div>
 
     <section class="ui-panel">
-      <div class="saved-items-toolbar ui-tab-bar flex items-center">
+      <div class="saved-items-toolbar mx-1 mt-1 flex items-stretch gap-2">
         <TabBar
           class="min-w-0 flex-1"
           :tabs="savedItemTabs"
@@ -28,7 +28,7 @@
         <button
           v-if="hasSavedItems"
           type="button"
-          class="inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-(--ui-divider) px-2.5 text-xs font-bold text-slate-700 transition-colors duration-(--motion-feedback) hover:bg-(--ui-panel) sm:px-3 sm:text-sm dark:text-slate-200"
+          class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-(--ui-tab-bar-radius) border border-brand-blue/20 bg-brand-blue/10 px-3 text-xs font-bold text-brand-blue-dark transition-colors duration-(--motion-feedback) hover:bg-brand-blue/20 sm:text-sm dark:text-brand-blue-light"
           :aria-label="editing ? 'Done editing saved items' : 'Edit saved items'"
           @click="toggleEditing"
         >
@@ -492,13 +492,7 @@ export default {
 </script>
 
 <style scoped>
-.saved-items-toolbar {
-  gap: 0;
-  padding: 0 0.25rem 0 0;
-}
-
 .saved-items-toolbar > .ui-tab-bar {
   margin: 0;
-  background: transparent;
 }
 </style>

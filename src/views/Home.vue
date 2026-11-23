@@ -1,6 +1,6 @@
 <template>
   <div class="ui-page ui-page-stack">
-    <LocationPicker />
+    <!-- <LocationPicker /> -->
 
     <SearchBar
       ref="stopSearch"

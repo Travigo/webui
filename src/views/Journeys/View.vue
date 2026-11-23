@@ -8,7 +8,6 @@
   <div v-else-if="journey" class="ui-page ui-page-stack">
     <PageHeader
       :title="journeyHeaderTitle"
-      :subtitle="journeyServiceDateLabel"
       variant="panel"
       compact
     >

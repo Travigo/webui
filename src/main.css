@@ -26,6 +26,7 @@
   --ui-muted: #686B80;
   --ui-soft: #86899e;
   --ui-panel-radius: 1rem;
+  --ui-tab-bar-radius: calc(var(--ui-panel-radius) - 5px);
   --ui-control-radius: 0.75rem;
   --ui-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 28px rgb(15 23 42 / 0.035);
   --motion-feedback: 120ms;
@@ -119,7 +120,7 @@ html {
   margin: 0.25rem 0.25rem 0;
   gap: 0.25rem;
   padding: 0.25rem;
-  border-radius: calc(var(--ui-panel-radius) - 5px);
+  border-radius: var(--ui-tab-bar-radius);
   background: var(--ui-subtle);
 }
 
