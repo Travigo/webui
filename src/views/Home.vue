@@ -11,6 +11,64 @@
       :showIcons="true"
     />
 
+    <component
+      :is="featuredSavedJourney.identifier ? 'router-link' : 'div'"
+      v-if="featuredSavedJourney"
+      v-bind="featuredSavedJourney.identifier ? { to: { name: 'journeys/view', params: { id: featuredSavedJourney.identifier } } } : {}"
+      class="ui-panel group block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+    >
+      <div class="px-4 py-3 sm:px-5 sm:py-4">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-(--ui-muted)">
+              <span
+                aria-hidden="true"
+                class="size-1.5 shrink-0 rounded-full"
+                :class="featuredSavedJourney.inProgress ? 'bg-emerald-500' : 'bg-brand-blue'"
+              ></span>
+              {{ featuredSavedJourney.status }}
+            </span>
+          </div>
+          <span v-if="featuredSavedJourney.identifier" class="material-symbols-outlined shrink-0 text-xl text-(--ui-muted) group-hover:text-brand-blue dark:group-hover:text-brand-blue-light" aria-hidden="true">chevron_right</span>
+        </div>
+
+        <div
+          class="mt-2 grid items-start gap-x-2.5 sm:gap-x-4"
+          :class="{'grid-cols-[minmax(0,1fr)_auto_minmax(0,1.2fr)] sm:grid-cols-[minmax(0,13rem)_auto_minmax(0,1fr)]': featuredSavedJourney.origin || featuredSavedJourney.departureTime}"
+        >
+          <template v-if="featuredSavedJourney.origin || featuredSavedJourney.departureTime">
+            <div class="min-w-0">
+              <p class="text-base font-bold leading-tight text-(--ui-text) wrap-anywhere">{{ featuredSavedJourney.origin || 'Origin' }}</p>
+              <p v-if="featuredSavedJourney.departureTime" class="mt-1 text-xs text-(--ui-muted)">Departs <strong class="tabular-nums text-(--ui-text)">{{ featuredSavedJourney.departureTime }}</strong></p>
+            </div>
+            <span class="material-symbols-outlined self-start text-[18px] text-(--ui-muted)" aria-hidden="true">arrow_forward</span>
+          </template>
+          <div class="min-w-0">
+            <p class="text-base font-bold leading-tight text-(--ui-text) wrap-anywhere"><span class="sr-only">To </span>{{ featuredSavedJourney.title }}</p>
+            <p v-if="featuredJourneyLiveInfo?.destinationArrival || featuredSavedJourney.arrivalTime" class="mt-1 text-xs text-(--ui-muted)">
+              Arrives <strong class="tabular-nums text-(--ui-text)">{{ featuredJourneyLiveInfo?.destinationArrival || featuredSavedJourney.arrivalTime }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <div v-if="featuredJourneyLiveInfo?.service || featuredSavedJourney.service" class="mt-2">
+          <ServiceIcon
+            class="max-w-full text-xs leading-5"
+            :service="featuredJourneyLiveInfo?.service || featuredSavedJourney.service"
+          />
+        </div>
+
+        <p v-if="featuredJourneyLiveInfo?.nextStop" class="mt-2 text-sm text-(--ui-muted) wrap-anywhere">
+          Next stop <strong class="text-(--ui-text)">{{ featuredJourneyLiveInfo.nextStop }}</strong><span v-if="featuredJourneyLiveInfo.nextStopTime" class="whitespace-nowrap tabular-nums"> · {{ featuredJourneyLiveInfo.nextStopTime }}</span>
+        </p>
+      </div>
+
+      <div v-if="featuredJourneyAlertSummary" class="flex items-start gap-2 border-t border-(--ui-divider) bg-amber-50 px-4 py-2 text-xs font-semibold leading-4 text-amber-900 sm:px-5 dark:bg-amber-400/5 dark:text-amber-200">
+        <span class="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">warning</span>
+        <span class="line-clamp-2 wrap-anywhere">{{ featuredJourneyAlertSummary }}</span>
+      </div>
+    </component>
+
     <section>
       <div class="ui-panel">
         <TabBar
@@ -223,12 +281,14 @@ import { getApiAccessToken } from '@/auth'
 import LocationPicker from '@/components/LocationPicker.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
+import ServiceIcon from '@/components/ServiceIcon.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
 import TabBar from '@/components/TabBar.vue'
+import Pretty from '@/pretty'
 
 import axios from 'axios'
 import API from '@/API'
-import { reportRequestFailure, reportRequestSuccess } from '@/offline/connectivity'
+import { isConnected, reportRequestFailure, reportRequestSuccess } from '@/offline/connectivity'
 import {
   auth0CacheScope,
   CACHE_MAX_AGE,
@@ -246,6 +306,7 @@ export default {
     LocationPicker,
     LoadingState,
     Modal,
+    ServiceIcon,
     StopInfo,
     TabBar
   },
@@ -261,6 +322,14 @@ export default {
       nearbyLocationRefreshTimer: undefined,
       nearbyLocationPollIntervalMs: 60000,
       nearbyRefreshDistanceMetres: 100,
+      savedJourneyStatusTimer: undefined,
+      currentTime: Date.now(),
+      featuredJourneyDetails: null,
+      featuredJourneyDetailsIdentifier: '',
+      featuredJourneyRealtimeFetchedAt: 0,
+      featuredJourneyAlerts: [],
+      featuredJourneyRequestVersion: 0,
+      savedItemsLoading: false,
       loadingNearbyStops: false,
       nearbyStopsError: '',
       nearbyPosition: undefined,
@@ -272,6 +341,7 @@ export default {
       loadingSavedStops: false,
       savedStopsError: '',
       savedStops: [],
+      savedJourneys: [],
       nearbyStops: []
     }
   },
@@ -300,6 +370,143 @@ export default {
       }
 
       return this.nearbyStops.length > 0 ? 'Refresh' : 'Use location'
+    },
+    featuredSavedJourney() {
+      const journeys = this.savedJourneys
+        .map(journey => {
+          const identifier = journey.PrimaryIdentifier || journey.Identifier || journey.SavedObjectIdentifier
+          const finalPath = journey.Path?.[journey.Path.length - 1]
+          const departure = this.journeyTimestamp(journey.DepartureTime) ??
+            this.journeyTimestamp(journey.Path?.[0]?.OriginDepartureTime) ??
+            this.journeyTimestamp(journey.Path?.[0]?.OriginArrivalTime)
+          const arrival = this.journeyTimestamp(journey.ArrivalTime) ??
+            this.journeyTimestamp(finalPath?.DestinationArrivalTime) ??
+            this.journeyTimestamp(finalPath?.DestinationDepartureTime)
+          const currentDetails = this.featuredJourneyDetailsIdentifier === identifier ? this.featuredJourneyDetails : null
+          const realtime = currentDetails?.RealtimeJourney || journey.RealtimeJourney
+          const cancelled = realtime?.Cancelled === true
+          const lastRealtimeUpdate = this.journeyTimestamp(realtime?.ModificationDateTime || realtime?.VehicleLocationObservedAt)
+          const responseIsRecent = currentDetails && this.currentTime - this.featuredJourneyRealtimeFetchedAt < 5 * 60 * 1000
+          const recentlyTracked = realtime?.ActivelyTracked === true && !cancelled && (responseIsRecent || (lastRealtimeUpdate !== null && this.currentTime - lastRealtimeUpdate < 5 * 60 * 1000))
+          const inProgress = !cancelled && ((departure !== null && arrival !== null && departure <= this.currentTime && arrival > this.currentTime) || recentlyTracked)
+          const upcoming = !cancelled && departure !== null && departure > this.currentTime
+
+          if (!identifier) return undefined
+
+          const origin = journey.OriginDisplay || journey.Path?.[0]?.OriginStop?.PrimaryName || ''
+          const title = journey.DestinationDisplay || finalPath?.DestinationStop?.PrimaryName || 'Saved journey'
+
+          return {
+            identifier,
+            inProgress,
+            upcoming,
+            journey,
+            departure,
+            arrival,
+            origin,
+            title,
+            status: inProgress ? 'In progress' : upcoming ? 'Upcoming' : cancelled ? 'Cancelled' : 'Saved journey'
+          }
+        })
+        .filter(Boolean)
+
+      const active = journeys.filter(journey => journey.inProgress)
+        .sort((first, second) => (first.arrival ?? Infinity) - (second.arrival ?? Infinity))[0]
+      const upcoming = journeys.filter(journey => journey.upcoming)
+        .sort((first, second) => first.departure - second.departure)[0]
+      const selected = active || upcoming
+      if (selected) {
+        const { journey } = selected
+        const firstLeg = journey.Path?.[0]
+        const lastLeg = journey.Path?.at(-1)
+        return {
+          ...selected,
+          service: journey.Service,
+          departureTime: this.firstJourneyClockTime([
+            journey.DepartureTime, firstLeg?.OriginDepartureTime, firstLeg?.OriginArrivalTime
+          ], journey.DepartureTimezone),
+          arrivalTime: this.firstJourneyClockTime([
+            journey.ArrivalTime, lastLeg?.DestinationArrivalTime, lastLeg?.DestinationDepartureTime
+          ], journey.DepartureTimezone)
+        }
+      }
+      return undefined
+    },
+    featuredJourneyLiveInfo() {
+      const selected = this.featuredSavedJourney
+      const journey = this.featuredJourneyDetailsIdentifier === selected?.identifier ? this.featuredJourneyDetails : null
+      if (!journey) return null
+
+      const path = journey.Path || []
+      const points = path.map(leg => ({
+        stop: leg.OriginStop,
+        stopRef: leg.OriginStopRef,
+        arrivalTime: leg.OriginArrivalTime,
+        departureTime: leg.OriginDepartureTime
+      }))
+      const finalLeg = path[path.length - 1]
+      if (finalLeg) {
+        points.push({
+          stop: finalLeg.DestinationStop,
+          stopRef: finalLeg.DestinationStopRef,
+          arrivalTime: finalLeg.DestinationArrivalTime,
+          departureTime: finalLeg.DestinationDepartureTime
+        })
+      }
+
+      const realtime = journey.RealtimeJourney
+      const realtimeIsFresh = this.featuredJourneyRealtimeFetchedAt > 0 && this.currentTime - this.featuredJourneyRealtimeFetchedAt < 2 * 60 * 1000
+      const matchesStop = (point, identifier) => Boolean(identifier && (
+        point.stopRef === identifier ||
+        point.stop?.PrimaryIdentifier === identifier ||
+        point.stop?.OtherIdentifiers?.includes(identifier)
+      ))
+      const realtimeStopForPoint = (point, index) => {
+        const stops = Object.entries(realtime?.Stops || {})
+        return stops.find(([key, stop]) => {
+          if (stop?.JourneyStopIndex !== undefined) return stop.JourneyStopIndex === index
+          return matchesStop(point, stop?.StopRef || key)
+        })?.[1]
+      }
+      const nextStopIndex = Number.isInteger(realtime?.NextStopIndex) && realtime.NextStopIndex > 0 && realtime.NextStopIndex < points.length
+        ? realtime.NextStopIndex
+        : points.findIndex(point => matchesStop(point, realtime?.NextStopRef))
+      const nextPoint = realtime?.ActivelyTracked && realtimeIsFresh && !realtime.Cancelled && nextStopIndex >= 0
+        ? points[nextStopIndex]
+        : null
+      const nextRealtimeStop = nextPoint ? realtimeStopForPoint(nextPoint, nextStopIndex) : null
+      const nextStopTime = nextPoint
+        ? this.firstJourneyClockTime([
+            nextRealtimeStop?.ArrivalTime,
+            nextRealtimeStop?.DepartureTime,
+            nextPoint.arrivalTime,
+            nextPoint.departureTime
+          ], journey.DepartureTimezone)
+        : ''
+      const destinationPoint = points[points.length - 1]
+      const destinationRealtimeStop = destinationPoint ? realtimeStopForPoint(destinationPoint, points.length - 1) : null
+      const destinationArrival = this.firstJourneyClockTime([
+        realtimeIsFresh ? destinationRealtimeStop?.ArrivalTime : '',
+        realtimeIsFresh ? destinationRealtimeStop?.DepartureTime : '',
+        journey.ArrivalTime,
+        destinationPoint?.arrivalTime,
+        destinationPoint?.departureTime
+      ], journey.DepartureTimezone)
+
+      return {
+        service: journey.Service,
+        nextStop: nextPoint?.stop?.PrimaryName || nextPoint?.stopRef || '',
+        nextStopTime,
+        destinationArrival
+      }
+    },
+    featuredJourneyAlertSummary() {
+      const count = this.featuredJourneyAlerts.length
+      if (!count) return ''
+      const title = this.featuredJourneyAlerts.map(alert => alert.Title?.trim())
+        .find(title => title && !/^service alerts?[.!]?$/i.test(title))
+      if (!title) return count === 1 ? 'Service alert' : `${count} service alerts`
+      return count === 1 ? title : `${title} · +${count - 1} more`
     },
     networkSummary() {
       return [
@@ -405,14 +612,118 @@ export default {
       localStorage.setItem(stopPanelStorageKey, tab)
 
       if (tab === 'saved') {
-        this.getSavedStops()
+        this.getSavedItems()
       }
     },
-    async getSavedStops() {
+    journeyTimestamp(value) {
+      if (!value || /^000[01]-/.test(value)) return null
+      const timestamp = new Date(value).getTime()
+      return Number.isFinite(timestamp) ? timestamp : null
+    },
+    journeyClockTime(value, timezone) {
+      if (!value || value === '0001-01-01T00:00:00Z') return ''
+      try {
+        return Pretty.time(value, timezone)
+      } catch {
+        return ''
+      }
+    },
+    firstJourneyClockTime(values, timezone) {
+      for (const value of values) {
+        const time = this.journeyClockTime(value, timezone)
+        if (time) return time
+      }
+      return ''
+    },
+    journeyServiceDate(journey) {
+      const runDate = journey?.RealtimeJourney?.JourneyRunDate?.slice(0, 10)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(runDate || '')) return runDate
+
+      const departureValue = journey?.DepartureTime || journey?.Path?.[0]?.OriginDepartureTime || journey?.Path?.[0]?.OriginArrivalTime
+      const departureTimestamp = this.journeyTimestamp(departureValue)
+      const timezone = journey?.DepartureTimezone || 'UTC'
+      const date = departureTimestamp === null ? new Date(this.currentTime) : new Date(departureTimestamp)
+
+      try {
+        return new Intl.DateTimeFormat('en-CA', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(date)
+      } catch {
+        return new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'UTC',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(date)
+      }
+    },
+    async refreshFeaturedJourneyInfo(identifier = this.featuredSavedJourney?.identifier) {
+      if (!identifier || !isConnected()) return
+
+      const requestVersion = ++this.featuredJourneyRequestVersion
+      const savedJourney = this.savedJourneys.find(journey => {
+        return (journey.PrimaryIdentifier || journey.Identifier || journey.SavedObjectIdentifier) === identifier
+      })
+      const dayInstance = `DAYINSTANCEOF:${this.journeyServiceDate(savedJourney)}:${identifier}`
+      const needsJourneyDetails = this.featuredJourneyDetailsIdentifier !== identifier || !this.featuredJourneyDetails
+
+      try {
+        const requests = [
+          needsJourneyDetails ? axios.get(`${API.URL}/core/journeys/${identifier}`, { params: { view: 'web' } }) : null,
+          axios.get(`${API.URL}/core/journeys/${identifier}`, { params: { realtime_only: true, view: 'web' } }),
+          axios.get(`${API.URL}/core/service_alerts/matching/${identifier},${dayInstance}`, { params: { view: 'web' } })
+        ]
+        const results = await Promise.all(requests.map(request => {
+          if (!request) return Promise.resolve({ status: 'skipped' })
+          return request.then(
+            value => ({ status: 'fulfilled', value }),
+            reason => ({ status: 'rejected', reason })
+          )
+        }))
+
+        if (requestVersion !== this.featuredJourneyRequestVersion || identifier !== this.featuredSavedJourney?.identifier) return
+
+        const [journeyResult, realtimeResult, alertsResult] = results
+        const succeeded = results.some(result => result.status === 'fulfilled')
+        if (!succeeded) {
+          reportRequestFailure(results.find(result => result.status === 'rejected')?.reason)
+          return
+        }
+
+        reportRequestSuccess()
+        if (journeyResult.status === 'fulfilled' || realtimeResult.status === 'fulfilled') {
+          const journey = {
+            ...(journeyResult.status === 'fulfilled'
+              ? journeyResult.value.data
+              : this.featuredJourneyDetails || savedJourney || {})
+          }
+          if (realtimeResult.status === 'fulfilled') {
+            journey.RealtimeJourney = realtimeResult.value.data
+            this.featuredJourneyRealtimeFetchedAt = Date.now()
+          }
+          this.featuredJourneyDetails = journey
+          this.featuredJourneyDetailsIdentifier = identifier
+        }
+
+        if (alertsResult.status === 'fulfilled') {
+          this.featuredJourneyAlerts = Array.isArray(alertsResult.value.data) ? alertsResult.value.data : []
+        }
+      } catch (error) {
+        reportRequestFailure(error)
+      }
+    },
+    async getSavedItems() {
+      if (this.savedItemsLoading) return
+      this.savedItemsLoading = true
       this.savedStopsError = ''
 
       if (!this.auth0.isAuthenticated) {
         this.savedStops = []
+        this.savedJourneys = []
+        this.savedItemsLoading = false
         return
       }
 
@@ -423,6 +734,7 @@ export default {
 
       if (cached) {
         this.savedStops = cached.data?.savedStops || []
+        this.savedJourneys = cached.data?.savedJourneys || []
       }
 
       this.loadingSavedStops = !cached
@@ -434,12 +746,14 @@ export default {
           params: { view: 'web' }
         })
         reportRequestSuccess()
-        this.savedStops = this.hydrateSavedStops(this.normaliseSavedObjects(response.data))
+        const savedObjects = this.normaliseSavedObjects(response.data)
+        this.savedStops = this.hydrateSavedStops(savedObjects)
+        this.savedJourneys = this.hydrateSavedJourneys(savedObjects)
 
         if (scope) {
           await putCachedResource(cacheKeys.savedItems, {
             savedStops: this.savedStops,
-            savedJourneys: cached?.data?.savedJourneys || []
+            savedJourneys: this.savedJourneys
           }, { scope })
         }
       } catch (error) {
@@ -451,6 +765,7 @@ export default {
         }
       } finally {
         this.loadingSavedStops = false
+        this.savedItemsLoading = false
       }
     },
     normaliseSavedObjects(responseData) {
@@ -479,6 +794,16 @@ export default {
       })
 
       return hydratedStops.filter(Boolean)
+    },
+    hydrateSavedJourneys(savedObjects) {
+      const journeyObjects = savedObjects.filter(savedObject => ['journey', 'journeys'].includes(String(savedObject.Type || '').toLowerCase()))
+      return journeyObjects
+        .filter(savedObject => savedObject.Object)
+        .map(savedObject => ({
+          ...savedObject.Object,
+          SavedObjectPrimaryIdentifier: savedObject.PrimaryIdentifier,
+          SavedObjectIdentifier: savedObject.ObjectIdentifier
+        }))
     },
     closeStatsModal() {
       this.statsModalOpen = false
@@ -690,24 +1015,39 @@ export default {
   mounted () {
     this.getStats()
     this.startNearbyLocationPollingIfAllowed()
+    this.getSavedItems()
+    this.savedJourneyStatusTimer = setInterval(() => {
+      this.currentTime = Date.now()
+      if (!document.hidden) this.refreshFeaturedJourneyInfo()
+    }, 60000)
 
     if (this.stopPanelTab === 'saved') {
-      this.getSavedStops()
+      this.getSavedItems()
     }
 
     this.refreshTimer = setInterval(this.getStats, 250000)
   },
   watch: {
     'auth0.isAuthenticated'() {
-      if (this.stopPanelTab === 'saved') this.getSavedStops()
+      this.getSavedItems()
+    },
+    'featuredSavedJourney.identifier'(identifier) {
+      this.featuredJourneyRequestVersion++
+      this.featuredJourneyDetails = null
+      this.featuredJourneyDetailsIdentifier = ''
+      this.featuredJourneyRealtimeFetchedAt = 0
+      this.featuredJourneyAlerts = []
+      if (identifier) this.refreshFeaturedJourneyInfo(identifier)
     }
   },
   beforeRouteLeave() {
     clearInterval(this.refreshTimer)
+    clearInterval(this.savedJourneyStatusTimer)
     this.stopNearbyLocationPolling()
   },
   beforeUnmount() {
     clearInterval(this.refreshTimer)
+    clearInterval(this.savedJourneyStatusTimer)
     this.stopNearbyLocationPolling()
   },
 }
