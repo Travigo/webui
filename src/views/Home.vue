@@ -11,9 +11,15 @@
       :showIcons="true"
     />
 
+    <CommuteJourneyCard
+      v-if="featuredCommute"
+      :commute="featuredCommute"
+      :alert-summary="featuredCommuteAlertSummary"
+    />
+
     <component
       :is="featuredSavedJourney.identifier ? 'router-link' : 'div'"
-      v-if="featuredSavedJourney"
+      v-else-if="featuredSavedJourney"
       v-bind="featuredSavedJourney.identifier ? { to: { name: 'journeys/view', params: { id: featuredSavedJourney.identifier } } } : {}"
       class="ui-panel group block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
     >
@@ -276,6 +282,7 @@
 
 <script>
 import SearchBar from '@/components/SearchBar.vue'
+import CommuteJourneyCard from '@/components/CommuteJourneyCard.vue'
 import { useAuth0 } from '@auth0/auth0-vue'
 import { getApiAccessToken } from '@/auth'
 import LocationPicker from '@/components/LocationPicker.vue'
@@ -285,6 +292,8 @@ import ServiceIcon from '@/components/ServiceIcon.vue'
 import StopInfo from '@/components/Stops/StopInfo.vue'
 import TabBar from '@/components/TabBar.vue'
 import Pretty from '@/pretty'
+import commutesApi from '@/commutes'
+import { DateTime } from 'luxon'
 
 import axios from 'axios'
 import API from '@/API'
@@ -303,6 +312,7 @@ export default {
   name: 'Home',
   components: {
     SearchBar,
+    CommuteJourneyCard,
     LocationPicker,
     LoadingState,
     Modal,
@@ -329,6 +339,13 @@ export default {
       featuredJourneyRealtimeFetchedAt: 0,
       featuredJourneyAlerts: [],
       featuredJourneyRequestVersion: 0,
+      commuteListRequestVersion: 0,
+      commutePlanRequestVersion: 0,
+      commuteAlertRequestVersion: 0,
+      commutePlanLoading: false,
+      savedCommutes: [],
+      commutePlanCandidates: [],
+      commuteAlerts: [],
       savedItemsLoading: false,
       loadingNearbyStops: false,
       nearbyStopsError: '',
@@ -432,6 +449,26 @@ export default {
       }
       return undefined
     },
+    featuredCommute() {
+      const candidates = this.commutePlanCandidates.map(candidate => ({
+        ...candidate,
+        inProgress: candidate.start <= this.currentTime && candidate.arrival > this.currentTime,
+        upcoming: candidate.start > this.currentTime
+      })).filter(candidate => candidate.inProgress || candidate.upcoming)
+
+      const active = candidates.filter(candidate => candidate.inProgress)
+        .sort((first, second) => first.arrival - second.arrival)[0]
+      if (active) return active
+
+      const upcoming = candidates.filter(candidate => candidate.upcoming)
+        .sort((first, second) => first.start - second.start)[0]
+      if (!upcoming) return undefined
+
+      const savedJourney = this.featuredSavedJourney
+      if (savedJourney?.inProgress) return undefined
+      if (savedJourney?.upcoming && savedJourney.departure <= upcoming.start) return undefined
+      return upcoming
+    },
     featuredJourneyLiveInfo() {
       const selected = this.featuredSavedJourney
       const journey = this.featuredJourneyDetailsIdentifier === selected?.identifier ? this.featuredJourneyDetails : null
@@ -504,6 +541,14 @@ export default {
       const count = this.featuredJourneyAlerts.length
       if (!count) return ''
       const title = this.featuredJourneyAlerts.map(alert => alert.Title?.trim())
+        .find(title => title && !/^service alerts?[.!]?$/i.test(title))
+      if (!title) return count === 1 ? 'Service alert' : `${count} service alerts`
+      return count === 1 ? title : `${title} · +${count - 1} more`
+    },
+    featuredCommuteAlertSummary() {
+      const count = this.commuteAlerts.length
+      if (!count) return ''
+      const title = this.commuteAlerts.map(alert => alert.Title?.trim())
         .find(title => title && !/^service alerts?[.!]?$/i.test(title))
       if (!title) return count === 1 ? 'Service alert' : `${count} service alerts`
       return count === 1 ? title : `${title} · +${count - 1} more`
@@ -713,6 +758,333 @@ export default {
         }
       } catch (error) {
         reportRequestFailure(error)
+      }
+    },
+    async getSavedCommutes() {
+      const requestVersion = ++this.commuteListRequestVersion
+      this.commutePlanRequestVersion++
+      this.commutePlanLoading = false
+      if (!this.auth0.isAuthenticated) {
+        this.commuteAlertRequestVersion++
+        this.savedCommutes = []
+        this.commutePlanCandidates = []
+        this.commuteAlerts = []
+        return
+      }
+
+      try {
+        const commutes = await commutesApi.list(this.auth0)
+        if (requestVersion !== this.commuteListRequestVersion) return
+        this.savedCommutes = commutes
+        reportRequestSuccess()
+        this.refreshCommutePlans()
+      } catch (error) {
+        if (requestVersion !== this.commuteListRequestVersion) return
+        reportRequestFailure(error)
+      }
+    },
+    commuteDateTime(date, time) {
+      if (!date?.isValid || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time || '')) return null
+      const value = DateTime.fromFormat(`${date.toISODate()} ${time}`, 'yyyy-MM-dd HH:mm', { zone: date.zoneName })
+      return value.isValid ? value : null
+    },
+    commuteRunsOnDate(commute, date) {
+      const weekday = date.setLocale('en').toFormat('cccc').toLowerCase()
+      return (commute.daysOfWeek || []).some(day => String(day).trim().toLowerCase() === weekday)
+    },
+    plannerPathSegment(value) {
+      return encodeURIComponent(value).replace(/%2C/g, ',')
+    },
+    plannerPlans(results) {
+      return [
+        results?.JourneyPlans, results?.journeyPlans, results?.Plans, results?.plans,
+        results?.data?.JourneyPlans, results?.data?.journeyPlans,
+        results?.Data?.JourneyPlans, results?.Data?.journeyPlans, results
+      ].find(Array.isArray) || []
+    },
+    async requestCommutePlans(originRef, destinationRef, datetime) {
+      const response = await axios.get(`${API.URL}/core/planner/${this.plannerPathSegment(originRef)}/${this.plannerPathSegment(destinationRef)}`, {
+        params: {
+          count: 8,
+          max_changes: 3,
+          max_transfer_distance_metres: 1000,
+          max_journey_duration_minutes: 720,
+          view: 'web',
+          datetime: datetime.toISO()
+        }
+      })
+      return this.plannerPlans(response.data)
+    },
+    planCandidate(commute, direction, target, plans) {
+      const outbound = direction === 'outbound'
+      const now = this.currentTime
+      const viable = plans.map(plan => {
+        const start = this.journeyTimestamp(plan.StartTime || plan.startTime)
+        const arrival = this.journeyTimestamp(plan.ArrivalTime || plan.arrivalTime)
+        return { plan, start, arrival }
+      }).filter(({ plan, start, arrival }) => {
+        if (!Number.isFinite(start) || !Number.isFinite(arrival) || arrival <= now) return false
+        if (outbound) return start < now || arrival <= target.toMillis() + 30 * 60 * 1000
+        return start >= target.toMillis() - 60 * 1000
+      })
+
+      const active = viable.filter(item => item.start <= now && item.arrival > now)
+      const upcoming = viable.filter(item => item.start > now)
+      const selected = active.length
+        ? active.sort((first, second) => first.arrival - second.arrival)[0]
+        : upcoming.sort((first, second) => outbound
+          ? second.arrival - first.arrival
+          : first.start - second.start)[0]
+      if (!selected) return null
+
+      const routeItems = [
+        selected.plan.RouteItems, selected.plan.routeItems,
+        selected.plan.Steps, selected.plan.steps,
+        selected.plan.Legs, selected.plan.legs
+      ].find(Array.isArray) || []
+      if (!routeItems.some(item => item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney)) return null
+
+      const steps = this.commuteSteps(routeItems, commute, outbound, now, selected.plan)
+
+      return {
+        key: `${commute.id || commute.originRef}-${direction}-${selected.plan.StartTime || selected.plan.startTime}`,
+        name: commute.name || 'Saved commute',
+        directionLabel: outbound ? 'Outward' : 'Return',
+        start: selected.start,
+        arrival: selected.arrival,
+        steps,
+        alertIdentifiers: this.commuteAlertIdentifiers(routeItems, selected.plan)
+      }
+    },
+    commuteStopName(stop, fallback) {
+      return stop?.PrimaryName || stop?.primaryName || stop?.name || stop?.Name || fallback
+    },
+    commuteSteps(routeItems, commute, outbound, now, plan) {
+      const originName = outbound ? this.commuteStopName(commute.origin, '') : this.commuteStopName(commute.destination, '')
+      const destinationName = outbound ? this.commuteStopName(commute.destination, '') : this.commuteStopName(commute.origin, '')
+      const items = routeItems.filter(item => item && typeof item === 'object')
+      return items.map((item, index) => {
+        const journey = item.Journey || item.journey || item.RealtimeJourney || item.realtimeJourney || null
+        const isTransfer = String(item.Type || item.type || '').toLowerCase() === 'transfer'
+        const start = item.StartTime || item.startTime || item.DepartureTime || item.departureTime || journey?.DepartureTime
+        const arrival = item.ArrivalTime || item.arrivalTime || item.EndTime || item.endTime
+        const startTimestamp = this.journeyTimestamp(start)
+        const arrivalTimestamp = this.journeyTimestamp(arrival)
+        const isActive = startTimestamp !== null && arrivalTimestamp !== null && startTimestamp <= now && arrivalTimestamp > now
+        const itemOrigin = item.OriginStop || item.originStop || item.FromStop || item.fromStop
+        const itemDestination = item.DestinationStop || item.destinationStop || item.ToStop || item.toStop
+        const itemOriginRef = item.OriginStopRef || item.originStopRef || item.FromStopRef || item.fromStopRef || ''
+        const itemDestinationRef = item.DestinationStopRef || item.destinationStopRef || item.ToStopRef || item.toStopRef || ''
+        const origin = this.commuteStopName(itemOrigin, index === 0 ? originName : itemOriginRef)
+        const destination = this.commuteStopName(itemDestination, index === items.length - 1 ? destinationName : itemDestinationRef)
+        const realtime = journey?.RealtimeJourney || journey?.realtimeJourney || null
+        const realtimeIsFresh = realtime?.ActivelyTracked && !realtime.Cancelled
+        const service = journey?.Service || item.Service || item.service || null
+        const transportType = service?.TransportType || item.TransportType || item.transportType || ''
+        const serviceName = service?.ServiceName || service?.PrimaryName || service?.Name || transportType || 'Service'
+        const realtimeStopForRef = ref => Object.values(realtime?.Stops || {}).find(stop => stop?.StopRef === ref)
+        const realtimeOrigin = realtimeIsFresh ? realtimeStopForRef(itemOriginRef) : null
+        const realtimeDestination = realtimeIsFresh ? realtimeStopForRef(itemDestinationRef) : null
+        const journeyTimezone = journey?.DepartureTimezone
+        const displayTimezone = journeyTimezone || DateTime.local().zoneName
+        const displayStart = realtimeOrigin?.DepartureTime || realtimeOrigin?.ArrivalTime || start
+        const displayArrival = realtimeDestination?.ArrivalTime || realtimeDestination?.DepartureTime || arrival
+        const journeyId = journey?.PrimaryIdentifier || journey?.primaryIdentifier || journey?.Identifier || journey?.identifier || journey?.ID || journey?.id || ''
+        const realtimeRunDate = realtime?.JourneyRunDate?.slice(0, 10)
+        const journeyRunDate = /^\d{4}-\d{2}-\d{2}$/.test(realtimeRunDate || '')
+          ? realtimeRunDate
+          : DateTime.fromISO(plan?.StartTime || start || journey?.DepartureTime || '', { setZone: true })
+            .setZone(displayTimezone)
+            .toISODate()
+
+        let nextStop = ''
+        let nextStopTime = ''
+        if (!isTransfer && isActive && realtimeIsFresh) {
+          const nextRef = realtime.NextStopRef
+          const path = journey?.Path || journey?.path || []
+          const points = path.map(leg => ({
+            stop: leg.OriginStop || leg.originStop,
+            ref: leg.OriginStopRef || leg.originStopRef,
+            time: leg.OriginArrivalTime || leg.OriginDepartureTime
+          }))
+          const finalLeg = path[path.length - 1]
+          if (finalLeg) points.push({
+            stop: finalLeg.DestinationStop || finalLeg.destinationStop,
+            ref: finalLeg.DestinationStopRef || finalLeg.destinationStopRef,
+            time: finalLeg.DestinationArrivalTime || finalLeg.DestinationDepartureTime
+          })
+          const nextIndex = Number.isInteger(realtime.NextStopIndex) && realtime.NextStopIndex > 0 && realtime.NextStopIndex < points.length
+            ? realtime.NextStopIndex
+            : -1
+          const point = (nextIndex >= 0 ? points[nextIndex] : null) || points.find(value => value.ref === nextRef)
+          const realtimeNextStop = Object.values(realtime?.Stops || {}).find(stop => nextIndex >= 0 && stop?.JourneyStopIndex === nextIndex) || realtimeStopForRef(nextRef)
+          nextStop = this.commuteStopName(point?.stop || realtime.NextStop, '') ||
+            (nextRef === itemOriginRef ? origin : nextRef === itemDestinationRef ? destination : '')
+          nextStopTime = this.firstJourneyClockTime([
+            realtimeNextStop?.ArrivalTime,
+            realtimeNextStop?.DepartureTime,
+            point?.time
+          ], displayTimezone)
+        }
+
+        const isWalking = ['walking', 'walk'].includes(String(item.TransferType || item.transferType || '').toLowerCase()) ||
+          Boolean(item.DistanceMetres || item.distanceMetres || item.WalkDurationSeconds || item.walkDurationSeconds)
+        const transferDetails = []
+        if (origin && destination && origin !== destination) transferDetails.push(`${origin} to ${destination}`)
+        const transferDistance = item.DistanceMetres || item.distanceMetres
+        if (transferDistance) transferDetails.push(transferDistance >= 1000 ? `${(transferDistance / 1000).toFixed(1)} km` : `${transferDistance} m`)
+        const transferDuration = item.TotalDurationSeconds || item.totalDurationSeconds || item.WalkDurationSeconds || item.walkDurationSeconds
+        if (transferDuration) transferDetails.push(Pretty.duration(transferDuration * 1e9))
+
+        return {
+          key: item.PrimaryIdentifier || item.Identifier || itemOriginRef || `${index}-${start || ''}`,
+          isTransfer,
+          isActive,
+          title: isTransfer
+            ? isWalking ? 'Walk to next service' : `Change at ${destination || origin || 'station'}`
+            : serviceName,
+          subtitle: isTransfer ? transferDetails.join(' · ') || 'Transfer' : '',
+          service: isTransfer ? null : service,
+          journeyRoute: !isTransfer && journeyId
+            ? { name: 'journeys/view', params: { id: journeyId }, query: { date: journeyRunDate || undefined } }
+            : undefined,
+          icon: ({ rail: 'train', train: 'train', bus: 'directions_bus', coach: 'airport_shuttle', tram: 'tram', metro: 'subway', ferry: 'directions_boat', air: 'flight', walk: 'directions_walk', walking: 'directions_walk' })[transportType.toLowerCase()] || 'route',
+          origin,
+          destination,
+          nextStop,
+          nextStopRef: isActive && realtimeIsFresh && !nextStop ? (realtime?.NextStopRef || '') : '',
+          nextStopTime,
+          startTime: this.firstJourneyClockTime([displayStart], displayTimezone),
+          arrivalTime: this.firstJourneyClockTime([displayArrival], displayTimezone)
+        }
+      })
+    },
+    commuteAlertIdentifiers(routeItems, plan) {
+      const identifiers = new Set()
+      for (const item of routeItems) {
+        const journey = item.Journey || item.journey || item.RealtimeJourney || item.realtimeJourney
+        const journeyId = journey?.PrimaryIdentifier || journey?.primaryIdentifier || journey?.Identifier || journey?.identifier || journey?.ID || journey?.id
+        if (journeyId) {
+          identifiers.add(journeyId)
+          const runDate = journey?.RealtimeJourney?.JourneyRunDate?.slice(0, 10) ||
+            DateTime.fromISO(plan.StartTime || plan.startTime, { setZone: true }).toISODate()
+          if (runDate) identifiers.add(`DAYINSTANCEOF:${runDate}:${journeyId}`)
+        }
+        for (const ref of [item.OriginStopRef || item.originStopRef, item.DestinationStopRef || item.destinationStopRef]) {
+          if (ref) identifiers.add(ref)
+        }
+        const nextStopRef = journey?.RealtimeJourney?.NextStopRef || journey?.realtimeJourney?.nextStopRef
+        if (nextStopRef) identifiers.add(nextStopRef)
+      }
+      return [...identifiers]
+    },
+    async refreshCommutePlans() {
+      if (this.commutePlanLoading) return
+      if (!this.auth0.isAuthenticated || this.savedCommutes.length === 0) {
+        this.commutePlanRequestVersion++
+        this.commutePlanCandidates = []
+        return
+      }
+
+      const requestVersion = ++this.commutePlanRequestVersion
+      this.commutePlanLoading = true
+      const candidates = []
+      let completedRequest = false
+      let firstError
+
+      try {
+        const now = DateTime.fromMillis(this.currentTime)
+        for (const commute of this.savedCommutes) {
+          if (!commute.originRef || !commute.destinationRef || !(commute.daysOfWeek || []).length) continue
+
+          let occurrencesAttempted = 0
+          for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+            const date = now.startOf('day').plus({ days: dayOffset })
+            if (!this.commuteRunsOnDate(commute, date)) continue
+            const outwardTarget = this.commuteDateTime(date, commute.arrivalAtDestinationTime)
+            const returnTarget = this.commuteDateTime(date, commute.returnDepartureTime)
+            const outwardIsRelevant = outwardTarget && outwardTarget.toMillis() > this.currentTime - 4 * 60 * 60 * 1000
+            const returnIsRelevant = returnTarget && returnTarget.toMillis() > this.currentTime - 4 * 60 * 60 * 1000
+            if (!outwardIsRelevant && !returnIsRelevant) continue
+
+            const candidateCountBeforeDate = candidates.length
+            const requests = []
+            if (outwardIsRelevant) {
+              requests.push({
+                direction: 'outbound',
+                target: outwardTarget,
+                promise: this.requestCommutePlans(commute.originRef, commute.destinationRef, outwardTarget.minus({ hours: 12 }))
+              })
+            }
+            if (returnIsRelevant) {
+              requests.push({
+                direction: 'return',
+                target: returnTarget,
+                promise: this.requestCommutePlans(commute.destinationRef, commute.originRef, returnTarget)
+              })
+            }
+
+            const results = await Promise.all(requests.map(request => request.promise.then(
+              plans => ({ status: 'fulfilled', request, plans }),
+              error => ({ status: 'rejected', request, error })
+            )))
+            if (requestVersion !== this.commutePlanRequestVersion) return
+            occurrencesAttempted++
+
+            for (const result of results) {
+              if (result.status === 'fulfilled') {
+                completedRequest = true
+                const candidate = this.planCandidate(commute, result.request.direction, result.request.target, result.plans)
+                if (candidate) candidates.push(candidate)
+              } else {
+                firstError ||= result.error
+              }
+            }
+            if (candidates.length > candidateCountBeforeDate) break
+            if (occurrencesAttempted >= 2) break
+          }
+        }
+
+        if (requestVersion === this.commutePlanRequestVersion && (completedRequest || !firstError)) {
+          this.commutePlanCandidates = candidates
+          if (completedRequest) reportRequestSuccess()
+        } else if (firstError) {
+          reportRequestFailure(firstError)
+        }
+      } finally {
+        if (requestVersion === this.commutePlanRequestVersion) this.commutePlanLoading = false
+      }
+    },
+    async refreshCommuteAlerts(commute = this.featuredCommute) {
+      const requestVersion = ++this.commuteAlertRequestVersion
+      if (!commute || !commute.alertIdentifiers?.length || !isConnected()) {
+        this.commuteAlerts = []
+        return
+      }
+
+      try {
+        const identifiers = encodeURIComponent(commute.alertIdentifiers.join(',')).replace(/%2C/g, ',')
+        const stopLookups = commute.steps
+          .map((step, index) => step.nextStopRef ? { step, index, promise: axios.get(`${API.URL}/core/stops/${encodeURIComponent(step.nextStopRef)}`, { params: { view: 'summary' } }) } : null)
+          .filter(Boolean)
+        const results = await Promise.allSettled([
+          axios.get(`${API.URL}/core/service_alerts/matching/${identifiers}`, { params: { view: 'web' } }),
+          ...stopLookups.map(lookup => lookup.promise)
+        ])
+        if (requestVersion !== this.commuteAlertRequestVersion || commute.key !== this.featuredCommute?.key) return
+        if (results[0].status === 'fulfilled') {
+          this.commuteAlerts = Array.isArray(results[0].value.data) ? results[0].value.data : []
+        } else {
+          reportRequestFailure(results[0].reason)
+        }
+        stopLookups.forEach((lookup, index) => {
+          const result = results[index + 1]
+          if (result?.status !== 'fulfilled') return
+          lookup.step.nextStop = this.commuteStopName(result.value.data, '')
+          if (lookup.step.nextStop) lookup.step.nextStopRef = ''
+        })
+      } catch (error) {
+        if (requestVersion === this.commuteAlertRequestVersion) reportRequestFailure(error)
       }
     },
     async getSavedItems() {
@@ -1016,9 +1388,14 @@ export default {
     this.getStats()
     this.startNearbyLocationPollingIfAllowed()
     this.getSavedItems()
+    this.getSavedCommutes()
     this.savedJourneyStatusTimer = setInterval(() => {
       this.currentTime = Date.now()
-      if (!document.hidden) this.refreshFeaturedJourneyInfo()
+      if (!document.hidden) {
+        this.refreshCommutePlans()
+        if (this.featuredCommute) this.refreshCommuteAlerts()
+        else this.refreshFeaturedJourneyInfo()
+      }
     }, 60000)
 
     if (this.stopPanelTab === 'saved') {
@@ -1030,6 +1407,7 @@ export default {
   watch: {
     'auth0.isAuthenticated'() {
       this.getSavedItems()
+      this.getSavedCommutes()
     },
     'featuredSavedJourney.identifier'(identifier) {
       this.featuredJourneyRequestVersion++
@@ -1037,17 +1415,27 @@ export default {
       this.featuredJourneyDetailsIdentifier = ''
       this.featuredJourneyRealtimeFetchedAt = 0
       this.featuredJourneyAlerts = []
-      if (identifier) this.refreshFeaturedJourneyInfo(identifier)
+      if (identifier && !this.featuredCommute) this.refreshFeaturedJourneyInfo(identifier)
+    },
+    'featuredCommute.key'(key) {
+      this.commuteAlerts = []
+      if (key) this.refreshCommuteAlerts(this.featuredCommute)
     }
   },
   beforeRouteLeave() {
     clearInterval(this.refreshTimer)
     clearInterval(this.savedJourneyStatusTimer)
+    this.commuteListRequestVersion++
+    this.commutePlanRequestVersion++
+    this.commuteAlertRequestVersion++
     this.stopNearbyLocationPolling()
   },
   beforeUnmount() {
     clearInterval(this.refreshTimer)
     clearInterval(this.savedJourneyStatusTimer)
+    this.commuteListRequestVersion++
+    this.commutePlanRequestVersion++
+    this.commuteAlertRequestVersion++
     this.stopNearbyLocationPolling()
   },
 }
