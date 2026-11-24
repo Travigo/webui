@@ -15,6 +15,7 @@
       v-if="featuredCommute"
       :commute="featuredCommute"
       :alert-summary="featuredCommuteAlertSummary"
+      :alerts="commuteAlerts"
     />
 
     <component
@@ -294,6 +295,7 @@ import TabBar from '@/components/TabBar.vue'
 import Pretty from '@/pretty'
 import commutesApi from '@/commutes'
 import { DateTime } from 'luxon'
+import { journeyPlanForDisplay, journeyPlanRouteItems } from '@/plannerRouteItems'
 
 import axios from 'axios'
 import API from '@/API'
@@ -307,6 +309,9 @@ import {
 } from '@/offline/resourceCache'
 
 const stopPanelStorageKey = 'travigo_home_stops_tab'
+const COMMUTE_UPCOMING_WINDOW_MS = 2 * 60 * 60 * 1000
+const COMMUTE_PLAN_LOOKBACK_MS = 4 * 60 * 60 * 1000
+const COMMUTE_MAX_JOURNEY_DURATION_MS = 12 * 60 * 60 * 1000
 
 export default {
   name: 'Home',
@@ -460,7 +465,7 @@ export default {
         .sort((first, second) => first.arrival - second.arrival)[0]
       if (active) return active
 
-      const upcoming = candidates.filter(candidate => candidate.upcoming)
+      const upcoming = candidates.filter(candidate => candidate.upcoming && candidate.start <= this.currentTime + COMMUTE_UPCOMING_WINDOW_MS)
         .sort((first, second) => first.start - second.start)[0]
       if (!upcoming) return undefined
 
@@ -819,9 +824,10 @@ export default {
       const outbound = direction === 'outbound'
       const now = this.currentTime
       const viable = plans.map(plan => {
-        const start = this.journeyTimestamp(plan.StartTime || plan.startTime)
-        const arrival = this.journeyTimestamp(plan.ArrivalTime || plan.arrivalTime)
-        return { plan, start, arrival }
+        const displayPlan = journeyPlanForDisplay(plan)
+        const start = this.journeyTimestamp(displayPlan.StartTime || displayPlan.startTime)
+        const arrival = this.journeyTimestamp(displayPlan.ArrivalTime || displayPlan.arrivalTime)
+        return { plan, displayPlan, start, arrival }
       }).filter(({ plan, start, arrival }) => {
         if (!Number.isFinite(start) || !Number.isFinite(arrival) || arrival <= now) return false
         if (outbound) return start < now || arrival <= target.toMillis() + 30 * 60 * 1000
@@ -837,14 +843,11 @@ export default {
           : first.start - second.start)[0]
       if (!selected) return null
 
-      const routeItems = [
-        selected.plan.RouteItems, selected.plan.routeItems,
-        selected.plan.Steps, selected.plan.steps,
-        selected.plan.Legs, selected.plan.legs
-      ].find(Array.isArray) || []
-      if (!routeItems.some(item => item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney)) return null
+      const routeItems = journeyPlanRouteItems(selected.plan)
+      const displayRouteItems = journeyPlanRouteItems(selected.displayPlan)
+      if (!displayRouteItems.some(item => item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney)) return null
 
-      const steps = this.commuteSteps(routeItems, commute, outbound, now, selected.plan)
+      const steps = this.commuteSteps(displayRouteItems, commute, outbound, now, selected.displayPlan)
 
       return {
         key: `${commute.id || commute.originRef}-${direction}-${selected.plan.StartTime || selected.plan.startTime}`,
@@ -941,7 +944,7 @@ export default {
           isTransfer,
           isActive,
           title: isTransfer
-            ? isWalking ? 'Walk to next service' : `Change at ${destination || origin || 'station'}`
+            ? isWalking ? 'Walk' : `Change at ${destination || origin || 'station'}`
             : serviceName,
           subtitle: isTransfer ? transferDetails.join(' · ') || 'Transfer' : '',
           service: isTransfer ? null : service,
@@ -1003,8 +1006,12 @@ export default {
             if (!this.commuteRunsOnDate(commute, date)) continue
             const outwardTarget = this.commuteDateTime(date, commute.arrivalAtDestinationTime)
             const returnTarget = this.commuteDateTime(date, commute.returnDepartureTime)
-            const outwardIsRelevant = outwardTarget && outwardTarget.toMillis() > this.currentTime - 4 * 60 * 60 * 1000
-            const returnIsRelevant = returnTarget && returnTarget.toMillis() > this.currentTime - 4 * 60 * 60 * 1000
+            const outwardIsRelevant = outwardTarget &&
+              outwardTarget.toMillis() > this.currentTime - COMMUTE_PLAN_LOOKBACK_MS &&
+              outwardTarget.toMillis() <= this.currentTime + COMMUTE_UPCOMING_WINDOW_MS + COMMUTE_MAX_JOURNEY_DURATION_MS
+            const returnIsRelevant = returnTarget &&
+              returnTarget.toMillis() > this.currentTime - COMMUTE_PLAN_LOOKBACK_MS &&
+              returnTarget.toMillis() <= this.currentTime + COMMUTE_UPCOMING_WINDOW_MS
             if (!outwardIsRelevant && !returnIsRelevant) continue
 
             const candidateCountBeforeDate = candidates.length

@@ -1,6 +1,6 @@
 <template>
   <div class="ui-panel block overflow-hidden">
-    <div class="px-4 py-3 sm:px-5 sm:py-4">
+    <div class="px-3 py-2.5 sm:px-4 sm:py-3">
       <div class="flex items-center justify-between gap-2">
         <div class="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
           <span class="inline-flex items-center gap-1.5 text-xs font-bold text-(--ui-muted)">
@@ -15,7 +15,7 @@
         </div>
       </div>
 
-      <ol class="mt-3 space-y-2.5">
+      <ol class="mt-2 space-y-1.5">
         <li
           v-for="(step, index) in commute.steps"
           :key="`${step.key}-${index}`"
@@ -24,23 +24,24 @@
           <component
             :is="step.journeyRoute ? 'router-link' : 'div'"
             v-bind="step.journeyRoute ? { to: step.journeyRoute } : {}"
-            class="relative grid grid-cols-[1.25rem_minmax(0,1fr)] gap-x-2.5 rounded-lg"
+            class="relative grid grid-cols-[1.1rem_minmax(0,1fr)] gap-x-2 rounded-lg"
             :class="step.journeyRoute ? 'transition hover:bg-brand-blue/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue dark:hover:bg-brand-blue/100/5' : ''"
           >
             <div class="flex flex-col items-center">
               <span
-                class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
                 :class="step.isTransfer ? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' : step.isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light'"
               >
-                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">{{ step.isTransfer ? 'sync_alt' : step.icon }}</span>
+                <span class="material-symbols-outlined text-[13px]" aria-hidden="true">{{ step.isTransfer ? 'sync_alt' : step.icon }}</span>
               </span>
-              <span v-if="index < commute.steps.length - 1" class="my-1 min-h-3 w-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
+              <span v-if="index < commute.steps.length - 1" class="my-0.5 min-h-2 w-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
             </div>
 
             <div class="min-w-0 pb-1">
               <template v-if="step.isTransfer">
-                <p class="text-sm font-bold text-(--ui-text)">{{ step.title }}</p>
-                <p class="mt-0.5 text-xs text-(--ui-muted)">{{ step.subtitle }}</p>
+                <p class="text-xs font-bold leading-5 text-(--ui-text)">
+                  {{ step.title }}<span v-if="step.subtitle" class="font-medium text-(--ui-muted)"> · {{ step.subtitle }}</span>
+                </p>
               </template>
               <template v-else>
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -49,18 +50,18 @@
                   <span v-if="step.isActive" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">Now</span>
                   <span v-if="step.journeyRoute" class="material-symbols-outlined text-[16px] text-(--ui-muted)" aria-hidden="true">chevron_right</span>
                 </div>
-                <p class="mt-1 flex min-w-0 flex-wrap items-center gap-x-1 text-sm font-semibold text-(--ui-text)">
+                <p class="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1 text-xs font-semibold leading-5 text-(--ui-text)">
                   <span class="wrap-anywhere">{{ step.origin }}</span>
-                  <span class="material-symbols-outlined text-[15px] text-(--ui-muted)" aria-hidden="true">arrow_forward</span>
+                  <span class="material-symbols-outlined text-[13px] text-(--ui-muted)" aria-hidden="true">arrow_forward</span>
                   <span class="wrap-anywhere">{{ step.destination }}</span>
                 </p>
-                <p v-if="step.nextStop" class="mt-0.5 truncate text-xs font-medium text-(--ui-muted)">
+                <p v-if="step.nextStop" class="mt-0.5 truncate text-[11px] font-medium leading-4 text-(--ui-muted)">
                   Next stop: <strong class="text-(--ui-text)">{{ step.nextStop }}</strong><span v-if="step.nextStopTime"> · {{ step.nextStopTime }}</span>
                 </p>
               </template>
             </div>
 
-            <div class="col-start-2 mt-0.5 flex flex-wrap gap-x-3 text-xs font-medium text-(--ui-muted)">
+            <div v-if="!step.isTransfer" class="col-start-2 mt-0.5 flex flex-wrap gap-x-2 text-[11px] font-medium leading-4 text-(--ui-muted)">
               <span v-if="step.startTime">Departs <strong class="tabular-nums text-(--ui-text)">{{ step.startTime }}</strong></span>
               <span v-if="step.arrivalTime">Arrives <strong class="tabular-nums text-(--ui-text)">{{ step.arrivalTime }}</strong></span>
             </div>
@@ -69,19 +70,48 @@
       </ol>
     </div>
 
-    <div v-if="alertSummary" class="flex items-start gap-2 border-t border-(--ui-divider) bg-amber-50 px-4 py-2 text-xs font-semibold leading-4 text-amber-900 sm:px-5 dark:bg-amber-400/5 dark:text-amber-200">
-      <span class="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">warning</span>
-      <span class="line-clamp-2 wrap-anywhere">{{ alertSummary }}</span>
+    <div v-if="alertSummary" class="border-t border-(--ui-divider) bg-amber-50 dark:bg-amber-400/5">
+      <button
+        type="button"
+        class="flex w-full items-start gap-2 px-3 py-1.5 text-left text-xs font-semibold leading-4 text-amber-900 transition hover:bg-amber-100/70 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-amber-700 sm:px-4 dark:text-amber-200 dark:hover:bg-amber-400/10"
+        :aria-label="`View ${alerts.length} service alert${alerts.length === 1 ? '' : 's'} for ${commute.name}`"
+        aria-haspopup="dialog"
+        :aria-expanded="alertsModalOpen"
+        @click="alertsModalOpen = true"
+      >
+        <span class="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">warning</span>
+        <span class="line-clamp-2 min-w-0 flex-1 wrap-anywhere">{{ alertSummary }}</span>
+        <span class="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">chevron_right</span>
+      </button>
     </div>
+
+    <Modal
+      v-model:open="alertsModalOpen"
+      title="Commute service alerts"
+      :subtitle="`${commute.name} · ${commute.directionLabel}`"
+      icon="warning_amber"
+      size="lg"
+      close-label="Close commute alerts"
+      body-class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5"
+    >
+      <ServiceAlertList :alerts="alerts" :context-name="commute.name" />
+    </Modal>
   </div>
 </template>
 
 <script>
+import Modal from '@/components/Modal.vue'
+import ServiceAlertList from '@/components/ServiceAlertList.vue'
 import ServiceIcon from '@/components/ServiceIcon.vue'
 
 export default {
   name: 'CommuteJourneyCard',
-  components: { ServiceIcon },
+  components: { Modal, ServiceAlertList, ServiceIcon },
+  data() {
+    return {
+      alertsModalOpen: false
+    }
+  },
   props: {
     commute: {
       type: Object,
@@ -90,6 +120,10 @@ export default {
     alertSummary: {
       type: String,
       default: ''
+    },
+    alerts: {
+      type: Array,
+      default: () => []
     }
   }
 }

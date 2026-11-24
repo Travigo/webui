@@ -234,6 +234,7 @@ import API from '@/API'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
 import Pretty from '@/pretty'
+import { journeyPlanForDisplay, journeyPlanRouteItems } from '@/plannerRouteItems'
 
 const PLANNER_REQUEST_TIMEOUT_MS = 22000
 
@@ -270,7 +271,7 @@ export default {
         this.results?.data?.JourneyPlans, this.results?.data?.journeyPlans,
         this.results?.Data?.JourneyPlans, this.results?.Data?.journeyPlans, this.results
       ].find(result => Array.isArray(result))
-      return resultSet || []
+      return (resultSet || []).map(journeyPlanForDisplay)
     },
     searchTruncated() {
       return Boolean(this.results?.SearchTruncated || this.results?.searchTruncated || this.results?.data?.SearchTruncated || this.results?.data?.searchTruncated)
@@ -363,7 +364,7 @@ export default {
     timestamp(value) { const result = Date.parse(value); return Number.isFinite(result) ? result : Number.POSITIVE_INFINITY },
     journeyPlanKey(plan, index) { return plan.PrimaryIdentifier || plan.Identifier || `${plan.StartTime || 'start'}-${plan.ArrivalTime || 'arrival'}-${index}` },
     routeItems(plan) {
-      return [plan?.RouteItems, plan?.routeItems, plan?.Steps, plan?.steps, plan?.Legs, plan?.legs].find(Array.isArray) || []
+      return journeyPlanRouteItems(plan)
     },
     rawItemJourney(item) { return item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney || null },
     itemJourney(item) {
