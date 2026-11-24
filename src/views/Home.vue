@@ -16,6 +16,7 @@
       :commute="featuredCommute"
       :alert-summary="featuredCommuteAlertSummary"
       :alerts="commuteAlerts"
+      :compact="featuredCommuteIsCompact"
     />
 
     <component
@@ -312,6 +313,14 @@ const stopPanelStorageKey = 'travigo_home_stops_tab'
 const COMMUTE_UPCOMING_WINDOW_MS = 2 * 60 * 60 * 1000
 const COMMUTE_PLAN_LOOKBACK_MS = 4 * 60 * 60 * 1000
 const COMMUTE_MAX_JOURNEY_DURATION_MS = 12 * 60 * 60 * 1000
+const URGENT_COMMUTE_ALERT_TYPES = new Set([
+  'JourneyCancelled',
+  'JourneyPartiallyCancelled',
+  'ServiceSuspended',
+  'ServicePartSuspended',
+  'StopClosed',
+  'SevereDelays'
+])
 
 export default {
   name: 'Home',
@@ -465,7 +474,8 @@ export default {
         .sort((first, second) => first.arrival - second.arrival)[0]
       if (active) return active
 
-      const upcoming = candidates.filter(candidate => candidate.upcoming && candidate.start <= this.currentTime + COMMUTE_UPCOMING_WINDOW_MS)
+      const todayEnd = DateTime.fromMillis(this.currentTime).endOf('day').toMillis()
+      const upcoming = candidates.filter(candidate => candidate.upcoming && candidate.start <= todayEnd)
         .sort((first, second) => first.start - second.start)[0]
       if (!upcoming) return undefined
 
@@ -473,6 +483,19 @@ export default {
       if (savedJourney?.inProgress) return undefined
       if (savedJourney?.upcoming && savedJourney.departure <= upcoming.start) return undefined
       return upcoming
+    },
+    featuredCommuteHasUrgentAlert() {
+      return this.commuteAlerts.some(alert => {
+        const type = String(alert.AlertType || '').trim()
+        if (URGENT_COMMUTE_ALERT_TYPES.has(type)) return true
+
+        const details = `${alert.Title || ''} ${alert.Text || ''}`
+        return /\b(cancelled|canceled|cancellation|cancellations|suspended|suspension|severe delays?|major delays?|significant delays?|substantial delays?)\b/i.test(details)
+      })
+    },
+    featuredCommuteIsCompact() {
+      if (!this.featuredCommute || this.featuredCommute.inProgress || this.featuredCommuteHasUrgentAlert) return false
+      return this.featuredCommute.start > this.currentTime + COMMUTE_UPCOMING_WINDOW_MS
     },
     featuredJourneyLiveInfo() {
       const selected = this.featuredSavedJourney
@@ -1006,12 +1029,15 @@ export default {
             if (!this.commuteRunsOnDate(commute, date)) continue
             const outwardTarget = this.commuteDateTime(date, commute.arrivalAtDestinationTime)
             const returnTarget = this.commuteDateTime(date, commute.returnDepartureTime)
+            const targetHorizon = dayOffset === 0
+              ? now.endOf('day').toMillis()
+              : this.currentTime + COMMUTE_UPCOMING_WINDOW_MS
             const outwardIsRelevant = outwardTarget &&
               outwardTarget.toMillis() > this.currentTime - COMMUTE_PLAN_LOOKBACK_MS &&
-              outwardTarget.toMillis() <= this.currentTime + COMMUTE_UPCOMING_WINDOW_MS + COMMUTE_MAX_JOURNEY_DURATION_MS
+              outwardTarget.toMillis() <= targetHorizon + (dayOffset === 0 ? 0 : COMMUTE_MAX_JOURNEY_DURATION_MS)
             const returnIsRelevant = returnTarget &&
               returnTarget.toMillis() > this.currentTime - COMMUTE_PLAN_LOOKBACK_MS &&
-              returnTarget.toMillis() <= this.currentTime + COMMUTE_UPCOMING_WINDOW_MS
+              returnTarget.toMillis() <= targetHorizon
             if (!outwardIsRelevant && !returnIsRelevant) continue
 
             const candidateCountBeforeDate = candidates.length

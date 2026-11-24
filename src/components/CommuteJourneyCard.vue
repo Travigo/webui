@@ -1,5 +1,39 @@
 <template>
-  <div class="ui-panel block overflow-hidden">
+  <div v-if="compact" class="ui-panel block overflow-hidden">
+    <component
+      :is="compactJourneyRoute ? 'router-link' : 'div'"
+      v-bind="compactJourneyRoute ? { to: compactJourneyRoute } : {}"
+      class="flex items-center gap-3 px-3 py-2.5 sm:px-4"
+      :class="compactJourneyRoute ? 'transition hover:bg-brand-blue/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-blue dark:hover:bg-brand-blue/100/5' : ''"
+    >
+      <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">schedule</span>
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-xs font-bold leading-4 text-(--ui-muted)">Commute later today</span>
+        <span class="block truncate text-sm font-semibold leading-5 text-(--ui-text)">
+          {{ commute.name }} · {{ commute.directionLabel }}<span v-if="compactDepartureTime"> · Departs {{ compactDepartureTime }}</span>
+        </span>
+      </span>
+      <span v-if="compactJourneyRoute" class="material-symbols-outlined shrink-0 text-[18px] text-(--ui-muted)" aria-hidden="true">chevron_right</span>
+    </component>
+
+    <button
+      v-if="alertSummary"
+      type="button"
+      class="flex w-full items-start gap-2 border-t border-(--ui-divider) bg-amber-50 px-3 py-1.5 text-left text-xs font-semibold leading-4 text-amber-900 transition hover:bg-amber-100/70 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-amber-700 sm:px-4 dark:bg-amber-400/5 dark:text-amber-200 dark:hover:bg-amber-400/10"
+      :aria-label="`View ${alerts.length} service alert${alerts.length === 1 ? '' : 's'} for ${commute.name}`"
+      aria-haspopup="dialog"
+      :aria-expanded="alertsModalOpen"
+      @click="alertsModalOpen = true"
+    >
+      <span class="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">warning</span>
+      <span class="line-clamp-2 min-w-0 flex-1 wrap-anywhere">{{ alertSummary }}</span>
+      <span class="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">chevron_right</span>
+    </button>
+  </div>
+
+  <div v-else class="ui-panel block overflow-hidden">
     <div class="px-3 py-2.5 sm:px-4 sm:py-3">
       <div class="flex items-center justify-between gap-2">
         <div class="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
@@ -85,18 +119,20 @@
       </button>
     </div>
 
-    <Modal
-      v-model:open="alertsModalOpen"
-      title="Commute service alerts"
-      :subtitle="`${commute.name} · ${commute.directionLabel}`"
-      icon="warning_amber"
-      size="lg"
-      close-label="Close commute alerts"
-      body-class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5"
-    >
-      <ServiceAlertList :alerts="alerts" :context-name="commute.name" />
-    </Modal>
   </div>
+
+  <Modal
+    v-if="alerts.length"
+    v-model:open="alertsModalOpen"
+    title="Commute service alerts"
+    :subtitle="`${commute.name} · ${commute.directionLabel}`"
+    icon="warning_amber"
+    size="lg"
+    close-label="Close commute alerts"
+    body-class="max-h-[calc(88dvh-5rem)] space-y-3 overflow-y-auto p-4 sm:p-5"
+  >
+    <ServiceAlertList :alerts="alerts" :context-name="commute.name" />
+  </Modal>
 </template>
 
 <script>
@@ -124,6 +160,23 @@ export default {
     alerts: {
       type: Array,
       default: () => []
+    },
+    compact: {
+      type: Boolean,
+      default: false
+    }
+  },
+  computed: {
+    compactJourneyRoute() {
+      return this.commute.steps.find(step => step.journeyRoute)?.journeyRoute || ''
+    },
+    compactDepartureTime() {
+      return this.commute.steps.find(step => !step.isTransfer && step.startTime)?.startTime || ''
+    }
+  },
+  watch: {
+    alerts(alerts) {
+      if (!alerts.length) this.alertsModalOpen = false
     }
   }
 }
