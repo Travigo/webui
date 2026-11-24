@@ -16,6 +16,7 @@
       :commute="featuredCommute"
       :alert-summary="featuredCommuteAlertSummary"
       :alerts="commuteAlerts"
+      :alert-groups="featuredCommuteAlertGroups"
       :compact="featuredCommuteIsCompact"
     />
 
@@ -314,6 +315,8 @@ const COMMUTE_UPCOMING_WINDOW_MS = 2 * 60 * 60 * 1000
 const COMMUTE_PLAN_LOOKBACK_MS = 4 * 60 * 60 * 1000
 const COMMUTE_MAX_JOURNEY_DURATION_MS = 12 * 60 * 60 * 1000
 const URGENT_COMMUTE_ALERT_TYPES = new Set([
+  'Delays',
+  'JourneyDelayed',
   'JourneyCancelled',
   'JourneyPartiallyCancelled',
   'ServiceSuspended',
@@ -485,17 +488,29 @@ export default {
       return upcoming
     },
     featuredCommuteHasUrgentAlert() {
-      return this.commuteAlerts.some(alert => {
-        const type = String(alert.AlertType || '').trim()
-        if (URGENT_COMMUTE_ALERT_TYPES.has(type)) return true
-
-        const details = `${alert.Title || ''} ${alert.Text || ''}`
-        return /\b(cancelled|canceled|cancellation|cancellations|suspended|suspension|severe delays?|major delays?|significant delays?|substantial delays?)\b/i.test(details)
-      })
+      return this.commuteAlerts.some(alert => URGENT_COMMUTE_ALERT_TYPES.has(String(alert.AlertType || '').trim()))
     },
     featuredCommuteIsCompact() {
       if (!this.featuredCommute || this.featuredCommute.inProgress || this.featuredCommuteHasUrgentAlert) return false
       return this.featuredCommute.start > this.currentTime + COMMUTE_UPCOMING_WINDOW_MS
+    },
+    featuredCommuteAlertGroups() {
+      const groups = [
+        { key: 'journeys', title: 'Journey alerts', identifiers: new Set(this.featuredCommute?.alertIdentifierGroups?.journeys || []), alerts: [] },
+        { key: 'services', title: 'Service alerts', identifiers: new Set(this.featuredCommute?.alertIdentifierGroups?.services || []), alerts: [] },
+        { key: 'stops', title: 'Stop alerts', identifiers: new Set(this.featuredCommute?.alertIdentifierGroups?.stops || []), alerts: [] },
+        { key: 'other', title: 'Other related updates', identifiers: new Set(), alerts: [] }
+      ]
+      const groupsByKey = Object.fromEntries(groups.map(group => [group.key, group]))
+
+      for (const alert of this.commuteAlerts) {
+        const matchedIdentifiers = alert.MatchedIdentifiers || alert.matchedIdentifiers || []
+        const matched = groups.slice(0, 3).find(group => matchedIdentifiers.some(identifier => group.identifiers.has(identifier)))
+        if (matched) matched.alerts.push(alert)
+        else groupsByKey.other.alerts.push(alert)
+      }
+
+      return groups.filter(group => group.alerts.length)
     },
     featuredJourneyLiveInfo() {
       const selected = this.featuredSavedJourney
@@ -871,6 +886,7 @@ export default {
       if (!displayRouteItems.some(item => item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney)) return null
 
       const steps = this.commuteSteps(displayRouteItems, commute, outbound, now, selected.displayPlan)
+      const alertIdentifierGroups = this.commuteAlertTargets(routeItems, selected.plan)
 
       return {
         key: `${commute.id || commute.originRef}-${direction}-${selected.plan.StartTime || selected.plan.startTime}`,
@@ -879,7 +895,8 @@ export default {
         start: selected.start,
         arrival: selected.arrival,
         steps,
-        alertIdentifiers: this.commuteAlertIdentifiers(routeItems, selected.plan)
+        alertIdentifierGroups,
+        alertIdentifiers: [...new Set(Object.values(alertIdentifierGroups).flat())]
       }
     },
     commuteStopName(stop, fallback) {
@@ -985,24 +1002,38 @@ export default {
         }
       })
     },
-    commuteAlertIdentifiers(routeItems, plan) {
-      const identifiers = new Set()
+    commuteAlertTargets(routeItems, plan) {
+      const groups = {
+        journeys: new Set(),
+        services: new Set(),
+        stops: new Set()
+      }
       for (const item of routeItems) {
         const journey = item.Journey || item.journey || item.RealtimeJourney || item.realtimeJourney
         const journeyId = journey?.PrimaryIdentifier || journey?.primaryIdentifier || journey?.Identifier || journey?.identifier || journey?.ID || journey?.id
         if (journeyId) {
-          identifiers.add(journeyId)
-          const runDate = journey?.RealtimeJourney?.JourneyRunDate?.slice(0, 10) ||
+          groups.journeys.add(journeyId)
+          const runDate = (journey?.RealtimeJourney || journey?.realtimeJourney)?.JourneyRunDate?.slice(0, 10) ||
             DateTime.fromISO(plan.StartTime || plan.startTime, { setZone: true }).toISODate()
-          if (runDate) identifiers.add(`DAYINSTANCEOF:${runDate}:${journeyId}`)
+          if (runDate) groups.journeys.add(`DAYINSTANCEOF:${runDate}:${journeyId}`)
         }
-        for (const ref of [item.OriginStopRef || item.originStopRef, item.DestinationStopRef || item.destinationStopRef]) {
-          if (ref) identifiers.add(ref)
+
+        const service = journey?.Service || journey?.service || item.Service || item.service
+        const serviceId = service?.PrimaryIdentifier || service?.primaryIdentifier || service?.Identifier || service?.identifier
+        if (serviceId) groups.services.add(serviceId)
+
+        for (const ref of [
+          item.OriginStopRef || item.originStopRef || item.FromStopRef || item.fromStopRef,
+          item.DestinationStopRef || item.destinationStopRef || item.ToStopRef || item.toStopRef
+        ]) {
+          if (ref) groups.stops.add(ref)
         }
-        const nextStopRef = journey?.RealtimeJourney?.NextStopRef || journey?.realtimeJourney?.nextStopRef
-        if (nextStopRef) identifiers.add(nextStopRef)
+        const realtime = journey?.RealtimeJourney || journey?.realtimeJourney
+        const nextStopRef = realtime?.NextStopRef || realtime?.nextStopRef
+        if (nextStopRef) groups.stops.add(nextStopRef)
       }
-      return [...identifiers]
+
+      return Object.fromEntries(Object.entries(groups).map(([key, identifiers]) => [key, [...identifiers]]))
     },
     async refreshCommutePlans() {
       if (this.commutePlanLoading) return

@@ -11,14 +11,15 @@ function isTrivialFinalWalk(items) {
   if (items.length < 2) return false
 
   const final = items.at(-1)
-  const previous = items.at(-2)
-  if (!isJourneyItem(previous)) return false
   if (String(final?.Type || final?.type).toLowerCase() !== 'transfer') return false
-  if (String(final?.TransferType || final?.transferType).toLowerCase() !== 'nearbywalk') return false
+  if (!items.slice(0, -1).some(isJourneyItem)) return false
 
   const distance = Number(final.DistanceMetres || final.distanceMetres)
-  const duration = Number(final.WalkDurationSeconds || final.walkDurationSeconds || final.TotalDurationSeconds || final.totalDurationSeconds)
-  return distance > 0 && distance <= 25 && (!duration || duration <= 120)
+  const transferType = String(final.TransferType || final.transferType || '').toLowerCase()
+  const walkDuration = Number(final.WalkDurationSeconds || final.walkDurationSeconds)
+  const duration = walkDuration || Number(final.TotalDurationSeconds || final.totalDurationSeconds)
+  const isWalk = transferType === 'nearbywalk' || ['walk', 'walking'].includes(transferType) || distance > 0
+  return isWalk && distance > 0 && distance <= 25 && (!duration || duration <= 120)
 }
 
 export function journeyPlanRouteItems(plan) {
