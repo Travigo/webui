@@ -495,22 +495,35 @@ export default {
       return this.featuredCommute.start > this.currentTime + COMMUTE_UPCOMING_WINDOW_MS
     },
     featuredCommuteAlertGroups() {
-      const groups = [
-        { key: 'journeys', title: 'Journey alerts', identifiers: new Set(this.featuredCommute?.alertIdentifierGroups?.journeys || []), alerts: [] },
-        { key: 'services', title: 'Service alerts', identifiers: new Set(this.featuredCommute?.alertIdentifierGroups?.services || []), alerts: [] },
-        { key: 'stops', title: 'Stop alerts', identifiers: new Set(this.featuredCommute?.alertIdentifierGroups?.stops || []), alerts: [] },
-        { key: 'other', title: 'Other related updates', identifiers: new Set(), alerts: [] }
-      ]
-      const groupsByKey = Object.fromEntries(groups.map(group => [group.key, group]))
+      const groups = (this.featuredCommute?.alertEntities || []).map(entity => ({
+        ...entity,
+        typeLabel: { journey: 'Journey', service: 'Service', stop: 'Stop' }[entity.type] || 'Related update',
+        alerts: [],
+        seenAlertKeys: new Set()
+      }))
+      const groupsByIdentifier = new Map()
+      for (const group of groups) {
+        for (const identifier of group.identifiers) {
+          const matchedGroups = groupsByIdentifier.get(identifier) || []
+          matchedGroups.push(group)
+          groupsByIdentifier.set(identifier, matchedGroups)
+        }
+      }
+      const other = { key: 'other', title: 'Other related updates', typeLabel: '', alerts: [], seenAlertKeys: new Set() }
 
       for (const alert of this.commuteAlerts) {
         const matchedIdentifiers = alert.MatchedIdentifiers || alert.matchedIdentifiers || []
-        const matched = groups.slice(0, 3).find(group => matchedIdentifiers.some(identifier => group.identifiers.has(identifier)))
-        if (matched) matched.alerts.push(alert)
-        else groupsByKey.other.alerts.push(alert)
+        const matchedGroups = new Set(matchedIdentifiers.flatMap(identifier => groupsByIdentifier.get(identifier) || []))
+        const targets = matchedGroups.size ? matchedGroups : [other]
+        const alertKey = alert.PrimaryIdentifier || alert.primaryIdentifier || `${alert.AlertType || alert.alertType}|${alert.Title || alert.title}|${alert.Text || alert.text}`
+        for (const group of targets) {
+          if (group.seenAlertKeys.has(alertKey)) continue
+          group.seenAlertKeys.add(alertKey)
+          group.alerts.push(alert)
+        }
       }
 
-      return groups.filter(group => group.alerts.length)
+      return [...groups, other].filter(group => group.alerts.length)
     },
     featuredJourneyLiveInfo() {
       const selected = this.featuredSavedJourney
@@ -886,7 +899,7 @@ export default {
       if (!displayRouteItems.some(item => item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney)) return null
 
       const steps = this.commuteSteps(displayRouteItems, commute, outbound, now, selected.displayPlan)
-      const alertIdentifierGroups = this.commuteAlertTargets(routeItems, selected.plan)
+      const alertEntities = this.commuteAlertTargets(routeItems, selected.plan)
 
       return {
         key: `${commute.id || commute.originRef}-${direction}-${selected.plan.StartTime || selected.plan.startTime}`,
@@ -895,8 +908,8 @@ export default {
         start: selected.start,
         arrival: selected.arrival,
         steps,
-        alertIdentifierGroups,
-        alertIdentifiers: [...new Set(Object.values(alertIdentifierGroups).flat())]
+        alertEntities,
+        alertIdentifiers: [...new Set(alertEntities.flatMap(entity => entity.identifiers))]
       }
     },
     commuteStopName(stop, fallback) {
@@ -1003,37 +1016,64 @@ export default {
       })
     },
     commuteAlertTargets(routeItems, plan) {
-      const groups = {
-        journeys: new Set(),
-        services: new Set(),
-        stops: new Set()
+      const entities = new Map()
+      const addEntity = (type, id, title, subtitle, identifier = id) => {
+        if (!id || !identifier) return null
+        const key = `${type}:${id}`
+        const entity = entities.get(key) || { key, type, title, subtitle, identifiers: new Set() }
+        entity.identifiers.add(identifier)
+        entities.set(key, entity)
+        return entity
       }
+
       for (const item of routeItems) {
         const journey = item.Journey || item.journey || item.RealtimeJourney || item.realtimeJourney
         const journeyId = journey?.PrimaryIdentifier || journey?.primaryIdentifier || journey?.Identifier || journey?.identifier || journey?.ID || journey?.id
-        if (journeyId) {
-          groups.journeys.add(journeyId)
-          const runDate = (journey?.RealtimeJourney || journey?.realtimeJourney)?.JourneyRunDate?.slice(0, 10) ||
-            DateTime.fromISO(plan.StartTime || plan.startTime, { setZone: true }).toISODate()
-          if (runDate) groups.journeys.add(`DAYINSTANCEOF:${runDate}:${journeyId}`)
-        }
-
         const service = journey?.Service || journey?.service || item.Service || item.service
         const serviceId = service?.PrimaryIdentifier || service?.primaryIdentifier || service?.Identifier || service?.identifier
-        if (serviceId) groups.services.add(serviceId)
+        const serviceName = service?.ServiceName || service?.serviceName || service?.PrimaryName || service?.primaryName || service?.Name || service?.name || service?.TransportType || service?.transportType || 'Service'
 
-        for (const ref of [
-          item.OriginStopRef || item.originStopRef || item.FromStopRef || item.fromStopRef,
-          item.DestinationStopRef || item.destinationStopRef || item.ToStopRef || item.toStopRef
-        ]) {
-          if (ref) groups.stops.add(ref)
+        const originStop = item.OriginStop || item.originStop || item.FromStop || item.fromStop
+        const destinationStop = item.DestinationStop || item.destinationStop || item.ToStop || item.toStop
+        const originRef = item.OriginStopRef || item.originStopRef || item.FromStopRef || item.fromStopRef
+        const destinationRef = item.DestinationStopRef || item.destinationStopRef || item.ToStopRef || item.toStopRef
+        const originName = this.commuteStopName(originStop, originRef || '')
+        const destinationName = this.commuteStopName(destinationStop, destinationRef || '')
+
+        if (journeyId) {
+          const realtime = journey?.RealtimeJourney || journey?.realtimeJourney
+          const runDate = realtime?.JourneyRunDate?.slice(0, 10) ||
+            DateTime.fromISO(plan.StartTime || plan.startTime, { setZone: true }).toISODate()
+          const journeyKey = runDate ? `${journeyId}:${runDate}` : journeyId
+          const journeyName = originName && destinationName
+            ? `${originName} → ${destinationName}`
+            : serviceName
+          const journeyEntity = addEntity('journey', journeyKey, journeyName, serviceName, journeyId)
+          if (runDate) journeyEntity.identifiers.add(`DAYINSTANCEOF:${runDate}:${journeyId}`)
         }
+
+        if (serviceId) addEntity('service', serviceId, serviceName, '')
+        if (originRef) {
+          const descriptor = originStop?.Descriptor || originStop?.descriptor || ''
+          const label = descriptor && !originName.toLowerCase().includes(descriptor.toLowerCase())
+            ? `${originName} · ${descriptor}`
+            : originName
+          addEntity('stop', originRef, label, '')
+        }
+        if (destinationRef) {
+          const descriptor = destinationStop?.Descriptor || destinationStop?.descriptor || ''
+          const label = descriptor && !destinationName.toLowerCase().includes(descriptor.toLowerCase())
+            ? `${destinationName} · ${descriptor}`
+            : destinationName
+          addEntity('stop', destinationRef, label, '')
+        }
+
         const realtime = journey?.RealtimeJourney || journey?.realtimeJourney
         const nextStopRef = realtime?.NextStopRef || realtime?.nextStopRef
-        if (nextStopRef) groups.stops.add(nextStopRef)
+        if (nextStopRef) addEntity('stop', nextStopRef, realtime?.NextStopName || realtime?.nextStopName || nextStopRef, '')
       }
 
-      return Object.fromEntries(Object.entries(groups).map(([key, identifiers]) => [key, [...identifiers]]))
+      return [...entities.values()].map(entity => ({ ...entity, identifiers: [...entity.identifiers] }))
     },
     async refreshCommutePlans() {
       if (this.commutePlanLoading) return
@@ -1144,8 +1184,13 @@ export default {
         stopLookups.forEach((lookup, index) => {
           const result = results[index + 1]
           if (result?.status !== 'fulfilled') return
-          lookup.step.nextStop = this.commuteStopName(result.value.data, '')
-          if (lookup.step.nextStop) lookup.step.nextStopRef = ''
+          const stopName = this.commuteStopName(result.value.data, '')
+          lookup.step.nextStop = stopName
+          if (stopName) {
+            const stopEntity = commute.alertEntities?.find(entity => entity.type === 'stop' && entity.identifiers.includes(lookup.step.nextStopRef))
+            if (stopEntity?.title === lookup.step.nextStopRef) stopEntity.title = stopName
+            lookup.step.nextStopRef = ''
+          }
         })
       } catch (error) {
         if (requestVersion === this.commuteAlertRequestVersion) reportRequestFailure(error)

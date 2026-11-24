@@ -1,10 +1,11 @@
 <template>
-  <div v-if="compact" class="ui-panel block overflow-hidden">
-    <component
-      :is="compactJourneyRoute ? 'router-link' : 'div'"
-      v-bind="compactJourneyRoute ? { to: compactJourneyRoute } : {}"
-      class="flex items-center gap-3 px-3 py-2.5 sm:px-4"
-      :class="compactJourneyRoute ? 'transition hover:bg-brand-blue/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-blue dark:hover:bg-brand-blue/100/5' : ''"
+  <div v-if="compact && !detailsExpanded" class="ui-panel block overflow-hidden">
+    <button
+      type="button"
+      class="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-brand-blue/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-blue sm:px-4 dark:hover:bg-brand-blue/100/5"
+      :aria-label="`Show details for ${commute.name} ${commute.directionLabel} commute`"
+      :aria-expanded="detailsExpanded"
+      @click="detailsExpanded = true"
     >
       <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
         <span class="material-symbols-outlined text-[18px]" aria-hidden="true">schedule</span>
@@ -15,8 +16,8 @@
           {{ commute.name }} · {{ commute.directionLabel }}<span v-if="compactDepartureTime"> · Departs {{ compactDepartureTime }}</span>
         </span>
       </span>
-      <span v-if="compactJourneyRoute" class="material-symbols-outlined shrink-0 text-[18px] text-(--ui-muted)" aria-hidden="true">chevron_right</span>
-    </component>
+      <span class="material-symbols-outlined shrink-0 text-[18px] text-(--ui-muted)" aria-hidden="true">expand_more</span>
+    </button>
 
     <button
       v-if="alertSummary"
@@ -47,6 +48,15 @@
           </span>
           <span class="truncate text-xs font-semibold text-(--ui-muted)">{{ commute.name }} · {{ commute.directionLabel }}</span>
         </div>
+        <button
+          v-if="compact && detailsExpanded"
+          type="button"
+          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-(--ui-muted) transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-blue dark:hover:bg-slate-800"
+          aria-label="Collapse commute details"
+          @click="detailsExpanded = false"
+        >
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">expand_less</span>
+        </button>
       </div>
 
       <ol class="mt-2 space-y-1.5">
@@ -134,7 +144,12 @@
     <div class="space-y-5">
       <section v-for="group in alertGroupsForDisplay" :key="group.key" class="space-y-2">
         <h3 class="flex items-center justify-between gap-3 text-sm font-bold text-slate-800 dark:text-slate-100">
-          <span>{{ group.title }}</span>
+          <span class="min-w-0">
+            <span class="block wrap-anywhere">{{ group.title }}</span>
+            <span v-if="group.typeLabel || group.subtitle" class="mt-0.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
+              {{ group.typeLabel }}<span v-if="group.typeLabel && group.subtitle"> · </span>{{ group.subtitle }}
+            </span>
+          </span>
           <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ group.alerts.length }}</span>
         </h3>
         <ServiceAlertList :alerts="group.alerts" :context-name="commute.name" />
@@ -153,7 +168,8 @@ export default {
   components: { Modal, ServiceAlertList, ServiceIcon },
   data() {
     return {
-      alertsModalOpen: false
+      alertsModalOpen: false,
+      detailsExpanded: false
     }
   },
   props: {
@@ -179,9 +195,6 @@ export default {
     }
   },
   computed: {
-    compactJourneyRoute() {
-      return this.commute.steps.find(step => step.journeyRoute)?.journeyRoute || ''
-    },
     compactDepartureTime() {
       return this.commute.steps.find(step => !step.isTransfer && step.startTime)?.startTime || ''
     },
@@ -194,6 +207,9 @@ export default {
   watch: {
     alerts(alerts) {
       if (!alerts.length) this.alertsModalOpen = false
+    },
+    'commute.key'() {
+      this.detailsExpanded = false
     }
   }
 }
