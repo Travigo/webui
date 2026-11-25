@@ -172,6 +172,10 @@
                     </div>
                     <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ transfersLabel(journeyPlan) }}</span>
                   </div>
+                  <div v-if="fareSummary(journeyPlan)" class="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+                    <span class="font-semibold text-slate-500 dark:text-slate-400">{{ fareCertaintyLabel(fareQuote(journeyPlan)) }}</span>
+                    <span class="font-black text-slate-900 dark:text-slate-100">{{ fareSummary(journeyPlan) }}</span>
+                  </div>
                 </div>
               </button>
             </template>
@@ -196,6 +200,54 @@
           <div><p class="text-xs font-bold uppercase text-slate-500">Arrive</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.ArrivalTime, destinationTimezone) }}</p></div>
           <div><p class="text-xs font-bold uppercase text-slate-500">Changes</p><p class="mt-1 text-lg font-black">{{ transferCount(selectedJourneyPlan) }}</p></div>
         </div>
+
+        <section v-if="fareQuote(selectedJourneyPlan)" class="rounded-xl border border-brand-blue/15 bg-brand-blue/5 p-4 dark:border-brand-blue-light/20 dark:bg-brand-blue/5" aria-labelledby="journey-fare-heading">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="journey-fare-heading" class="text-sm font-black text-slate-950 dark:text-slate-100">Fare information</h2>
+              <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ fareCertaintyLabel(fareQuote(selectedJourneyPlan)) }}<span v-if="fareAvailabilityLabel(fareQuote(selectedJourneyPlan))"> · {{ fareAvailabilityLabel(fareQuote(selectedJourneyPlan)) }}</span><span v-if="fareQuote(selectedJourneyPlan).source || fareQuote(selectedJourneyPlan).Source"> · {{ fareQuote(selectedJourneyPlan).source || fareQuote(selectedJourneyPlan).Source }}</span></p>
+            </div>
+            <p v-if="fareSummary(selectedJourneyPlan)" class="text-xl font-black text-slate-950 dark:text-slate-100">{{ fareSummary(selectedJourneyPlan) }}</p>
+          </div>
+          <p v-if="fareQuote(selectedJourneyPlan).reason || fareQuote(selectedJourneyPlan).Reason" class="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">{{ fareQuote(selectedJourneyPlan).reason || fareQuote(selectedJourneyPlan).Reason }}</p>
+
+          <ul v-if="fareAssumptions(selectedJourneyPlan).length" class="mt-3 list-disc space-y-1 pl-5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+            <li v-for="assumption in fareAssumptions(selectedJourneyPlan)" :key="assumption">{{ assumption }}</li>
+          </ul>
+
+          <div v-if="fareAlternatives(selectedJourneyPlan).length" class="mt-4 space-y-2">
+            <h3 class="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Ticket options</h3>
+            <article v-for="(alternative, index) in fareAlternatives(selectedJourneyPlan)" :key="alternative.product_ref || alternative.ProductRef || alternative.name || alternative.Name || index" class="rounded-lg bg-white/80 p-3 dark:bg-slate-900/70">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ alternative.name || alternative.Name || 'Ticket option' }}</p>
+                <p class="shrink-0 text-sm font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(alternative.price || alternative.Price) }}</p>
+              </div>
+              <ul v-if="fareConditions(alternative).length" class="mt-2 list-disc space-y-1 pl-5 text-xs font-medium text-slate-600 dark:text-slate-300">
+                <li v-for="condition in fareConditions(alternative)" :key="condition">{{ condition }}</li>
+              </ul>
+              <a v-if="farePurchaseURL(alternative)" :href="farePurchaseURL(alternative)" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex min-h-10 items-center gap-1 text-xs font-bold text-brand-blue underline-offset-4 hover:underline dark:text-brand-blue-light">
+                Buy this ticket <span class="material-symbols-outlined text-[16px]" aria-hidden="true">open_in_new</span>
+              </a>
+            </article>
+          </div>
+
+          <div v-if="fareComponents(selectedJourneyPlan).length" class="mt-4 space-y-2">
+            <h3 class="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Fare breakdown</h3>
+            <div v-for="(component, index) in fareComponents(selectedJourneyPlan)" :key="component.journey_ref || component.JourneyRef || index" class="flex flex-wrap items-start justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 dark:bg-slate-900/70">
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ fareComponentLabel(component, index) }}</p>
+                <p v-if="component.reason || component.Reason" class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{{ component.reason || component.Reason }}</p>
+              </div>
+              <p v-if="component.price || component.Price" class="shrink-0 text-xs font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(component.price || component.Price) }}</p>
+              <div v-if="fareAlternativesFor(component).length" class="basis-full space-y-1 border-t border-slate-100 pt-2 dark:border-slate-800">
+                <div v-for="(alternative, alternativeIndex) in fareAlternativesFor(component)" :key="alternative.product_ref || alternative.ProductRef || alternative.name || alternative.Name || alternativeIndex" class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs">
+                  <span class="font-semibold text-slate-600 dark:text-slate-300">{{ alternative.name || alternative.Name || 'Ticket option' }}</span>
+                  <span class="font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(alternative.price || alternative.Price) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <ol class="space-y-3">
           <li v-for="(step, index) in selectedJourneySteps" :key="step.key" class="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3">
@@ -365,6 +417,75 @@ export default {
     journeyPlanKey(plan, index) { return plan.PrimaryIdentifier || plan.Identifier || `${plan.StartTime || 'start'}-${plan.ArrivalTime || 'arrival'}-${index}` },
     routeItems(plan) {
       return journeyPlanRouteItems(plan)
+    },
+    fareQuote(plan) { return plan?.Fare || plan?.fare || null },
+    fareMoneyAmount(money) {
+      if (!money) return undefined
+      const amountMinor = Number(money.amount_minor ?? money.amountMinor ?? money.AmountMinor)
+      const exponent = Number(money.exponent ?? money.Exponent ?? 2)
+      if (!Number.isFinite(amountMinor) || !Number.isInteger(exponent) || exponent < 0 || exponent > 4) return undefined
+      return { amount: amountMinor / (10 ** exponent), exponent, currency: String(money.currency || money.Currency || '').toUpperCase() }
+    },
+    formatFareMoney(money) {
+      const value = this.fareMoneyAmount(money)
+      if (!value) return ''
+      if (/^[A-Z]{3}$/.test(value.currency)) {
+        try {
+          return new Intl.NumberFormat(undefined, { style: 'currency', currency: value.currency, minimumFractionDigits: value.exponent, maximumFractionDigits: value.exponent }).format(value.amount)
+        } catch (_) {}
+      }
+      return `${value.currency ? `${value.currency} ` : ''}${value.amount.toFixed(value.exponent)}`
+    },
+    fareAlternatives(plan) {
+      const fare = this.fareQuote(plan)
+      return fare?.alternatives || fare?.Alternatives || []
+    },
+    fareSummary(plan) {
+      const fare = this.fareQuote(plan)
+      if (!fare) return ''
+      const price = fare.price || fare.Price
+      if (price) return this.formatFareMoney(price)
+      const pricedAlternatives = this.fareAlternatives(plan).map(item => ({ item, amount: this.fareMoneyAmount(item.price || item.Price) })).filter(item => item.amount)
+      if (!pricedAlternatives.length) return ''
+      const currencies = new Set(pricedAlternatives.map(item => item.amount.currency))
+      if (currencies.size !== 1) return ''
+      pricedAlternatives.sort((a, b) => a.amount.amount - b.amount.amount)
+      return `From ${this.formatFareMoney(pricedAlternatives[0].item.price || pricedAlternatives[0].item.Price)}`
+    },
+    fareCertaintyLabel(fare) {
+      const certainty = String(fare?.certainty || fare?.Certainty || '').toLowerCase()
+      return {
+        authoritative: 'Published fare',
+        computed: 'Calculated fare',
+        catalogue_only: 'Catalogue fare',
+        partial: 'Partial fare estimate',
+        unavailable: 'Fare unavailable'
+      }[certainty] || 'Fare information'
+    },
+    fareAvailabilityLabel(fare) {
+      const availability = String(fare?.availability || fare?.Availability || '').toLowerCase()
+      return { available: 'Availability confirmed', unavailable: 'Ticket unavailable', unknown: 'Availability unknown' }[availability] || ''
+    },
+    fareAssumptions(plan) {
+      const fare = this.fareQuote(plan)
+      return fare?.passenger_assumptions || fare?.PassengerAssumptions || []
+    },
+    fareConditions(alternative) { return alternative?.conditions || alternative?.Conditions || [] },
+    fareAlternativesFor(component) { return component?.alternatives || component?.Alternatives || [] },
+    fareComponents(plan) {
+      const fare = this.fareQuote(plan)
+      return fare?.components || fare?.Components || []
+    },
+    fareComponentLabel(component, index) {
+      const refs = component?.journey_refs || component?.JourneyRefs || []
+      const journeyRef = component?.journey_ref || component?.JourneyRef || refs[0]
+      const item = this.journeyLegs(this.selectedJourneyPlan).find(leg => this.journeyIdentifier(this.itemJourney(leg)) === journeyRef)
+      const name = item ? this.serviceName(item) : ''
+      return name || `Transit leg ${index + 1}`
+    },
+    farePurchaseURL(alternative) {
+      const url = alternative?.purchase_url || alternative?.PurchaseURL || ''
+      return /^https?:\/\//i.test(url) ? url : ''
     },
     rawItemJourney(item) { return item?.Journey || item?.journey || item?.RealtimeJourney || item?.realtimeJourney || null },
     itemJourney(item) {
@@ -543,6 +664,7 @@ export default {
         count,
         max_changes: Number(this.queryValue(this.$route.query.maxChanges) || 3),
         max_transfer_distance_metres: Number(this.queryValue(this.$route.query.maxWalking) || 1000),
+        include_fares: true,
         view: 'web'
       }
       const datetime = this.queryValue(this.$route.query.datetime)
