@@ -282,6 +282,8 @@
 <script>
 import { DateTime } from 'luxon'
 import axios from 'axios'
+import { useAuth0 } from '@auth0/auth0-vue'
+import { getApiAccessToken } from '@/auth'
 import API from '@/API'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
@@ -295,6 +297,10 @@ export default {
   components: { LoadingState, Modal },
   data () {
     return {
+      auth0: useAuth0(),
+      fareProfile: { age: null, discount_cards: [] },
+      fareProfileLoaded: false,
+      fareProfileController: null,
       results: {},
       loadingResults: true,
       error: undefined,
@@ -317,6 +323,10 @@ export default {
     }
   },
   computed: {
+    fareProfileAccount() {
+      if (this.auth0.isLoading) return null
+      return this.auth0.isAuthenticated ? this.auth0.user?.sub || 'authenticated' : false
+    },
     journeyPlans() {
       const resultSet = [
         this.results?.JourneyPlans, this.results?.journeyPlans, this.results?.Plans, this.results?.plans,
@@ -398,15 +408,19 @@ export default {
     }
   },
   watch: {
+    fareProfileAccount() {
+      this.loadFareProfile()
+    },
     '$route.fullPath'() {
       this.getJourneyPlan()
     }
   },
   mounted() {
     this.clockTimer = window.setInterval(() => { this.currentTime = Date.now() }, 30000)
-    this.getJourneyPlan()
+    this.loadFareProfile()
   },
   beforeUnmount() {
+    this.fareProfileController?.abort()
     this.requestController?.abort()
     this.alternativesController?.abort()
     window.clearInterval(this.clockTimer)
@@ -669,7 +683,43 @@ export default {
       }
       const datetime = this.queryValue(this.$route.query.datetime)
       if (datetime) params.datetime = datetime
+      if (Number.isInteger(this.fareProfile.age)) params.fare_age = this.fareProfile.age
+      if (this.fareProfile.discount_cards?.length) params.fare_cards = JSON.stringify(this.fareProfile.discount_cards)
       return params
+    },
+    async loadFareProfile() {
+      this.fareProfileController?.abort()
+      this.fareProfileLoaded = false
+      this.fareProfile = { age: null, discount_cards: [] }
+      if (this.fareProfileAccount === null) return
+      if (this.fareProfileAccount === false) {
+        this.fareProfileLoaded = true
+        this.getJourneyPlan()
+        return
+      }
+      const controller = new AbortController()
+      this.fareProfileController = controller
+      try {
+        const token = await getApiAccessToken(this.auth0)
+        if (controller.signal.aborted) return
+        const response = await axios.get(`${API.URL}/core/account/fareprofile`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+          timeout: PLANNER_REQUEST_TIMEOUT_MS
+        })
+        if (controller.signal.aborted) return
+        this.fareProfile = {
+          age: Number.isInteger(response.data?.age) ? response.data.age : null,
+          discount_cards: Array.isArray(response.data?.discount_cards) ? response.data.discount_cards : []
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) console.log('Fare profile could not be loaded for planner search.', error)
+      } finally {
+        if (!controller.signal.aborted) {
+          this.fareProfileLoaded = true
+          if (this.error !== 'Search cancelled. Your route and preferences have been kept.') this.getJourneyPlan()
+        }
+      }
     },
     cancelSearch() {
       this.requestController?.abort()
@@ -679,6 +729,7 @@ export default {
       this.error = 'Search cancelled. Your route and preferences have been kept.'
     },
     getJourneyPlan() {
+      if (!this.fareProfileLoaded) return
       const origin = this.queryValue(this.$route.query.origin)
       const destination = this.queryValue(this.$route.query.destination)
       if (!origin || !destination) {
