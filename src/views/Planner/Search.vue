@@ -1,187 +1,149 @@
 <template>
   <div class="ui-page">
-    <main class="mx-auto max-w-6xl space-y-4">
-      <header class="ui-panel p-4 sm:p-5">
-        <div class="mb-2 flex items-center justify-between gap-3">
-          <router-link :to="editRoute" class="inline-flex min-h-11 items-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-bold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-            Edit search
-          </router-link>
-          <button
-            type="button"
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition hover:bg-brand-blue/20 disabled:opacity-60 dark:bg-brand-blue/100/10 dark:text-brand-blue-light dark:hover:bg-brand-blue/100/20"
-            :disabled="loadingResults"
-            aria-label="Refresh journey results"
-            @click="getJourneyPlan"
-          >
-            <span class="material-symbols-outlined text-[22px]" :class="{ 'animate-spin': loadingResults }">refresh</span>
-          </button>
+    <main class="mx-auto max-w-3xl space-y-4">
+      <header class="ui-panel px-3 py-3 sm:px-4">
+        <div class="flex items-start gap-2 sm:gap-3">
+          <div class="relative mt-0.5 flex w-5 shrink-0 flex-col items-center gap-0.5 text-brand-blue dark:text-brand-blue-light" aria-hidden="true">
+            <span class="material-symbols-outlined text-[15px]">trip_origin</span>
+            <span class="h-1.5 w-px bg-current opacity-40"></span>
+            <span class="material-symbols-outlined text-[16px]">location_on</span>
+          </div>
+          <h1 class="min-w-0 flex-1 wrap-anywhere text-(--ui-text)">
+            <span class="block text-xs font-semibold leading-5 text-(--ui-muted)"><span class="sr-only">From </span>{{ originName }}</span>
+            <span class="block text-base font-bold leading-6 sm:text-lg"><span class="sr-only">To </span>{{ destinationName }}</span>
+          </h1>
+          <div class="flex shrink-0 items-center">
+            <router-link
+              :to="editRoute"
+              class="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-bold text-brand-blue hover:bg-brand-blue/10 dark:text-brand-blue-light sm:px-3"
+              aria-label="Edit search"
+            >
+              <span class="material-symbols-outlined text-[17px]" aria-hidden="true">edit</span>
+              Edit
+            </router-link>
+            <button
+              type="button"
+              class="flex size-11 shrink-0 items-center justify-center rounded-lg text-brand-blue hover:bg-brand-blue/10 disabled:opacity-60 dark:text-brand-blue-light"
+              :disabled="loadingResults"
+              aria-label="Refresh journey results"
+              @click="getJourneyPlan"
+            >
+              <span class="material-symbols-outlined text-[19px]" :class="{ 'animate-spin': loadingResults }" aria-hidden="true">refresh</span>
+            </button>
+          </div>
         </div>
-        <h1 class="text-lg font-black tracking-tight text-slate-950 dark:text-slate-100 sm:flex sm:flex-wrap sm:items-baseline sm:gap-x-2 sm:text-2xl">
-          <span class="block wrap-anywhere">{{ originName }}</span>
-          <span class="flex items-baseline gap-2">
-            <span class="material-symbols-outlined shrink-0 self-center text-brand-blue dark:text-brand-blue-light" aria-hidden="true">arrow_forward</span>
-            <span class="sr-only">to</span>
-            <span class="wrap-anywhere">{{ destinationName }}</span>
-          </span>
-        </h1>
-        <p class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          {{ searchDescription }}<span class="lg:hidden"> · {{ preferenceSummary }}</span>
-        </p>
+        <p class="mt-2 pl-7 text-xs leading-5 text-(--ui-muted) sm:pl-8">{{ searchDescription }} · {{ preferenceSummary }}</p>
       </header>
 
-      <div class="grid items-start gap-4 lg:grid-cols-[17rem_minmax(0,1fr)]">
-        <aside class="ui-panel hidden p-4 lg:sticky lg:top-4 lg:block">
-          <h2 class="text-sm font-black text-slate-950 dark:text-slate-100">Your search</h2>
-          <dl class="mt-3 space-y-3 text-sm">
-            <div class="flex gap-2">
-              <span class="material-symbols-outlined mt-0.5 text-[18px] text-brand-blue dark:text-brand-blue-light">schedule</span>
-              <div><dt class="sr-only">When</dt><dd class="font-bold text-slate-700 dark:text-slate-200">{{ searchDescription }}</dd></div>
-            </div>
-            <div class="flex gap-2">
-              <span class="material-symbols-outlined mt-0.5 text-[18px] text-slate-400">sync_alt</span>
-              <div><dt class="sr-only">Maximum changes</dt><dd class="font-semibold text-slate-600 dark:text-slate-300">{{ preferenceSummary }}</dd></div>
-            </div>
-          </dl>
-        </aside>
+      <section class="min-w-0" aria-labelledby="journey-results-heading">
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
+          <div class="min-w-0">
+            <h2 id="journey-results-heading" class="text-base font-bold text-(--ui-text)">Journey options</h2>
+            <p class="text-xs leading-5 text-(--ui-muted)" aria-live="polite">{{ resultsStatus }}</p>
+          </div>
+          <button v-if="loadingResults" type="button" class="min-h-11 rounded-lg px-3 text-sm font-bold text-(--ui-muted) hover:bg-(--ui-subtle)" @click="cancelSearch">Cancel</button>
+          <label v-else-if="journeyPlans.length > 1" class="min-w-0 max-w-full">
+            <span class="sr-only">Sort journeys by</span>
+            <select v-model="sortMode" class="min-h-11 max-w-full rounded-lg border border-(--ui-border) bg-(--ui-panel) py-2 pr-9 pl-2.5 text-base font-semibold text-(--ui-text) sm:text-sm">
+              <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+        </div>
 
-        <section class="ui-panel min-w-0" aria-labelledby="journey-results-heading">
-          <div class="border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <h2 id="journey-results-heading" class="text-base font-black text-slate-950 dark:text-slate-100">Journey options</h2>
-                <p class="mt-0.5 text-sm font-medium text-slate-500 dark:text-slate-400">{{ resultsStatus }}</p>
-              </div>
-              <button v-if="loadingResults" type="button" class="min-h-11 rounded-xl px-3 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" @click="cancelSearch">Cancel</button>
-            </div>
+        <div v-if="loadingResults" class="ui-panel p-4 sm:p-5" role="status">
+          <LoadingState title="Finding journeys" :subtitle="loadingSubtitle" compact :rows="4" :show-tabs="false" />
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-blue/10 px-3 py-2 text-xs font-semibold text-brand-blue-dark dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
+            <span>{{ slowSearch ? 'This search is taking longer than usual. You can keep waiting or edit it.' : 'Checking live and scheduled services…' }}</span>
+            <router-link :to="editRoute" class="min-h-10 rounded-lg px-2.5 py-2 font-bold hover:bg-brand-blue/20 dark:hover:bg-brand-blue/100/10">Edit search</router-link>
+          </div>
+        </div>
 
-            <div v-if="!loadingResults && journeyPlans.length > 1">
-              <label class="mt-2 flex items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200 sm:hidden">
-                <span class="shrink-0">Sort by</span>
-                <select v-model="sortMode" class="min-h-11 w-full min-w-0 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors duration-(--motion-feedback) dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200" :class="sortMode !== 'recommended' && 'text-brand-blue dark:text-brand-blue-light'">
-                  <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                </select>
-              </label>
-              <div class="mt-3 hidden gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 sm:flex" role="group" aria-label="Sort journeys">
-              <button
-                v-for="option in sortOptions"
-                :key="option.value"
-                type="button"
-                :aria-pressed="sortMode === option.value"
-                class="min-h-10 flex-1 rounded-lg px-2 text-xs font-bold transition-colors duration-(--motion-feedback)"
-                :class="sortMode === option.value ? 'bg-white text-brand-blue shadow-sm dark:bg-slate-950 dark:text-brand-blue-light' : 'text-slate-500 dark:text-slate-400'"
-                @click="sortMode = option.value"
-              >
-                {{ option.label }}
-              </button>
-              </div>
+        <div v-else-if="error !== undefined" class="p-4 sm:p-5">
+          <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            <p class="font-black">Journeys unavailable</p>
+            <p class="mt-1">{{ errorMessage }}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
+              <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-bold">Edit search</router-link>
             </div>
           </div>
+        </div>
 
-          <div v-if="loadingResults" class="p-4 sm:p-5" role="status">
-            <LoadingState title="Finding journeys" :subtitle="loadingSubtitle" compact :rows="4" :show-tabs="false" />
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-blue/10 px-3 py-2 text-xs font-semibold text-brand-blue-dark dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
-              <span>{{ slowSearch ? 'This search is taking longer than usual. You can keep waiting or edit it.' : 'Checking live and scheduled services…' }}</span>
-              <router-link :to="editRoute" class="min-h-10 rounded-lg px-2.5 py-2 font-bold hover:bg-brand-blue/20 dark:hover:bg-brand-blue/100/10">Edit search</router-link>
+        <div v-else-if="searchTruncated && journeyPlans.length === 0" class="p-4 sm:p-5">
+          <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            <p class="font-black">Search took too long</p>
+            <p class="mt-1">We could not finish checking every route, so this does not mean that no journey is possible.</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
+              <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-bold">Edit search</router-link>
             </div>
           </div>
+        </div>
 
-          <div v-else-if="error !== undefined" class="p-4 sm:p-5">
-            <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-              <p class="font-black">Journeys unavailable</p>
-              <p class="mt-1">{{ errorMessage }}</p>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
-                <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-bold">Edit search</router-link>
-              </div>
-            </div>
+        <div v-else-if="journeyPlans.length === 0" class="p-4 sm:p-5">
+          <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            <p class="font-black">No journeys found</p>
+            <p class="mt-1">Try a later time, allow more changes, or increase the walking distance.</p>
+            <router-link :to="editRoute" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100">Change search</router-link>
           </div>
+        </div>
 
-          <div v-else-if="searchTruncated && journeyPlans.length === 0" class="p-4 sm:p-5">
-            <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-              <p class="font-black">Search took too long</p>
-              <p class="mt-1">We could not finish checking every route, so this does not mean that no journey is possible.</p>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <button type="button" class="min-h-11 rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100" @click="getJourneyPlan">Try this search again</button>
-                <router-link :to="editRoute" class="inline-flex min-h-11 items-center rounded-xl px-3 font-bold">Edit search</router-link>
-              </div>
-            </div>
-          </div>
+        <div v-else class="ui-results-reveal space-y-2">
+          <p v-if="searchTruncated" class="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            Showing the journeys found before this search reached its limit.
+          </p>
+          <template v-for="(journeyPlan, index) in sortedJourneyPlans" :key="journeyPlanKey(journeyPlan, index)">
+            <h3 v-if="departureDayChange(index)" class="px-1 pt-1 text-xs font-semibold text-(--ui-muted)">
+              {{ formatDay(journeyPlan.StartTime) }}
+            </h3>
 
-          <div v-else-if="journeyPlans.length === 0" class="p-4 sm:p-5">
-            <div class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-              <p class="font-black">No journeys found</p>
-              <p class="mt-1">Try a later time, allow more changes, or increase the walking distance.</p>
-              <router-link :to="editRoute" class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-amber-100 px-3 font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-100">Change search</router-link>
-            </div>
-          </div>
-
-          <div v-else class="ui-results-reveal divide-y divide-slate-100 dark:divide-slate-800">
-            <div v-if="searchTruncated" class="bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-100 sm:px-5">
-              Showing the journeys found before this search reached its limit.
-            </div>
-            <template v-for="(journeyPlan, index) in sortedJourneyPlans" :key="journeyPlanKey(journeyPlan, index)">
-              <div v-if="departureDayChange(index)" class="bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-950/40 dark:text-slate-300 sm:px-5">
-                {{ formatDay(journeyPlan.StartTime) }}
-              </div>
-
-              <button
-                type="button"
-                class="group block w-full bg-white p-4 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-blue dark:bg-slate-900 dark:hover:bg-slate-800/60 sm:p-5"
-                @click="selectJourneyPlan(journeyPlan)"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex min-w-0 flex-wrap items-center gap-2">
-                    <span v-if="recommendationLabel(journeyPlan)" class="ui-status bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">{{ recommendationLabel(journeyPlan) }}</span>
-                    <span class="ui-status bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      <span class="h-1.5 w-1.5 rounded-full" :class="statusLabel(journeyPlan) === 'Live' ? 'bg-emerald-500' : 'bg-slate-400'"></span>
-                      {{ statusLabel(journeyPlan) }}
+            <button
+              type="button"
+              class="ui-panel group flex w-full items-center gap-2.5 px-3 py-3 text-left transition hover:border-brand-blue/50 focus-visible:outline-2 focus-visible:outline-brand-blue sm:gap-4 sm:px-4"
+              @click="selectJourneyPlan(journeyPlan)"
+            >
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-xl leading-none font-bold tabular-nums text-(--ui-text)">
+                    <span><span class="sr-only">Departs </span>{{ formatTime(journeyPlan.StartTime, originTimezone) }}</span>
+                    <span class="material-symbols-outlined text-[17px] text-(--ui-muted)" aria-hidden="true">arrow_forward</span>
+                    <span><span class="sr-only">Arrives </span>{{ formatTime(journeyPlan.ArrivalTime, destinationTimezone) }}</span>
+                  </span>
+                  <span v-if="recommendationLabel(journeyPlan)" class="rounded-md bg-brand-blue/10 px-1.5 py-0.5 text-xs font-semibold text-brand-blue dark:bg-brand-blue/100/15 dark:text-brand-blue-light">
+                    {{ recommendationLabel(journeyPlan) }}
+                  </span>
+                </div>
+                  <p class="mt-1 flex flex-wrap items-baseline gap-x-1 text-xs leading-5 text-(--ui-muted)">
+                  <span>{{ formatDuration(journeyPlan.Duration) || calculatedDuration(journeyPlan) }}</span>
+                  <span>· {{ transfersLabel(journeyPlan) }}</span>
+                  <span v-if="countdownLabel(journeyPlan.StartTime)">· {{ countdownLabel(journeyPlan.StartTime) }}</span>
+                    <span v-if="fareSummary(journeyPlan)" class="ml-auto inline-flex flex-wrap items-baseline gap-x-1 pl-1">
+                      <span>{{ fareCertaintyLabel(fareQuote(journeyPlan)) }}</span>
+                      <strong class="text-(--ui-text)">{{ fareSummary(journeyPlan) }}</strong>
                     </span>
-                    <span v-if="countdownLabel(journeyPlan.StartTime)" class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ countdownLabel(journeyPlan.StartTime) }}</span>
-                  </div>
-                  <span class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-blue">chevron_right</span>
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                  <template v-if="journeyLegs(journeyPlan).length">
+                    <ServiceIcon
+                      v-for="service in itineraryServices(journeyPlan)"
+                      :key="service.PrimaryIdentifier || service.ServiceName"
+                      class="max-w-full wrap-anywhere text-xs font-bold leading-5"
+                      :service="service"
+                    />
+                  </template>
+                  <span v-else class="text-xs font-semibold text-(--ui-text)">{{ primaryMode(journeyPlan) }} service</span>
+                  <span class="inline-flex items-center gap-1 text-xs text-(--ui-muted)">
+                    <span class="size-1.5 rounded-full" :class="statusLabel(journeyPlan) === 'Live' ? 'bg-emerald-500' : 'bg-slate-400'" aria-hidden="true"></span>
+                    {{ statusLabel(journeyPlan) }}
+                  </span>
                 </div>
-
-                <div class="mt-3 grid grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(4rem,1fr)_minmax(0,1fr)] sm:gap-3">
-                  <div class="min-w-0">
-                    <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.StartTime, originTimezone) }}</p>
-                    <p class="mt-1 wrap-anywhere text-xs font-bold text-slate-600 dark:text-slate-300">{{ originName }}</p>
-                  </div>
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                      <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
-                      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light">
-                        <span class="material-symbols-outlined text-[20px]">{{ transportIcon(primaryMode(journeyPlan)) }}</span>
-                      </span>
-                      <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
-                    </div>
-                    <p class="mt-1 text-center text-xs font-bold text-slate-500 dark:text-slate-400">{{ formatDuration(journeyPlan.Duration) || calculatedDuration(journeyPlan) }}</p>
-                  </div>
-                  <div class="min-w-0 text-right">
-                    <p class="text-2xl font-black leading-none text-slate-950 dark:text-slate-100">{{ formatTime(journeyPlan.ArrivalTime, destinationTimezone) }}</p>
-                    <p class="mt-1 wrap-anywhere text-xs font-bold text-slate-600 dark:text-slate-300">{{ destinationName }}</p>
-                  </div>
-                </div>
-
-                <div class="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-                  <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined mt-0.5 text-[20px] text-slate-400">{{ transportIcon(primaryMode(journeyPlan)) }}</span>
-                    <div class="min-w-0 flex-1">
-                      <p class="text-sm font-black text-slate-900 dark:text-slate-100">{{ serviceSummary(journeyPlan) }}</p>
-                      <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ itinerarySummary(journeyPlan) }}</p>
-                    </div>
-                    <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ transfersLabel(journeyPlan) }}</span>
-                  </div>
-                  <div v-if="fareSummary(journeyPlan)" class="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
-                    <span class="font-semibold text-slate-500 dark:text-slate-400">{{ fareCertaintyLabel(fareQuote(journeyPlan)) }}</span>
-                    <span class="font-black text-slate-900 dark:text-slate-100">{{ fareSummary(journeyPlan) }}</span>
-                  </div>
-                </div>
-              </button>
-            </template>
-          </div>
-        </section>
-      </div>
+                <p v-if="changeStops(journeyPlan)" class="mt-1.5 wrap-anywhere text-xs leading-5 text-(--ui-muted)">Change at {{ changeStops(journeyPlan) }}</p>
+              </div>
+              <span class="material-symbols-outlined shrink-0 text-[19px] text-(--ui-muted) transition group-hover:translate-x-0.5 group-hover:text-brand-blue" aria-hidden="true">chevron_right</span>
+            </button>
+          </template>
+        </div>
+      </section>
     </main>
 
     <Modal
@@ -191,87 +153,93 @@
       icon="route"
       size="lg"
       close-label="Close journey itinerary"
-      body-class="max-h-[calc(88dvh-5rem)] overflow-y-auto p-4 sm:p-5"
+      body-class="overflow-y-auto p-3 sm:p-5"
       @close="selectedJourneyPlan = undefined"
     >
-      <div v-if="selectedJourneyPlan" class="space-y-4">
-        <div class="grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
-          <div><p class="text-xs font-bold uppercase text-slate-500">Depart</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.StartTime, originTimezone) }}</p></div>
-          <div><p class="text-xs font-bold uppercase text-slate-500">Arrive</p><p class="mt-1 text-lg font-black">{{ formatTime(selectedJourneyPlan.ArrivalTime, destinationTimezone) }}</p></div>
-          <div><p class="text-xs font-bold uppercase text-slate-500">Changes</p><p class="mt-1 text-lg font-black">{{ transferCount(selectedJourneyPlan) }}</p></div>
-        </div>
+      <div v-if="selectedJourneyPlan" class="space-y-3">
+        <details v-if="selectedFare" class="group rounded-lg border border-(--ui-divider)">
+          <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-(--ui-muted) hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-blue dark:hover:bg-slate-800/60 [&::-webkit-details-marker]:hidden">
+            <span class="material-symbols-outlined shrink-0 text-[18px]" aria-hidden="true">confirmation_number</span>
+            <span class="flex-1 font-semibold">{{ selectedFareLabel }}</span>
+            <strong v-if="selectedFarePrice" class="text-(--ui-text)">{{ selectedFarePrice }}</strong>
+            <span class="material-symbols-outlined shrink-0 text-[18px] group-open:rotate-180" aria-hidden="true">expand_more</span>
+          </summary>
+          <div class="border-t border-(--ui-divider) px-3 py-2.5">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ fareCertaintyLabel(selectedFare) }}<span v-if="fareAvailabilityLabel(selectedFare)"> · {{ fareAvailabilityLabel(selectedFare) }}</span><span v-if="selectedFare.source || selectedFare.Source"> · {{ selectedFare.source || selectedFare.Source }}</span></p>
+            <p v-if="selectedFare.reason || selectedFare.Reason" class="mt-2 text-sm text-slate-600 dark:text-slate-300">{{ selectedFare.reason || selectedFare.Reason }}</p>
 
-        <section v-if="fareQuote(selectedJourneyPlan)" class="rounded-xl border border-brand-blue/15 bg-brand-blue/5 p-4 dark:border-brand-blue-light/20 dark:bg-brand-blue/5" aria-labelledby="journey-fare-heading">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 id="journey-fare-heading" class="text-sm font-black text-slate-950 dark:text-slate-100">Fare information</h2>
-              <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ fareCertaintyLabel(fareQuote(selectedJourneyPlan)) }}<span v-if="fareAvailabilityLabel(fareQuote(selectedJourneyPlan))"> · {{ fareAvailabilityLabel(fareQuote(selectedJourneyPlan)) }}</span><span v-if="fareQuote(selectedJourneyPlan).source || fareQuote(selectedJourneyPlan).Source"> · {{ fareQuote(selectedJourneyPlan).source || fareQuote(selectedJourneyPlan).Source }}</span></p>
+            <ul v-if="fareAssumptions(selectedJourneyPlan).length" class="mt-3 list-disc space-y-1 pl-5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              <li v-for="assumption in fareAssumptions(selectedJourneyPlan)" :key="assumption">{{ assumption }}</li>
+            </ul>
+
+            <div v-if="fareAlternatives(selectedJourneyPlan).length" class="mt-4 space-y-2">
+              <h3 class="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Ticket options</h3>
+              <article v-for="(alternative, index) in fareAlternatives(selectedJourneyPlan)" :key="alternative.product_ref || alternative.ProductRef || alternative.name || alternative.Name || index" class="rounded-lg bg-white/80 p-3 dark:bg-slate-900/70">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ alternative.name || alternative.Name || 'Ticket option' }}</p>
+                  <p class="shrink-0 text-sm font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(alternative.price || alternative.Price) }}</p>
+                </div>
+                <ul v-if="fareConditions(alternative).length" class="mt-2 list-disc space-y-1 pl-5 text-xs font-medium text-slate-600 dark:text-slate-300">
+                  <li v-for="condition in fareConditions(alternative)" :key="condition">{{ condition }}</li>
+                </ul>
+                <a v-if="farePurchaseURL(alternative)" :href="farePurchaseURL(alternative)" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex min-h-10 items-center gap-1 text-xs font-bold text-brand-blue underline-offset-4 hover:underline dark:text-brand-blue-light">
+                  Buy this ticket <span class="material-symbols-outlined text-[16px]" aria-hidden="true">open_in_new</span>
+                </a>
+              </article>
             </div>
-            <p v-if="fareSummary(selectedJourneyPlan)" class="text-xl font-black text-slate-950 dark:text-slate-100">{{ fareSummary(selectedJourneyPlan) }}</p>
-          </div>
-          <p v-if="fareQuote(selectedJourneyPlan).reason || fareQuote(selectedJourneyPlan).Reason" class="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">{{ fareQuote(selectedJourneyPlan).reason || fareQuote(selectedJourneyPlan).Reason }}</p>
 
-          <ul v-if="fareAssumptions(selectedJourneyPlan).length" class="mt-3 list-disc space-y-1 pl-5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-            <li v-for="assumption in fareAssumptions(selectedJourneyPlan)" :key="assumption">{{ assumption }}</li>
-          </ul>
-
-          <div v-if="fareAlternatives(selectedJourneyPlan).length" class="mt-4 space-y-2">
-            <h3 class="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Ticket options</h3>
-            <article v-for="(alternative, index) in fareAlternatives(selectedJourneyPlan)" :key="alternative.product_ref || alternative.ProductRef || alternative.name || alternative.Name || index" class="rounded-lg bg-white/80 p-3 dark:bg-slate-900/70">
-              <div class="flex flex-wrap items-start justify-between gap-2">
-                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ alternative.name || alternative.Name || 'Ticket option' }}</p>
-                <p class="shrink-0 text-sm font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(alternative.price || alternative.Price) }}</p>
-              </div>
-              <ul v-if="fareConditions(alternative).length" class="mt-2 list-disc space-y-1 pl-5 text-xs font-medium text-slate-600 dark:text-slate-300">
-                <li v-for="condition in fareConditions(alternative)" :key="condition">{{ condition }}</li>
-              </ul>
-              <a v-if="farePurchaseURL(alternative)" :href="farePurchaseURL(alternative)" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex min-h-10 items-center gap-1 text-xs font-bold text-brand-blue underline-offset-4 hover:underline dark:text-brand-blue-light">
-                Buy this ticket <span class="material-symbols-outlined text-[16px]" aria-hidden="true">open_in_new</span>
-              </a>
-            </article>
-          </div>
-
-          <div v-if="fareComponents(selectedJourneyPlan).length" class="mt-4 space-y-2">
-            <h3 class="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Fare breakdown</h3>
-            <div v-for="(component, index) in fareComponents(selectedJourneyPlan)" :key="component.journey_ref || component.JourneyRef || index" class="flex flex-wrap items-start justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 dark:bg-slate-900/70">
-              <div class="min-w-0">
-                <p class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ fareComponentLabel(component, index) }}</p>
-                <p v-if="component.reason || component.Reason" class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{{ component.reason || component.Reason }}</p>
-              </div>
-              <p v-if="component.price || component.Price" class="shrink-0 text-xs font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(component.price || component.Price) }}</p>
-              <div v-if="fareAlternativesFor(component).length" class="basis-full space-y-1 border-t border-slate-100 pt-2 dark:border-slate-800">
-                <div v-for="(alternative, alternativeIndex) in fareAlternativesFor(component)" :key="alternative.product_ref || alternative.ProductRef || alternative.name || alternative.Name || alternativeIndex" class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs">
-                  <span class="font-semibold text-slate-600 dark:text-slate-300">{{ alternative.name || alternative.Name || 'Ticket option' }}</span>
-                  <span class="font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(alternative.price || alternative.Price) }}</span>
+            <div v-if="selectedFareComponents.length" class="mt-4 space-y-2">
+              <h3 class="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Fare breakdown</h3>
+              <div v-for="({ component, service }, index) in selectedFareComponents" :key="component.journey_ref || component.JourneyRef || index" class="flex flex-wrap items-start justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 dark:bg-slate-900/70">
+                <div class="min-w-0">
+                  <ServiceIcon v-if="service" class="max-w-full wrap-anywhere text-xs font-bold leading-5" :service="service" />
+                  <p v-else class="text-xs font-bold text-slate-700 dark:text-slate-200">Transit leg {{ index + 1 }}</p>
+                  <p v-if="component.reason || component.Reason" class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{{ component.reason || component.Reason }}</p>
+                </div>
+                <p v-if="component.price || component.Price" class="shrink-0 text-xs font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(component.price || component.Price) }}</p>
+                <div v-if="fareAlternativesFor(component).length" class="basis-full space-y-1 border-t border-slate-100 pt-2 dark:border-slate-800">
+                  <div v-for="(alternative, alternativeIndex) in fareAlternativesFor(component)" :key="alternative.product_ref || alternative.ProductRef || alternative.name || alternative.Name || alternativeIndex" class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs">
+                    <span class="font-semibold text-slate-600 dark:text-slate-300">{{ alternative.name || alternative.Name || 'Ticket option' }}</span>
+                    <span class="font-black text-slate-900 dark:text-slate-100">{{ formatFareMoney(alternative.price || alternative.Price) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </details>
 
-        <ol class="space-y-3">
-          <li v-for="(step, index) in selectedJourneySteps" :key="step.key" class="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3">
+        <ol class="space-y-2">
+          <li v-for="(step, index) in selectedJourneySteps" :key="step.key" class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-2">
             <div class="relative flex justify-center">
-              <span v-if="index < selectedJourneySteps.length - 1" class="absolute top-10 h-[calc(100%+0.75rem)] w-px bg-slate-200 dark:bg-slate-700"></span>
-              <span class="relative z-10 flex h-10 w-10 items-center justify-center rounded-xl" :class="step.isTransfer ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200' : 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light'">
-                <span class="material-symbols-outlined text-[21px]">{{ step.icon }}</span>
+              <span v-if="index < selectedJourneySteps.length - 1" class="absolute top-4 -bottom-5 w-px bg-(--ui-divider)" aria-hidden="true"></span>
+              <span class="relative mt-1.5 flex size-7 items-center justify-center rounded-full" :class="step.isTransfer ? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' : 'bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/100/10 dark:text-brand-blue-light'">
+                <span class="material-symbols-outlined text-[17px]" aria-hidden="true">{{ step.icon }}</span>
               </span>
             </div>
-            <article class="min-w-0 rounded-xl border p-3" :class="step.isTransfer ? 'border-emerald-100 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-500/10' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h3 class="text-sm font-black text-slate-950 dark:text-slate-100">{{ step.title }}</h3>
-                  <p v-if="step.subtitle" class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ step.subtitle }}</p>
+            <component
+              :is="step.journeyRoute ? 'router-link' : 'div'"
+              v-bind="step.journeyRoute ? { to: step.journeyRoute } : {}"
+              class="flex min-w-0 items-start gap-2 rounded-lg px-2 py-2 sm:gap-3 sm:px-3"
+              :class="{
+                'border border-(--ui-divider)': !step.isTransfer,
+                'transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-blue dark:hover:bg-slate-800/60': step.journeyRoute
+              }"
+            >
+              <div class="min-w-0 flex-1">
+                <div v-if="step.service" class="font-bold">
+                  <span v-if="step.service.TransportType" class="sr-only">{{ step.service.TransportType }} </span>
+                  <ServiceIcon class="max-w-full wrap-anywhere text-xs leading-5" :service="step.service" />
                 </div>
-                <div class="shrink-0 text-right"><p class="text-sm font-black">{{ step.startTime }}</p><p v-if="step.arrivalTime !== '--'" class="mt-0.5 text-xs font-bold text-slate-500">{{ step.arrivalTime }}</p></div>
+                <h3 v-else class="text-sm font-bold text-(--ui-text)">{{ step.title }}</h3>
+                <p v-if="step.subtitle" class="mt-0.5 wrap-anywhere text-xs font-semibold leading-5 text-(--ui-text)">{{ step.subtitle }}</p>
+                <p v-if="step.metadata" class="mt-0.5 wrap-anywhere text-xs text-(--ui-muted)">{{ step.metadata }}</p>
               </div>
-              <div v-if="step.chips.length" class="mt-3 flex flex-wrap gap-2">
-                <span v-for="chip in step.chips" :key="chip" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ chip }}</span>
+              <div class="shrink-0 text-right tabular-nums">
+                <p class="text-sm font-bold"><span class="sr-only">Departs </span>{{ step.startTime }}</p>
+                <p v-if="step.arrivalTime !== '--'" class="text-xs font-medium text-(--ui-muted)"><span class="sr-only">Arrives </span>{{ step.arrivalTime }}</p>
               </div>
-              <router-link v-if="step.journeyId" :to="step.journeyRoute" class="mt-3 inline-flex min-h-11 items-center gap-1 rounded-xl bg-brand-blue px-3 text-sm font-bold text-white" @click="closeJourneyPlanModal">
-                View this service <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-              </router-link>
-            </article>
+              <span v-if="step.journeyRoute" class="material-symbols-outlined shrink-0 self-center text-[18px] text-(--ui-muted)" aria-hidden="true">chevron_right</span>
+            </component>
           </li>
         </ol>
       </div>
@@ -287,6 +255,7 @@ import { getApiAccessToken } from '@/auth'
 import API from '@/API'
 import LoadingState from '@/components/LoadingState.vue'
 import Modal from '@/components/Modal.vue'
+import ServiceIcon from '@/components/ServiceIcon.vue'
 import Pretty from '@/pretty'
 import { journeyPlanForDisplay, journeyPlanRouteItems } from '@/plannerRouteItems'
 
@@ -294,7 +263,7 @@ const PLANNER_REQUEST_TIMEOUT_MS = 22000
 
 export default {
   name: 'JourneyPlannerSearch',
-  components: { LoadingState, Modal },
+  components: { LoadingState, Modal, ServiceIcon },
   data () {
     return {
       auth0: useAuth0(),
@@ -374,6 +343,23 @@ export default {
     },
     selectedJourneySteps() {
       return this.routeItems(this.selectedJourneyPlan).map((item, index) => this.normaliseStep(item, index))
+    },
+    selectedFare() {
+      return this.fareQuote(this.selectedJourneyPlan)
+    },
+    selectedFarePrice() {
+      return this.fareSummary(this.selectedJourneyPlan)
+    },
+    selectedFareComponents() {
+      return this.fareComponents(this.selectedJourneyPlan).map(component => ({
+        component,
+        service: this.fareComponentService(component)
+      }))
+    },
+    selectedFareLabel() {
+      const hasFare = this.selectedFarePrice || this.fareAlternatives(this.selectedJourneyPlan).length ||
+        this.selectedFareComponents.some(({ component }) => this.formatFareMoney(component.price || component.Price) || this.fareAlternativesFor(component).length)
+      return hasFare ? this.fareCertaintyLabel(this.selectedFare) : 'Fare unavailable'
     },
     selectedJourneyPlanSubtitle() {
       if (!this.selectedJourneyPlan) return ''
@@ -490,12 +476,11 @@ export default {
       const fare = this.fareQuote(plan)
       return fare?.components || fare?.Components || []
     },
-    fareComponentLabel(component, index) {
+    fareComponentService(component) {
       const refs = component?.journey_refs || component?.JourneyRefs || []
       const journeyRef = component?.journey_ref || component?.JourneyRef || refs[0]
-      const item = this.journeyLegs(this.selectedJourneyPlan).find(leg => this.journeyIdentifier(this.itemJourney(leg)) === journeyRef)
-      const name = item ? this.serviceName(item) : ''
-      return name || `Transit leg ${index + 1}`
+      const item = journeyRef && this.journeyLegs(this.selectedJourneyPlan).find(leg => this.journeyIdentifier(this.itemJourney(leg)) === journeyRef)
+      return item ? this.serviceForItem(item) : null
     },
     farePurchaseURL(alternative) {
       const url = alternative?.purchase_url || alternative?.PurchaseURL || ''
@@ -505,14 +490,17 @@ export default {
     itemJourney(item) {
       return this.rawItemJourney(item)
     },
+    itemService(item) {
+      const journey = this.itemJourney(item)
+      return journey?.Service || journey?.service || item?.Service || item?.service || null
+    },
     journeyLegs(plan) { return this.routeItems(plan).filter(item => this.itemJourney(item)) },
     primaryRouteItem(plan) { return this.journeyLegs(plan)[0] || this.routeItems(plan)[0] },
     primaryJourney(plan) { return this.itemJourney(this.primaryRouteItem(plan)) },
     isTransferItem(item) { return String(item?.Type || item?.type || '').toLowerCase() === 'transfer' },
     transportTypeForItem(item) {
-      const journey = this.itemJourney(item)
       if (this.isTransferItem(item)) return item?.TransferType || item?.transferType || 'Transfer'
-      return journey?.Service?.TransportType || item?.Service?.TransportType || item?.TransportType || item?.transportType || ''
+      return this.itemService(item)?.TransportType || item?.Service?.TransportType || item?.TransportType || item?.transportType || ''
     },
     primaryMode(plan) {
       const item = this.primaryRouteItem(plan)
@@ -535,26 +523,31 @@ export default {
     transferCount(plan) { return Math.max(this.journeyLegs(plan).length - 1, 0) },
     transfersLabel(plan) { const count = this.transferCount(plan); return count === 0 ? 'Direct' : `${count} change${count === 1 ? '' : 's'}` },
     serviceName(item) {
-      const journey = this.itemJourney(item)
-      const service = journey?.Service || item?.Service || {}
+      const service = this.itemService(item) || {}
       const operator = this.operatorName(item)
       const mode = this.transportTypeForItem(item)
       return service.ServiceName || service.PrimaryName || service.Name || (operator && mode ? `${operator} ${mode.toLowerCase()}` : '') || mode || 'Service'
+    },
+    serviceForItem(item) {
+      const service = this.itemService(item)
+      return {
+        ...service,
+        ServiceName: this.serviceName(item),
+        BrandIcon: service?.BrandIcon || '',
+        TransportType: this.transportTypeForItem(item)
+      }
     },
     operatorName(item) {
       const journey = this.itemJourney(item)
       return journey?.Operator?.PrimaryName || item?.Operator?.PrimaryName || journey?.Service?.OperatorName || ''
     },
-    serviceSummary(plan) {
-      const labels = this.journeyLegs(plan).map(item => this.serviceName(item)).filter(Boolean)
-      const summary = [...new Set(labels)].join(' + ')
-      return summary === 'Service' ? `${this.primaryMode(plan)} service` : summary || `${this.primaryMode(plan)} service`
+    itineraryServices(plan) {
+      const services = this.journeyLegs(plan).map(item => this.serviceForItem(item))
+      return [...new Map(services.map(service => [service.PrimaryIdentifier || service.ServiceName, service])).values()]
     },
-    itinerarySummary(plan) {
-      const changes = this.routeItems(plan).filter(item => this.isTransferItem(item)).map(item => this.routeItemStopName(item, 'origin') || this.routeItemStopName(item, 'destination')).filter(Boolean)
-      const operator = this.operatorName(this.primaryRouteItem(plan))
-      if (changes.length) return `Change at ${[...new Set(changes)].join(', ')}${operator ? ` · ${operator}` : ''}`
-      return operator ? `${this.primaryMode(plan)} · ${operator}` : `${this.primaryMode(plan)} service`
+    changeStops(plan) {
+      const stops = this.journeyLegs(plan).slice(1).map(item => this.routeItemStopName(item, 'origin')).filter(Boolean)
+      return [...new Set(stops)].join(', ')
     },
     durationMilliseconds(plan) {
       if (typeof plan?.Duration === 'number') return plan.Duration / 1000000
@@ -640,23 +633,26 @@ export default {
       const isTransfer = this.isTransferItem(item)
       const start = item?.StartTime || item?.DepartureTime || item?.startTime || item?.departureTime || journey?.DepartureTime
       const arrival = item?.ArrivalTime || item?.EndTime || item?.arrivalTime || item?.endTime
-      const mode = this.transportTypeForItem(item)
       const origin = this.routeItemStopName(item, 'origin')
       const destination = this.routeItemStopName(item, 'destination')
-      const chips = isTransfer
-        ? [this.routeItemDistance(item), this.routeItemDuration(item)].filter(Boolean)
-        : [mode, this.operatorName(item), this.routeItemDuration(item), this.statusLabel({ RouteItems: [item] })].filter(Boolean)
+      const service = isTransfer ? null : this.serviceForItem(item)
+      const operator = this.operatorName(item)
+      const title = isTransfer ? this.transferTitle(item) : service.ServiceName
+      const metadata = isTransfer
+        ? [this.routeItemDistance(item), this.routeItemDuration(item)]
+        : [operator === title ? '' : operator, this.routeItemDuration(item), this.statusLabel({ RouteItems: [item] })]
+      const journeyId = this.journeyIdentifier(journey)
       return {
-        key: item?.PrimaryIdentifier || item?.Identifier || this.journeyIdentifier(journey) || `${index}-${start || ''}`,
-        title: isTransfer ? this.transferTitle(item) : this.serviceName(item),
+        key: item?.PrimaryIdentifier || item?.Identifier || journeyId || `${index}-${start || ''}`,
+        title,
+        service,
         subtitle: [origin, destination].filter(Boolean).join(' to '),
         isTransfer,
-        chips,
+        metadata: metadata.filter(Boolean).join(' · '),
         startTime: this.formatTime(start, journey?.DepartureTimezone || this.originTimezone),
         arrivalTime: this.formatTime(arrival, journey?.DepartureTimezone || this.destinationTimezone),
-        journeyId: this.journeyIdentifier(journey),
-        journeyRoute: journey ? this.journeyRoute(this.selectedJourneyPlan, journey) : undefined,
-        icon: this.transportIcon(mode)
+        journeyRoute: journeyId ? this.journeyRoute(this.selectedJourneyPlan, journey) : undefined,
+        icon: title === 'Walk to the next service' ? 'directions_walk' : this.transportIcon(this.transportTypeForItem(item))
       }
     },
     selectJourneyPlan(plan) {

@@ -8,7 +8,7 @@
       >
         <section
           ref="panel"
-          class="modal-panel max-h-[88dvh] w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl"
+          class="modal-panel flex max-h-[88dvh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl"
           :class="widthClass"
           role="dialog"
           aria-modal="true"
@@ -20,7 +20,7 @@
         >
           <div
             v-if="showHeader"
-            class="flex items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5"
+            class="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:p-5"
           >
             <div class="flex min-w-0 items-start gap-3">
               <span v-if="icon" class="ui-icon">
@@ -50,13 +50,13 @@
             </button>
           </div>
 
-          <div :class="bodyClass">
+          <div class="min-h-0" :class="bodyClass">
             <slot></slot>
           </div>
 
           <div
             v-if="$slots.footer"
-            class="border-t border-slate-100 p-4 dark:border-slate-800 sm:p-5"
+            class="shrink-0 border-t border-slate-100 p-4 dark:border-slate-800 sm:p-5"
           >
             <slot name="footer"></slot>
           </div>
@@ -176,9 +176,9 @@ export default {
     },
     trapFocus(event) {
       const focusable = this.$refs.panel?.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), details > summary:first-child, [tabindex]:not([tabindex="-1"])'
       )
-      const targets = Array.from(focusable || [])
+      const targets = Array.from(focusable || []).filter(element => element.getClientRects().length)
 
       if (targets.length === 0) {
         event.preventDefault()
